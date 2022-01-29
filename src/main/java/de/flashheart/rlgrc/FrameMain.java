@@ -23,7 +23,7 @@ public class FrameMain extends JFrame {
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        Container contentPane = getContentPane();
+        var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
             "default, $lcgap, default",
             "default:grow"));

@@ -23,14 +23,16 @@
         <lombok.version>1.18.22</lombok.version>
         <log4j2.version>2.17.1</log4j2.version>
         <json.version>20211205</json.version>
-        <jersey.version>2.34</jersey.version>
+        <jersey.version>3.0.3</jersey.version>
+        <guava.version>31.0.1-jre</guava.version>
+        <collections4.version>4.4</collections4.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -65,19 +67,30 @@
             <version>${jgoodies.validation.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>jersey-client</artifactId>
+                    <version>${jersey.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.jersey.media</groupId>
+                    <artifactId>jersey-media-json-jackson</artifactId>
+                    <version>${jersey.version}</version>
+                </dependency>
+<!--        <dependency>-->
+<!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
+<!--          <artifactId>jackson-datatype-guava</artifactId>-->
+<!--          <version>2.12.3</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -105,6 +118,16 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${collections4.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freeplane.bulenkov</groupId>
+            <artifactId>darcula</artifactId>
+            <version>2018.2</version>
         </dependency>
 
     </dependencies>

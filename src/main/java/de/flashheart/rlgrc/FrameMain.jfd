@@ -129,7 +129,7 @@ new FormModel {
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 							"$columnSpecs": "default:grow, unrelgap, default:grow, unrelgap, default"
-							"$rowSpecs": "default, relgap, default, default, default:grow, linegap, default"
+							"$rowSpecs": "default, relgap, default, default, default:grow"
 						} ) {
 							name: "panel1"
 							add( new FormComponent( "javax.swing.JLabel" ) {
@@ -187,37 +187,6 @@ new FormModel {
 								"gridX": 5
 								"gridY": 5
 								"vAlign": sfield com.jgoodies.forms.layout.CellConstraints TOP
-							} )
-							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
-								name: "panel3"
-								add( new FormComponent( "javax.swing.JButton" ) {
-									name: "btnAddCP"
-									"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-									"icon": &SwingIcon0 new com.jformdesigner.model.SwingIcon( 0, "/artwork/edit_add.png" )
-								} )
-								add( new FormComponent( "javax.swing.JButton" ) {
-									name: "btnDelCP"
-									"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-									"icon": &SwingIcon1 new com.jformdesigner.model.SwingIcon( 0, "/artwork/edit_remove.png" )
-								} )
-							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-								"gridY": 7
-							} )
-							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
-								name: "panel4"
-								add( new FormComponent( "javax.swing.JButton" ) {
-									name: "btnAddCP2"
-									"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-									"icon": #SwingIcon0
-								} )
-								add( new FormComponent( "javax.swing.JButton" ) {
-									name: "btnDelCP2"
-									"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-									"icon": #SwingIcon1
-								} )
-							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-								"gridY": 7
-								"gridX": 3
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridY": 13
@@ -279,8 +248,12 @@ new FormModel {
 				} )
 				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 					name: "scrollPane3"
-					add( new FormComponent( "javax.swing.JList" ) {
-						name: "list3"
+					add( new FormComponent( "javax.swing.JTable" ) {
+						name: "tblAgents"
+						"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector )
+						auxiliary() {
+							"model.noCode": true
+						}
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
@@ -290,6 +263,7 @@ new FormModel {
 					name: "btnRefreshAgents"
 					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/agt_reload32.png" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshAgents", true ) )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 					"gridY": 4

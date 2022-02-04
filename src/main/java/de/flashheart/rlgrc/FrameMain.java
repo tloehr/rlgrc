@@ -8,12 +8,15 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.games.Agents;
 import de.flashheart.rlgrc.games.GameParams;
+import de.flashheart.rlgrc.ui.TM_Agents;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
+import org.json.JSONObject;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -25,7 +28,7 @@ public class FrameMain extends JFrame {
     private final CardLayout cardLayout;
 
     private static final String REST_URI
-            = "http://localhost:8090/api/system/test";
+            = "http://localhost:8090/api/";
 
     private Client client = ClientBuilder.newClient();
 
@@ -33,6 +36,7 @@ public class FrameMain extends JFrame {
     public FrameMain() {
         initComponents();
         cardLayout = (CardLayout) cardPanel.getLayout();
+        tblAgents.setModel(new TM_Agents(new JSONObject()));
     }
 
     private void btnConquest(ActionEvent e) {
@@ -85,6 +89,25 @@ public class FrameMain extends JFrame {
 
     }
 
+    private void btnRefreshAgents(ActionEvent e) {
+        refreshAgents();
+    }
+
+    void refreshAgents() {
+        Response response = client
+                .target(REST_URI + "system/list_agents")
+                .request(MediaType.APPLICATION_JSON)
+                .get();
+        String json = response.readEntity(String.class);
+        log.debug(json);
+        SwingUtilities.invokeLater(() -> {
+            ((TM_Agents) tblAgents.getModel()).refresh_agents(new JSONObject(json));
+            tblAgents.invalidate();
+            tblAgents.repaint();
+        });
+
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         buttonPanel = new JPanel();
@@ -119,12 +142,6 @@ public class FrameMain extends JFrame {
         comboBox1 = new JComboBox();
         label12 = new JLabel();
         comboBox2 = new JComboBox();
-        panel3 = new JPanel();
-        btnAddCP = new JButton();
-        btnDelCP = new JButton();
-        panel4 = new JPanel();
-        btnAddCP2 = new JButton();
-        btnDelCP2 = new JButton();
         pnlSetup = new JPanel();
         label6 = new JLabel();
         label7 = new JLabel();
@@ -133,7 +150,7 @@ public class FrameMain extends JFrame {
         label2 = new JLabel();
         label14 = new JLabel();
         scrollPane3 = new JScrollPane();
-        list3 = new JList();
+        tblAgents = new JTable();
         btnRefreshAgents = new JButton();
         separator2 = new JSeparator();
         panel2 = new JPanel();
@@ -227,7 +244,7 @@ public class FrameMain extends JFrame {
                     {
                         panel1.setLayout(new FormLayout(
                             "2*(default:grow, $ugap), default",
-                            "default, $rgap, 2*(default), default:grow, $lgap, default"));
+                            "default, $rgap, 2*(default), default:grow"));
 
                         //---- label10 ----
                         label10.setText("Capture Points");
@@ -258,38 +275,6 @@ public class FrameMain extends JFrame {
                         label12.setText("Blue Spawn");
                         panel1.add(label12, CC.xy(5, 4));
                         panel1.add(comboBox2, CC.xy(5, 5, CC.DEFAULT, CC.TOP));
-
-                        //======== panel3 ========
-                        {
-                            panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
-
-                            //---- btnAddCP ----
-                            btnAddCP.setText(null);
-                            btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                            panel3.add(btnAddCP);
-
-                            //---- btnDelCP ----
-                            btnDelCP.setText(null);
-                            btnDelCP.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_remove.png")));
-                            panel3.add(btnDelCP);
-                        }
-                        panel1.add(panel3, CC.xy(1, 7));
-
-                        //======== panel4 ========
-                        {
-                            panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
-
-                            //---- btnAddCP2 ----
-                            btnAddCP2.setText(null);
-                            btnAddCP2.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                            panel4.add(btnAddCP2);
-
-                            //---- btnDelCP2 ----
-                            btnDelCP2.setText(null);
-                            btnDelCP2.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_remove.png")));
-                            panel4.add(btnDelCP2);
-                        }
-                        panel1.add(panel4, CC.xy(3, 7));
                     }
                     pnlConquest.add(panel1, CC.xywh(1, 13, 3, 1));
                 }
@@ -334,13 +319,14 @@ public class FrameMain extends JFrame {
 
             //======== scrollPane3 ========
             {
-                scrollPane3.setViewportView(list3);
+                scrollPane3.setViewportView(tblAgents);
             }
             mainPanel.add(scrollPane3, CC.xy(3, 2));
 
             //---- btnRefreshAgents ----
             btnRefreshAgents.setText(null);
             btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/agt_reload32.png")));
+            btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
             mainPanel.add(btnRefreshAgents, CC.xy(3, 4));
         }
         contentPane.add(mainPanel, CC.xy(2, 8, CC.DEFAULT, CC.FILL));
@@ -414,12 +400,6 @@ public class FrameMain extends JFrame {
     private JComboBox comboBox1;
     private JLabel label12;
     private JComboBox comboBox2;
-    private JPanel panel3;
-    private JButton btnAddCP;
-    private JButton btnDelCP;
-    private JPanel panel4;
-    private JButton btnAddCP2;
-    private JButton btnDelCP2;
     private JPanel pnlSetup;
     private JLabel label6;
     private JLabel label7;
@@ -428,7 +408,7 @@ public class FrameMain extends JFrame {
     private JLabel label2;
     private JLabel label14;
     private JScrollPane scrollPane3;
-    private JList list3;
+    private JTable tblAgents;
     private JButton btnRefreshAgents;
     private JSeparator separator2;
     private JPanel panel2;

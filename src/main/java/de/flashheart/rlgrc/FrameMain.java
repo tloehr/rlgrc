@@ -11,6 +11,7 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.AgentRefreshJob;
 import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.NumberVerifier;
 import de.flashheart.rlgrc.ui.TM_Agents;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -28,6 +29,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -58,9 +60,19 @@ public class FrameMain extends JFrame {
         this.scheduler.start();
         agentJob = new JobKey(AgentRefreshJob.name, "group1");
         initComponents();
+        setVerifiers();
+
         initRefreshAgents();
         cardLayout = (CardLayout) cardPanel.getLayout();
         show_mode(configs.get(Configs.LAST_GAME_MODE));
+    }
+
+    private void setVerifiers() {
+        txtCnqTickets.setInputVerifier(new NumberVerifier());
+        txtCnqTPrice.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
+        txtCnqBleedStarts.setInputVerifier(new NumberVerifier());
+        txtCnqSBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
+        txtCnqEBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, false));
     }
 
     private void show_mode(String mode) {
@@ -172,16 +184,20 @@ public class FrameMain extends JFrame {
 
     public void refreshAgents() {
         if (!cbRefreshAgents.isSelected()) return;
-        Response response = client
-                .target(REST_URI + "system/list_agents")
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-        String json = response.readEntity(String.class);
+        try {
+            Response response = client
+                    .target(REST_URI + "system/list_agents")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            String json = response.readEntity(String.class);
 
-        log.debug(json);
-        SwingUtilities.invokeLater(() -> {
-            ((TM_Agents) tblAgents.getModel()).refresh_agents(new JSONObject(json));
-        });
+            log.debug(json);
+            SwingUtilities.invokeLater(() -> {
+                ((TM_Agents) tblAgents.getModel()).refresh_agents(new JSONObject(json));
+            });
+        } catch (Exception connectException){
+            log.warn(connectException);
+        }
     }
 
     private void createUIComponents() {
@@ -336,8 +352,8 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$ugap, default, $ugap, default:grow, $ugap, default, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$ugap, default, $ugap, default:grow, $ugap, default, $ugap"));
 
         //======== buttonPanel ========
         {
@@ -369,8 +385,8 @@ public class FrameMain extends JFrame {
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow, 6dlu, default",
-                    "default, $lgap, fill:96dlu, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow, 6dlu, default",
+                "default, $lgap, fill:96dlu, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== cardPanel ========
             {
@@ -379,8 +395,8 @@ public class FrameMain extends JFrame {
                 //======== pnlConquest ========
                 {
                     pnlConquest.setLayout(new FormLayout(
-                            "default, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                            "5*(default, $lgap), fill:default:grow"));
+                        "default, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                        "5*(default, $lgap), fill:default:grow"));
 
                     //---- label1 ----
                     label1.setText("Conquest");
@@ -415,8 +431,8 @@ public class FrameMain extends JFrame {
                     //======== panel1 ========
                     {
                         panel1.setLayout(new FormLayout(
-                                "2*(default:grow, $ugap), default",
-                                "default, $rgap, 2*(default), default:grow, $lgap, default, $lgap, pref, $lgap, default"));
+                            "2*(default:grow, $ugap), default",
+                            "default, $rgap, 2*(default), default:grow, $lgap, default, $lgap, pref, $lgap, default"));
 
                         //---- label10 ----
                         label10.setText("Capture Points");
@@ -435,8 +451,8 @@ public class FrameMain extends JFrame {
                         //======== panel5 ========
                         {
                             panel5.setLayout(new FormLayout(
-                                    "33dlu:grow, $lcgap, default",
-                                    "default, $ugap, fill:default"));
+                                "33dlu:grow, $lcgap, default",
+                                "default, $ugap, fill:default"));
 
                             //---- lblRedSpawn ----
                             lblRedSpawn.setText("test");
@@ -526,8 +542,8 @@ public class FrameMain extends JFrame {
                 //======== pnlSetup ========
                 {
                     pnlSetup.setLayout(new FormLayout(
-                            "default, $lcgap, default:grow",
-                            "2*(default, $lgap), default"));
+                        "default, $lcgap, default:grow",
+                        "2*(default, $lgap), default"));
 
                     //---- label6 ----
                     label6.setText("Setup Connection");
@@ -544,8 +560,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRush ========
                 {
                     pnlRush.setLayout(new FormLayout(
-                            "default, $lcgap, default:grow",
-                            "default, $lgap, default:grow, $lgap, default"));
+                        "default, $lcgap, default:grow",
+                        "default, $lgap, default:grow, $lgap, default"));
 
                     //---- label2 ----
                     label2.setText("Rush");

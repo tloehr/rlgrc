@@ -7,15 +7,18 @@ import org.json.JSONObject;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Log4j2
 public class TM_Agents extends AbstractTableModel {
     private final MultiKeyMap<String, String> agents_states;
+    private final HashMap<String, JSONObject> tooltips;
     private final ArrayList<String> agents;
-
+    private String[] colnames = new String[]{"Agent","Timestamp","WIFI"};
     public TM_Agents(JSONObject agent_states) throws JSONException {
         agents_states = new MultiKeyMap<>();
         agents = new ArrayList<>();
+        tooltips = new HashMap<>();
         refresh_agents(agent_states);
     }
 
@@ -26,9 +29,16 @@ public class TM_Agents extends AbstractTableModel {
                     agent_states.getJSONObject(agent).toMap().forEach((s, o) ->
                             agents_states.put(agent, s, o.toString()));
                     agents.add(agent);
+                    tooltips.put(agent, agent_states.getJSONObject(agent));
                 }
         );
         agents.sort(String::compareTo);
+        fireTableDataChanged();
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return colnames[column];
     }
 
     @Override
@@ -41,9 +51,13 @@ public class TM_Agents extends AbstractTableModel {
         return 3;
     }
 
+    public String getValueAt(int rowIndex) {
+        return tooltips.get(agents.get(rowIndex)).toString(4).replaceAll("\\n","<br/>");
+    }
+
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        log.debug("rowindex {}, colondex{}, agents {}", rowIndex, columnIndex, agents.size());
+        log.debug("rowindex {}, colindex{}, agents {}", rowIndex, columnIndex, agents.size());
         String agent = agents.get(rowIndex);
         Object value;
         switch (columnIndex) {

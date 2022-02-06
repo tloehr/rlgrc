@@ -26,6 +26,9 @@
         <jersey.version>3.0.3</jersey.version>
         <guava.version>31.0.1-jre</guava.version>
         <collections4.version>4.4</collections4.version>
+        <commons.io.version>2.4</commons.io.version>
+        <quartz.version>2.3.2</quartz.version>
+
     </properties>
 
     <dependencies>
@@ -60,6 +63,12 @@
             <artifactId>jgoodies-looks</artifactId>
             <version>${jgoodies.looks.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.quartz-scheduler/quartz -->
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>${quartz.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-validation -->
         <dependency>
             <groupId>com.jgoodies</groupId>
@@ -67,20 +76,20 @@
             <version>${jgoodies.validation.version}</version>
         </dependency>
         <dependency>
-                    <groupId>org.glassfish.jersey.core</groupId>
-                    <artifactId>jersey-client</artifactId>
-                    <version>${jersey.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.jersey.media</groupId>
-                    <artifactId>jersey-media-json-jackson</artifactId>
-                    <version>${jersey.version}</version>
-                </dependency>
-<!--        <dependency>-->
-<!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
-<!--          <artifactId>jackson-datatype-guava</artifactId>-->
-<!--          <version>2.12.3</version>-->
-<!--        </dependency>-->
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <!--        <dependency>-->
+        <!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
+        <!--          <artifactId>jackson-datatype-guava</artifactId>-->
+        <!--          <version>2.12.3</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
@@ -129,10 +138,31 @@
             <artifactId>darcula</artifactId>
             <version>2018.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+        </resources>
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
             <plugins>
                 <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->

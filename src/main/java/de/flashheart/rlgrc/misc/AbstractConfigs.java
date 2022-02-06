@@ -40,7 +40,7 @@ public abstract class AbstractConfigs {
 
         loadDefaults(); // defaults from the inheriting classes
         loadConfigs();
-        loadBuildContext();
+        //loadBuildContext();
 
         if (!configs.containsKey(MYUUID)) {
             configs.put(MYUUID, UUID.randomUUID().toString());

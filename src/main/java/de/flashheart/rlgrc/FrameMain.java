@@ -4,34 +4,38 @@
 
 package de.flashheart.rlgrc;
 
-import java.awt.*;
-import java.awt.event.*;
-
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
-import de.flashheart.rlgrc.jobs.AgentRefreshJob;
+import de.flashheart.rlgrc.jobs.ServerRefreshJob;
 import de.flashheart.rlgrc.misc.Configs;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import de.flashheart.rlgrc.ui.TM_Agents;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Optional;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -41,16 +45,23 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 @Log4j2
 public class FrameMain extends JFrame {
+    private static final int TAB_OVERVIEW = 0;
+    private static final int TAB_CONQUEST = 1;
+    private static final int TAB_RUSH = 2;
+    private final String GAMEID = "g1";
+    private boolean GAME_PAUSED;
     private final Scheduler scheduler;
     private final Configs configs;
     private SimpleTrigger agentTrigger;
     private final JobKey agentJob;
-    private final CardLayout cardLayout;
-    private static final String REST_URI
-            = "http://localhost:8090/api/";
+    //    private static final String REST_URI
+//            = "http://localhost:8090/api/";
     private Client client = ClientBuilder.newClient();
-    private JSONObject params;
-    private String current_mode;
+    private final int MAX_LOG_LINES = 200;
+    private String current_mode = "overview";
+    private final String[] MODES = new String[]{"overview", "conquest", "rush"};
+    //private Optional<File> loaded_file;
+    private HashMap<String, MutablePair<Optional<File>, JSONObject>> game_params;
 
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
@@ -58,13 +69,19 @@ public class FrameMain extends JFrame {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
         this.scheduler.getContext().put("rlgrc", this);
         this.scheduler.start();
-        agentJob = new JobKey(AgentRefreshJob.name, "group1");
-        initComponents();
-        setVerifiers();
+        game_params = new HashMap<>();
+        game_params.put("conquest", new MutablePair<>(Optional.empty(), load_defaults("conquest")));
 
-        initRefreshAgents();
-        cardLayout = (CardLayout) cardPanel.getLayout();
-        show_mode(configs.get(Configs.LAST_GAME_MODE));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
+        agentJob = new JobKey(ServerRefreshJob.name, "group1");
+        initComponents();
+        initLogger();
+        setVerifiers();
+        initRefresh();
+
+        params_to_dialog("conquest");
+        pack();
     }
 
     private void setVerifiers() {
@@ -75,105 +92,75 @@ public class FrameMain extends JFrame {
         txtCnqEBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, false));
     }
 
-    private void show_mode(String mode) {
-        current_mode = mode;
-        try {
-            params = new JSONObject(load_game_file(mode, configs.get(Configs.LAST_CONQUEST_FILE)));
-        } catch (IOException e) {
-            try {
-                params = new JSONObject(load_game_file(mode, "<default>"));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                params = null;
-            }
-        }
-        configs.put(Configs.LAST_GAME_MODE, mode);
+    private void btnFileNew(ActionEvent e) {
+        if (pnlGames.getSelectedIndex() == TAB_OVERVIEW) return;
+        game_params.put(current_mode, new MutablePair<>(Optional.empty(), load_defaults(current_mode)));
         params_to_dialog();
-        cmbFiles.setModel(list_files());
-        cardLayout.show(cardPanel, mode);
-
-    }
-
-    private void btnConquest(ActionEvent e) {
-        show_mode("conquest");
-    }
-
-    private void btnRush(ActionEvent e) {
-        cardLayout.show(cardPanel, "rush");
-    }
-
-    private void btnSetup(ActionEvent e) {
-        cardLayout.show(cardPanel, "setup");
     }
 
 
-    private String load_game_file(String mode, String filename) throws IOException {
-        StringBuffer stringBuffer = new StringBuffer();
-        if (filename.equals("<default>")) {
-            return load_resource_file(mode);
-        }
-        return FileUtils.readFileToString(new File(System.getProperty("workspace") + File.pathSeparator + current_mode + File.separator + filename));
-    }
-
-    private void save_game_file(String filename) {
-        log.debug(filename);
-        dialog_to_params();
+    private JSONObject load_file(File file) {
+        JSONObject params;
         try {
-            FileUtils.writeStringToFile(new File(System.getProperty("workspace") + File.separator + current_mode + File.separator + filename + ".json"), params.toString(4));
+            params = new JSONObject(FileUtils.readFileToString(file));
+            game_params.get(current_mode).setRight(params);
+            game_params.get(current_mode).setLeft(Optional.of(file));
         } catch (IOException e) {
             log.error(e);
+            addLog(e.getMessage());
+            params = new JSONObject();
+            game_params.get(current_mode).setLeft(Optional.empty());
         }
+        game_params.get(current_mode).setRight(params);
+        return params;
     }
 
-    private String load_resource_file(String mode) {
+    private void save_file(JSONObject params) {
+        if (game_params.get(current_mode).getLeft().isEmpty()) {
+            game_params.get(current_mode).setLeft(choose_file(true));
+        }
+
+        game_params.get(current_mode).getLeft().ifPresent(file -> {
+            try {
+                FileUtils.writeStringToFile(file, params.toString(4));
+            } catch (IOException e) {
+                log.error(e);
+                addLog(e.getMessage());
+            }
+        });
+
+    }
+
+    private JSONObject load_defaults(String mode) {
         StringBuffer stringBuffer = new StringBuffer();
         InputStream in = getClass().getResourceAsStream("/defaults/" + mode + ".json");
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         reader.lines().forEach(s -> stringBuffer.append(s));
-        return stringBuffer.toString();
+        return new JSONObject(stringBuffer.toString());
     }
 
-    private DefaultComboBoxModel<File> list_files() {
-        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
-        Collection<File> files = FileUtils.listFiles(new File(System.getProperty("workspace")+File.separator+current_mode+File.separator), new String[]{"json"}, false);
-        files.forEach(file -> dcbm.addElement(file));
-        return dcbm;
-    }
+//    private DefaultComboBoxModel<File> list_files() {
+//        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
+//        Collection<File> files = FileUtils.listFiles(new File(System.getProperty("workspace") + File.separator + current_mode + File.separator), new String[]{"json"}, false);
+//        files.forEach(file -> dcbm.addElement(file));
+//        return dcbm;
+//    }
 
     private void btnSend(ActionEvent e) {
-        String id = "g1";
-
-//        Response response = client
-//                .target(REST_URI)
-//                .queryParam("id", id)
-//                .request(MediaType.APPLICATION_JSON)
-//                .post(Entity.json("some string"));
-
-
-//        ObjectMapper mapper = JsonMapper.builder() // or mapper for other formats
-//                .addModule(new GuavaModule())
-//                .build();
-//
-//        String jsonResult = null;
-//        try {
-//            jsonResult = mapper.writerWithDefaultPrettyPrinter()
-//                    .writeValueAsString(conquestParams);
-//            log.debug(jsonResult);
-//        } catch (JsonProcessingException ex) {
-//            ex.printStackTrace();
-//        }
-
+        if (current_mode.equals("overview")) return;
+        addLog("--------------");
+        addLog(post("game/load", GAMEID, read_params_from_dialog().toString()).toString());
 
     }
 
-    private void initRefreshAgents() throws SchedulerException {
+    private void initRefresh() throws SchedulerException {
         if (scheduler.checkExists(agentJob)) return;
-        JobDetail job = newJob(AgentRefreshJob.class)
+        JobDetail job = newJob(ServerRefreshJob.class)
                 .withIdentity(agentJob)
                 .build();
 
         agentTrigger = newTrigger()
-                .withIdentity(AgentRefreshJob.name + "-trigger", "group1")
+                .withIdentity(ServerRefreshJob.name + "-trigger", "group1")
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
                         .withIntervalInSeconds(15)
                         .repeatForever())
@@ -181,22 +168,32 @@ public class FrameMain extends JFrame {
         scheduler.scheduleJob(job, agentTrigger);
     }
 
+    private void set_pause_mode(boolean paused) {
+        this.GAME_PAUSED = paused;
+        btnPauseGame.setIcon(new ImageIcon(getClass().getResource(GAME_PAUSED ? "/artwork/player_fwd.png" : "/artwork/player_pause.png")));
+    }
 
-    public void refreshAgents() {
-        if (!cbRefreshAgents.isSelected()) return;
+
+    private void refreshAgents() {
+        JSONObject request = get("system/list_agents");
+        SwingUtilities.invokeLater(() -> {
+            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+        });
+    }
+
+    public void refreshServer() {
+        if (cbRefreshAgents.isSelected()) refreshAgents();
+        if (cbRefreshGameStatus.isSelected()) refreshStatus();
+    }
+
+    private void refreshStatus() {
+        JSONObject request = get("game/status", GAMEID);
         try {
-            Response response = client
-                    .target(REST_URI + "system/list_agents")
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-            String json = response.readEntity(String.class);
-
-            log.debug(json);
-            SwingUtilities.invokeLater(() -> {
-                ((TM_Agents) tblAgents.getModel()).refresh_agents(new JSONObject(json));
-            });
-        } catch (Exception connectException){
-            log.warn(connectException);
+            request.getJSONObject("payload").getString("message");
+            addLog("Game " + GAMEID + " not loaded on the server");
+        } catch (Exception e) {
+            addLog(request.toString());
+            // funny - when an exception means NO EXPCETION on the server side
         }
     }
 
@@ -216,18 +213,84 @@ public class FrameMain extends JFrame {
         };
     }
 
-
-    private void btnAddCP(ActionEvent e) {
-        int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
-        DefaultListModel dlm = new DefaultListModel();
-        for (int s : selection) {
-            dlm.addElement(tblAgents.getModel().getValueAt(s, 0).toString());
-        }
-        SwingUtilities.invokeLater(() -> {
-            listCP.setModel(dlm);
-            listCP.repaint();
-        });
+    private void btnStartGame(ActionEvent e) {
+        JSONObject request = post("game/start", GAMEID);
+        addLog(request.toString());
     }
+
+
+    private void btnPauseGame(ActionEvent e) {
+        JSONObject request = post(GAME_PAUSED ? "game/resume" : "game/pause", GAMEID);
+        set_pause_mode(request.has("pause_start_time") && !request.getString("pause_start_time").equals("null"));
+        addLog(request.toString());
+    }
+
+    private void btnResetGame(ActionEvent e) {
+        JSONObject request = post("game/reset", GAMEID);
+        addLog(request.toString());
+    }
+
+    private void btnUnloadGame(ActionEvent e) {
+        JSONObject request = post("game/unload", GAMEID);
+        addLog(request.toString());
+    }
+
+    private JSONObject post(String uri, String id) {
+        return post(uri, id, "{}");
+    }
+
+    private JSONObject post(String uri, String id, String body) {
+        JSONObject result = new JSONObject();
+
+        try {
+            Response response = client
+                    .target(txtURI.getText().trim() + uri)
+                    .queryParam("id", id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(body));
+            addLog("----------\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n");
+            String entity = response.readEntity(String.class);
+            response.close();
+            if (entity.isEmpty()) result = new JSONObject();
+            else result = new JSONObject(entity);
+
+        } catch (Exception connectException) {
+            addLog(connectException.getMessage());
+        }
+        return result;
+    }
+
+    private JSONObject get(String uri, String id) {
+        String json = "";
+        try {
+            Response response = client
+                    .target(txtURI.getText().trim() + uri)
+                    .queryParam("id", id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            json = response.readEntity(String.class);
+            response.close();
+        } catch (Exception connectException) {
+            addLog(connectException.getMessage());
+        }
+        return new JSONObject(json);
+    }
+
+    private JSONObject get(String uri) {
+        String json = "{}";
+        try {
+            Response response = client
+                    .target(txtURI.getText() + uri)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            json = response.readEntity(String.class);
+            response.close();
+        } catch (Exception connectException) {
+            addLog(connectException.getMessage());
+        }
+        return new JSONObject(json);
+    }
+
 
     private void fill_list(JList mylist, JSONArray myarray) {
         DefaultListModel dlm = new DefaultListModel();
@@ -242,15 +305,41 @@ public class FrameMain extends JFrame {
         return new JSONArray(Arrays.asList(((DefaultListModel) mylist.getModel()).toArray()));
     }
 
-    private void btnSave(ActionEvent e) {
-        if (cmbFiles.getSelectedItem() == null) return;
-        if (current_mode.equals("conquest")) {
-            save_game_file(cmbFiles.getSelectedItem().toString());
+    private Optional<File> choose_file(boolean save) {
+        if (current_mode.equals("overview")) return null;
+        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("workspace") + File.separator + current_mode));
+        int result;// = JFileChooser.CANCEL_OPTION;
+        if (save) result = fileChooser.showSaveDialog(this);
+        else result = fileChooser.showOpenDialog(this);
+        Optional<File> file = Optional.empty();
+        if (result == JFileChooser.APPROVE_OPTION) {
+            file = Optional.of(fileChooser.getSelectedFile());
+            lblFile.setText(file.get().getAbsolutePath());
+        } else {
+            lblFile.setText(null);
         }
+        return file;
     }
 
-    private void params_to_dialog() {
-        if (current_mode.equals("conquest")) {
+    private void btnSaveFile(ActionEvent e) {
+        if (current_mode.equals("overview")) return;
+        if (game_params.get(current_mode).getLeft().isEmpty()) game_params.get(current_mode).setLeft(choose_file(true));
+        game_params.get(current_mode).getLeft().ifPresent(file -> save_file(read_params_from_dialog()));
+    }
+
+    private void btnLoadFile(ActionEvent e) {
+        if (current_mode.equals("overview")) return;
+
+        game_params.get(current_mode).setLeft(choose_file(false));
+        game_params.get(current_mode).getLeft().ifPresent(file -> game_params.get(current_mode).setRight(load_file(file)));
+        params_to_dialog();
+    }
+
+    private void params_to_dialog(String mode) {
+        JSONObject params = game_params.get(mode).getRight();
+        if (params.isEmpty()) return;
+        if (!params.has("mode")) return;
+        if (params.get("mode").equals("conquest")) {
             txtCnqTickets.setText(params.get("respawn_tickets").toString());
             txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
             txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
@@ -260,18 +349,22 @@ public class FrameMain extends JFrame {
             fill_list(listSirens, params.getJSONObject("agents").getJSONArray("sirens"));
             lblRedSpawn.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
             lblBlueSpawn.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
-
         }
     }
 
-    private void dialog_to_params() {
-        params.clear();
+    private void params_to_dialog() {
+        params_to_dialog(current_mode);
+    }
+
+    private JSONObject read_params_from_dialog() {
+        JSONObject params = new JSONObject();
         if (current_mode.equals("conquest")) {
             params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
             params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
             params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
             params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
             params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
+            params.put("class", "de.flashheart.rlg.commander.games.Conquest");
 
             JSONObject agents = new JSONObject();
             agents.put("capture_points", list_to_jsonarray(listCP));
@@ -280,25 +373,126 @@ public class FrameMain extends JFrame {
             agents.put("blue_spawn", new JSONArray().put(lblBlueSpawn.getText()));
             params.put("agents", agents);
         }
-        log.debug(params.toString(2));
+        params.put("mode", current_mode);
+        log.debug(params.toString(4));
+        game_params.get(current_mode).setRight(params);
+        return params;
     }
 
+
+    private void initLogger() {
+        // keeps the log window under MAX_LOG_LINES lines to prevent out of memory exception
+        txtLogger.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    Element root = e.getDocument().getDefaultRootElement();
+                    while (root.getElementCount() > MAX_LOG_LINES) {
+                        Element firstLine = root.getElement(0);
+                        try {
+                            e.getDocument().remove(0, firstLine.getEndOffset());
+                        } catch (BadLocationException ble) {
+                            log.error(ble);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+    }
+
+    public void addLog(String text) {
+        log.debug(text);
+        SwingUtilities.invokeLater(() -> {
+            txtLogger.append(text + "\n");
+            scrollPane1.getVerticalScrollBar().setValue(scrollPane1.getVerticalScrollBar().getMaximum());
+        });
+    }
+
+    private void btnSetRed(ActionEvent e) {
+        if (tblAgents.getSelectedRow() < 0) return;
+        lblRedSpawn.setText(tblAgents.getModel().getValueAt(tblAgents.getSelectedRow(), 0).toString());
+    }
+
+    private void btnSetBlue(ActionEvent e) {
+        if (tblAgents.getSelectedRow() < 0) return;
+        lblBlueSpawn.setText(tblAgents.getModel().getValueAt(tblAgents.getSelectedRow(), 0).toString());
+    }
+
+    private void btnAddCP(ActionEvent e) {
+        add_to_agents_list(listCP);
+    }
+
+    private void add_to_agents_list(JList jList) {
+        int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
+        DefaultListModel dlm = new DefaultListModel();
+        for (int s : selection) {
+            dlm.addElement(tblAgents.getModel().getValueAt(s, 0).toString());
+        }
+        SwingUtilities.invokeLater(() -> {
+            jList.setModel(dlm);
+            jList.repaint();
+        });
+    }
+
+    private void btnAddSirens(ActionEvent e) {
+        add_to_agents_list(listSirens);
+    }
+
+    private void tbKeyLockItemStateChanged(ItemEvent e) {
+        btnPauseGame.setEnabled(e.getStateChange() != ItemEvent.SELECTED);
+    }
+
+    private void pnlGamesStateChanged(ChangeEvent e) {
+        log.debug(e.toString());
+        current_mode = MODES[pnlGames.getSelectedIndex()];
+
+
+        //    private void show_mode(String mode) {
+        //        current_mode = mode;
+        //        params = new JSONObject(load_file());
+        //        configs.put(Configs.LAST_GAME_MODE, mode);
+        //        params_to_dialog();
+        //        //cmbFiles.setModel(list_files());
+        //        cardLayout.show(cardPanel, mode);
+        //    }
+
+        //    private void btnConquest(ActionEvent e) {
+        //        show_mode("conquest");
+        //    }
+        //
+        //    private void btnRush(ActionEvent e) {
+        //        cardLayout.show(cardPanel, "rush");
+        //    }
+        //
+        //    private void btnSetup(ActionEvent e) {
+        //        cardLayout.show(cardPanel, "setup");
+        //    }
+
+    }
+
+    private void txtURIFocusLost(FocusEvent e) {
+        configs.put(Configs.REST_URI, txtURI.getText().trim());
+    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
 
-        buttonPanel = new JPanel();
-        btnSetup = new JButton();
-        btnConquest = new JButton();
-        btnRush = new JButton();
-        hSpacer1 = new JPanel(null);
-        tbKeyLock = new JToggleButton();
-        separator1 = new JSeparator();
         mainPanel = new JPanel();
-        cardPanel = new JPanel();
+        pnlGames = new JTabbedPane();
+        pnlOverview = new JPanel();
+        label7 = new JLabel();
+        txtURI = new JTextField();
         pnlConquest = new JPanel();
-        label1 = new JLabel();
+        txtCnqComment = new JTextField();
         label3 = new JLabel();
         txtCnqTickets = new JTextField();
         label4 = new JLabel();
@@ -309,129 +503,120 @@ public class FrameMain extends JFrame {
         txtCnqEBleedInt = new JTextField();
         label9 = new JLabel();
         txtCnqTPrice = new JTextField();
-        panel1 = new JPanel();
+        pnl1234 = new JPanel();
         label10 = new JLabel();
         label13 = new JLabel();
-        panel5 = new JPanel();
-        lblRedSpawn = new JLabel();
-        btnSetRed = new JButton();
-        lblBlueSpawn = new JLabel();
-        btnSetBlue = new JButton();
         scrollPane1 = new JScrollPane();
         listCP = new JList();
         scrollPane2 = new JScrollPane();
         listSirens = new JList();
-        panel3 = new JPanel();
         btnAddCP = new JButton();
-        panel4 = new JPanel();
         btnAddSirens = new JButton();
-        cmbFiles = new JComboBox();
-        btnSave = new JButton();
-        pnlSetup = new JPanel();
-        label6 = new JLabel();
-        label7 = new JLabel();
-        textField1 = new JTextField();
+        panel1 = new JPanel();
+        lblRedSpawn = new JLabel();
+        btnSetRed = new JButton();
+        lblBlueSpawn = new JLabel();
+        btnSetBlue = new JButton();
         pnlRush = new JPanel();
-        label2 = new JLabel();
+        label8 = new JLabel();
         separator3 = new JSeparator();
         cbRefreshAgents = new JCheckBox();
         scrollPane3 = new JScrollPane();
-        label11 = new JLabel();
+        cbRefreshGameStatus = new JCheckBox();
         scrollPane4 = new JScrollPane();
-        textPane1 = new JTextPane();
+        txtLogger = new JTextArea();
+        pnlFiles = new JPanel();
+        lblFile = new JLabel();
+        hSpacer1 = new JPanel(null);
+        btnFileNew = new JButton();
+        btnLoadFile = new JButton();
+        btnSaveFile = new JButton();
         separator2 = new JSeparator();
         panel2 = new JPanel();
-        btnLoad2 = new JButton();
-        btnLoad = new JButton();
-        btnStart = new JButton();
-        btnPause = new JButton();
-        btnResume = new JButton();
-        btnUnload = new JButton();
+        btnSendToServer = new JButton();
+        btnStartGame = new JButton();
+        btnPauseGame = new JButton();
+        hSpacer2 = new JPanel(null);
+        tbKeyLock = new JToggleButton();
+        btnResetGame = new JButton();
+        btnUnloadGame = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
             "$ugap, default:grow, $ugap",
-            "$ugap, default, $ugap, default:grow, $ugap, default, $ugap"));
-
-        //======== buttonPanel ========
-        {
-            buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
-
-            //---- btnSetup ----
-            btnSetup.setText("Setup");
-            btnSetup.addActionListener(e -> btnSetup(e));
-            buttonPanel.add(btnSetup);
-
-            //---- btnConquest ----
-            btnConquest.setText("Conquest");
-            btnConquest.addActionListener(e -> btnConquest(e));
-            buttonPanel.add(btnConquest);
-
-            //---- btnRush ----
-            btnRush.setText("Rush");
-            btnRush.addActionListener(e -> btnRush(e));
-            buttonPanel.add(btnRush);
-            buttonPanel.add(hSpacer1);
-
-            //---- tbKeyLock ----
-            tbKeyLock.setText("Keylock");
-            buttonPanel.add(tbKeyLock);
-        }
-        contentPane.add(buttonPanel, CC.xy(2, 2));
-        contentPane.add(separator1, CC.xy(2, 3));
+            "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow, 6dlu, default",
-                "default, $lgap, fill:96dlu, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow, 6dlu, default:grow, $lcgap, default",
+                "default, $lgap, fill:96dlu, $rgap, default, $lgap, fill:default:grow, 2*($lgap, default)"));
 
-            //======== cardPanel ========
+            //======== pnlGames ========
             {
-                cardPanel.setLayout(new CardLayout());
+                pnlGames.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                pnlGames.addChangeListener(e -> pnlGamesStateChanged(e));
+
+                //======== pnlOverview ========
+                {
+                    pnlOverview.setLayout(new FormLayout(
+                        "default, $lcgap, default:grow",
+                        "default, $lgap, default"));
+
+                    //---- label7 ----
+                    label7.setText("URI");
+                    pnlOverview.add(label7, CC.xy(1, 1));
+
+                    //---- txtURI ----
+                    txtURI.setText("http://localhost:8090");
+                    txtURI.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            txtURIFocusLost(e);
+                        }
+                    });
+                    pnlOverview.add(txtURI, CC.xy(3, 1));
+                }
+                pnlGames.addTab("Overview", pnlOverview);
 
                 //======== pnlConquest ========
                 {
                     pnlConquest.setLayout(new FormLayout(
                         "default, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                        "5*(default, $lgap), fill:default:grow"));
-
-                    //---- label1 ----
-                    label1.setText("Conquest");
-                    label1.setFont(new Font("sansserif", Font.BOLD, 20));
-                    pnlConquest.add(label1, CC.xywh(1, 1, 3, 1));
+                        "$lgap, default, $ugap, 4*(default, $lgap), fill:default:grow"));
+                    pnlConquest.add(txtCnqComment, CC.xywh(1, 2, 7, 1));
 
                     //---- label3 ----
                     label3.setText("Respawn Tickets");
-                    pnlConquest.add(label3, CC.xy(1, 3));
-                    pnlConquest.add(txtCnqTickets, CC.xy(3, 3));
+                    pnlConquest.add(label3, CC.xy(1, 4));
+                    pnlConquest.add(txtCnqTickets, CC.xy(3, 4));
 
                     //---- label4 ----
                     label4.setText("Bleeding starts @");
-                    pnlConquest.add(label4, CC.xy(5, 3));
-                    pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 3));
+                    pnlConquest.add(label4, CC.xy(5, 4));
+                    pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 4));
 
                     //---- label5 ----
                     label5.setText("Start Bleed interval");
-                    pnlConquest.add(label5, CC.xy(1, 5));
-                    pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 5));
+                    pnlConquest.add(label5, CC.xy(1, 6));
+                    pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 6));
 
                     //---- lbl12345 ----
                     lbl12345.setText("Final Bleed interval");
-                    pnlConquest.add(lbl12345, CC.xy(5, 5));
-                    pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 5));
+                    pnlConquest.add(lbl12345, CC.xy(5, 6));
+                    pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 6));
 
                     //---- label9 ----
                     label9.setText("Ticket Price");
-                    pnlConquest.add(label9, CC.xy(1, 7));
-                    pnlConquest.add(txtCnqTPrice, CC.xy(3, 7));
+                    pnlConquest.add(label9, CC.xy(1, 8));
+                    pnlConquest.add(txtCnqTPrice, CC.xy(3, 8));
 
-                    //======== panel1 ========
+                    //======== pnl1234 ========
                     {
-                        panel1.setLayout(new FormLayout(
-                            "2*(default:grow, $ugap), default",
+                        pnl1234.setLayout(new FormLayout(
+                            "default:grow, $ugap, default:grow",
                             "default, $rgap, 2*(default), default:grow, $lgap, default, $lgap, pref, $lgap, default"));
 
                         //---- label10 ----
@@ -439,20 +624,44 @@ public class FrameMain extends JFrame {
                         label10.setBackground(SystemColor.windowBorder);
                         label10.setForeground(Color.black);
                         label10.setOpaque(true);
-                        panel1.add(label10, CC.xy(1, 1));
+                        pnl1234.add(label10, CC.xy(1, 1));
 
                         //---- label13 ----
                         label13.setText("Sirens");
                         label13.setBackground(SystemColor.windowBorder);
                         label13.setForeground(Color.black);
                         label13.setOpaque(true);
-                        panel1.add(label13, CC.xy(3, 1));
+                        pnl1234.add(label13, CC.xy(3, 1));
 
-                        //======== panel5 ========
+                        //======== scrollPane1 ========
                         {
-                            panel5.setLayout(new FormLayout(
-                                "33dlu:grow, $lcgap, default",
-                                "default, $ugap, fill:default"));
+                            scrollPane1.setViewportView(listCP);
+                        }
+                        pnl1234.add(scrollPane1, CC.xywh(1, 3, 1, 3, CC.DEFAULT, CC.FILL));
+
+                        //======== scrollPane2 ========
+                        {
+                            scrollPane2.setViewportView(listSirens);
+                        }
+                        pnl1234.add(scrollPane2, CC.xywh(3, 3, 1, 3));
+
+                        //---- btnAddCP ----
+                        btnAddCP.setText(null);
+                        btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/up.png")));
+                        btnAddCP.addActionListener(e -> btnAddCP(e));
+                        pnl1234.add(btnAddCP, CC.xy(1, 7));
+
+                        //---- btnAddSirens ----
+                        btnAddSirens.setText(null);
+                        btnAddSirens.setIcon(new ImageIcon(getClass().getResource("/artwork/up.png")));
+                        btnAddSirens.addActionListener(e -> btnAddSirens(e));
+                        pnl1234.add(btnAddSirens, CC.xy(3, 7));
+
+                        //======== panel1 ========
+                        {
+                            panel1.setLayout(new FormLayout(
+                                "default:grow, $ugap, default:grow",
+                                "pref"));
 
                             //---- lblRedSpawn ----
                             lblRedSpawn.setText("test");
@@ -461,116 +670,57 @@ public class FrameMain extends JFrame {
                             lblRedSpawn.setBackground(new Color(255, 0, 51));
                             lblRedSpawn.setOpaque(true);
                             lblRedSpawn.setForeground(new Color(255, 255, 51));
-                            panel5.add(lblRedSpawn, CC.xy(1, 1, CC.FILL, CC.DEFAULT));
+                            lblRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                            panel1.add(lblRedSpawn, CC.xy(1, 1, CC.DEFAULT, CC.FILL));
 
                             //---- btnSetRed ----
                             btnSetRed.setText(null);
-                            btnSetRed.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
+                            btnSetRed.setIcon(new ImageIcon(getClass().getResource("/artwork/previous.png")));
                             btnSetRed.setMinimumSize(new Dimension(38, 38));
                             btnSetRed.setPreferredSize(new Dimension(38, 38));
-                            panel5.add(btnSetRed, CC.xy(3, 1, CC.RIGHT, CC.DEFAULT));
-
-                            //---- lblBlueSpawn ----
-                            lblBlueSpawn.setText("test");
-                            lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                            lblBlueSpawn.setAlignmentX(0.5F);
-                            lblBlueSpawn.setBackground(new Color(51, 51, 255));
-                            lblBlueSpawn.setOpaque(true);
-                            lblBlueSpawn.setForeground(new Color(255, 255, 51));
-                            panel5.add(lblBlueSpawn, CC.xy(1, 3, CC.FILL, CC.DEFAULT));
-
-                            //---- btnSetBlue ----
-                            btnSetBlue.setText(null);
-                            btnSetBlue.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                            btnSetBlue.setMinimumSize(new Dimension(38, 38));
-                            btnSetBlue.setPreferredSize(new Dimension(38, 38));
-                            panel5.add(btnSetBlue, CC.xy(3, 3));
+                            btnSetRed.setHorizontalAlignment(SwingConstants.LEFT);
+                            btnSetRed.addActionListener(e -> btnSetRed(e));
+                            panel1.add(btnSetRed, CC.xy(3, 1));
                         }
-                        panel1.add(panel5, CC.xywh(5, 1, 1, 6));
+                        pnl1234.add(panel1, CC.xywh(1, 9, 3, 1));
 
-                        //======== scrollPane1 ========
-                        {
-                            scrollPane1.setViewportView(listCP);
-                        }
-                        panel1.add(scrollPane1, CC.xywh(1, 3, 1, 3, CC.DEFAULT, CC.FILL));
+                        //---- lblBlueSpawn ----
+                        lblBlueSpawn.setText("test");
+                        lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                        lblBlueSpawn.setAlignmentX(0.5F);
+                        lblBlueSpawn.setBackground(new Color(51, 51, 255));
+                        lblBlueSpawn.setOpaque(true);
+                        lblBlueSpawn.setForeground(new Color(255, 255, 51));
+                        lblBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                        pnl1234.add(lblBlueSpawn, CC.xy(1, 11, CC.FILL, CC.FILL));
 
-                        //======== scrollPane2 ========
-                        {
-                            scrollPane2.setViewportView(listSirens);
-                        }
-                        panel1.add(scrollPane2, CC.xywh(3, 3, 1, 3));
-
-                        //======== panel3 ========
-                        {
-                            panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
-
-                            //---- btnAddCP ----
-                            btnAddCP.setText(null);
-                            btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                            btnAddCP.addActionListener(e -> btnAddCP(e));
-                            panel3.add(btnAddCP);
-                        }
-                        panel1.add(panel3, CC.xy(1, 7));
-
-                        //======== panel4 ========
-                        {
-                            panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
-
-                            //---- btnAddSirens ----
-                            btnAddSirens.setText(null);
-                            btnAddSirens.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                            panel4.add(btnAddSirens);
-                        }
-                        panel1.add(panel4, CC.xy(3, 7));
-
-                        //---- cmbFiles ----
-                        cmbFiles.setEditable(true);
-                        panel1.add(cmbFiles, CC.xywh(1, 9, 3, 1));
-
-                        //---- btnSave ----
-                        btnSave.setText(null);
-                        btnSave.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-                        btnSave.setMinimumSize(new Dimension(38, 38));
-                        btnSave.setPreferredSize(new Dimension(38, 38));
-                        btnSave.addActionListener(e -> btnSave(e));
-                        panel1.add(btnSave, CC.xy(5, 9));
+                        //---- btnSetBlue ----
+                        btnSetBlue.setText(null);
+                        btnSetBlue.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
+                        btnSetBlue.setMinimumSize(new Dimension(38, 38));
+                        btnSetBlue.setPreferredSize(new Dimension(38, 38));
+                        btnSetBlue.setHorizontalAlignment(SwingConstants.LEFT);
+                        btnSetBlue.addActionListener(e -> btnSetBlue(e));
+                        pnl1234.add(btnSetBlue, CC.xy(3, 11));
                     }
-                    pnlConquest.add(panel1, CC.xywh(1, 11, 7, 1));
+                    pnlConquest.add(pnl1234, CC.xywh(1, 12, 7, 1));
                 }
-                cardPanel.add(pnlConquest, "conquest");
-
-                //======== pnlSetup ========
-                {
-                    pnlSetup.setLayout(new FormLayout(
-                        "default, $lcgap, default:grow",
-                        "2*(default, $lgap), default"));
-
-                    //---- label6 ----
-                    label6.setText("Setup Connection");
-                    label6.setFont(new Font("sansserif", Font.BOLD, 20));
-                    pnlSetup.add(label6, CC.xywh(1, 1, 3, 1));
-
-                    //---- label7 ----
-                    label7.setText("URI");
-                    pnlSetup.add(label7, CC.xy(1, 3));
-                    pnlSetup.add(textField1, CC.xy(3, 3));
-                }
-                cardPanel.add(pnlSetup, "setup");
+                pnlGames.addTab("Conquest", pnlConquest);
 
                 //======== pnlRush ========
                 {
                     pnlRush.setLayout(new FormLayout(
                         "default, $lcgap, default:grow",
-                        "default, $lgap, default:grow, $lgap, default"));
+                        "default:grow, $lgap, default"));
 
-                    //---- label2 ----
-                    label2.setText("Rush");
-                    label2.setFont(new Font("sansserif", Font.BOLD, 20));
-                    pnlRush.add(label2, CC.xy(1, 1));
+                    //---- label8 ----
+                    label8.setText("no rush yet...");
+                    pnlRush.add(label8, CC.xywh(1, 1, 3, 1));
                 }
-                cardPanel.add(pnlRush, "rush");
+                pnlGames.addTab("Rush", pnlRush);
+                pnlGames.setEnabledAt(2, false);
             }
-            mainPanel.add(cardPanel, CC.xywh(1, 1, 1, 9));
+            mainPanel.add(pnlGames, CC.xywh(1, 1, 1, 9));
 
             //---- separator3 ----
             separator3.setOrientation(SwingConstants.VERTICAL);
@@ -579,7 +729,6 @@ public class FrameMain extends JFrame {
             //---- cbRefreshAgents ----
             cbRefreshAgents.setText("Autorefresh Agent List");
             cbRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-            cbRefreshAgents.setSelected(true);
             mainPanel.add(cbRefreshAgents, CC.xy(3, 1));
 
             //======== scrollPane3 ========
@@ -588,74 +737,122 @@ public class FrameMain extends JFrame {
             }
             mainPanel.add(scrollPane3, CC.xy(3, 3));
 
-            //---- label11 ----
-            label11.setText("Server Response");
-            mainPanel.add(label11, CC.xy(3, 5));
+            //---- cbRefreshGameStatus ----
+            cbRefreshGameStatus.setText("Autorefresh Game Status");
+            cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+            mainPanel.add(cbRefreshGameStatus, CC.xy(3, 5));
 
             //======== scrollPane4 ========
             {
 
-                //---- textPane1 ----
-                textPane1.setContentType("text/html");
-                scrollPane4.setViewportView(textPane1);
+                //---- txtLogger ----
+                txtLogger.setForeground(new Color(51, 255, 51));
+                txtLogger.setLineWrap(true);
+                txtLogger.setWrapStyleWord(true);
+                scrollPane4.setViewportView(txtLogger);
             }
-            mainPanel.add(scrollPane4, CC.xywh(3, 7, 1, 3));
+            mainPanel.add(scrollPane4, CC.xywh(3, 7, 1, 5));
+
+            //======== pnlFiles ========
+            {
+                pnlFiles.setLayout(new BoxLayout(pnlFiles, BoxLayout.X_AXIS));
+
+                //---- lblFile ----
+                lblFile.setText("no file");
+                lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 12));
+                pnlFiles.add(lblFile);
+                pnlFiles.add(hSpacer1);
+
+                //---- btnFileNew ----
+                btnFileNew.setText(null);
+                btnFileNew.setIcon(new ImageIcon(getClass().getResource("/artwork/filenew.png")));
+                btnFileNew.setMinimumSize(new Dimension(38, 38));
+                btnFileNew.setPreferredSize(new Dimension(38, 38));
+                btnFileNew.addActionListener(e -> btnFileNew(e));
+                pnlFiles.add(btnFileNew);
+
+                //---- btnLoadFile ----
+                btnLoadFile.setText(null);
+                btnLoadFile.setIcon(new ImageIcon(getClass().getResource("/artwork/fileopen.png")));
+                btnLoadFile.setMinimumSize(new Dimension(38, 38));
+                btnLoadFile.setPreferredSize(new Dimension(38, 38));
+                btnLoadFile.addActionListener(e -> btnLoadFile(e));
+                pnlFiles.add(btnLoadFile);
+
+                //---- btnSaveFile ----
+                btnSaveFile.setText(null);
+                btnSaveFile.setIcon(new ImageIcon(getClass().getResource("/artwork/filesave.png")));
+                btnSaveFile.setMinimumSize(new Dimension(38, 38));
+                btnSaveFile.setPreferredSize(new Dimension(38, 38));
+                btnSaveFile.addActionListener(e -> btnSaveFile(e));
+                pnlFiles.add(btnSaveFile);
+            }
+            mainPanel.add(pnlFiles, CC.xy(1, 11));
         }
-        contentPane.add(mainPanel, CC.xy(2, 4, CC.DEFAULT, CC.FILL));
-        contentPane.add(separator2, CC.xy(2, 5));
+        contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
+        contentPane.add(separator2, CC.xy(2, 3));
 
         //======== panel2 ========
         {
             panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
-            //---- btnLoad2 ----
-            btnLoad2.setText("Load Game");
-            btnLoad2.addActionListener(e -> btnSend(e));
-            panel2.add(btnLoad2);
+            //---- btnSendToServer ----
+            btnSendToServer.setText(null);
+            btnSendToServer.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+            btnSendToServer.setToolTipText("Loag game on the server");
+            btnSendToServer.addActionListener(e -> btnSend(e));
+            panel2.add(btnSendToServer);
 
-            //---- btnLoad ----
-            btnLoad.setText("Load Game");
-            btnLoad.addActionListener(e -> btnSend(e));
-            panel2.add(btnLoad);
+            //---- btnStartGame ----
+            btnStartGame.setText(null);
+            btnStartGame.setToolTipText("Start loaded game");
+            btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
+            btnStartGame.addActionListener(e -> btnStartGame(e));
+            panel2.add(btnStartGame);
 
-            //---- btnStart ----
-            btnStart.setText("Start Game");
-            btnStart.addActionListener(e -> btnSend(e));
-            panel2.add(btnStart);
+            //---- btnPauseGame ----
+            btnPauseGame.setText(null);
+            btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
+            btnPauseGame.addActionListener(e -> btnPauseGame(e));
+            panel2.add(btnPauseGame);
+            panel2.add(hSpacer2);
 
-            //---- btnPause ----
-            btnPause.setText("Pause Game");
-            btnPause.addActionListener(e -> btnSend(e));
-            panel2.add(btnPause);
+            //---- tbKeyLock ----
+            tbKeyLock.setText(null);
+            tbKeyLock.setIcon(new ImageIcon(getClass().getResource("/artwork/decrypted.png")));
+            tbKeyLock.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/encrypted.png")));
+            tbKeyLock.setToolTipText("Keylock");
+            tbKeyLock.addItemListener(e -> tbKeyLockItemStateChanged(e));
+            panel2.add(tbKeyLock);
 
-            //---- btnResume ----
-            btnResume.setText("Resume Game");
-            btnResume.addActionListener(e -> btnSend(e));
-            panel2.add(btnResume);
+            //---- btnResetGame ----
+            btnResetGame.setText(null);
+            btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
+            btnResetGame.setToolTipText("Resume Game");
+            btnResetGame.addActionListener(e -> btnResetGame(e));
+            panel2.add(btnResetGame);
 
-            //---- btnUnload ----
-            btnUnload.setText("Unload Game");
-            btnUnload.addActionListener(e -> btnSend(e));
-            panel2.add(btnUnload);
+            //---- btnUnloadGame ----
+            btnUnloadGame.setText(null);
+            btnUnloadGame.setToolTipText("Unload Game");
+            btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+            btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
+            panel2.add(btnUnloadGame);
         }
-        contentPane.add(panel2, CC.xy(2, 6));
+        contentPane.add(panel2, CC.xy(2, 4));
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    private JPanel buttonPanel;
-    private JButton btnSetup;
-    private JButton btnConquest;
-    private JButton btnRush;
-    private JPanel hSpacer1;
-    private JToggleButton tbKeyLock;
-    private JSeparator separator1;
     private JPanel mainPanel;
-    private JPanel cardPanel;
+    private JTabbedPane pnlGames;
+    private JPanel pnlOverview;
+    private JLabel label7;
+    private JTextField txtURI;
     private JPanel pnlConquest;
-    private JLabel label1;
+    private JTextField txtCnqComment;
     private JLabel label3;
     private JTextField txtCnqTickets;
     private JLabel label4;
@@ -666,44 +863,43 @@ public class FrameMain extends JFrame {
     private JTextField txtCnqEBleedInt;
     private JLabel label9;
     private JTextField txtCnqTPrice;
-    private JPanel panel1;
+    private JPanel pnl1234;
     private JLabel label10;
     private JLabel label13;
-    private JPanel panel5;
-    private JLabel lblRedSpawn;
-    private JButton btnSetRed;
-    private JLabel lblBlueSpawn;
-    private JButton btnSetBlue;
     private JScrollPane scrollPane1;
     private JList listCP;
     private JScrollPane scrollPane2;
     private JList listSirens;
-    private JPanel panel3;
     private JButton btnAddCP;
-    private JPanel panel4;
     private JButton btnAddSirens;
-    private JComboBox cmbFiles;
-    private JButton btnSave;
-    private JPanel pnlSetup;
-    private JLabel label6;
-    private JLabel label7;
-    private JTextField textField1;
+    private JPanel panel1;
+    private JLabel lblRedSpawn;
+    private JButton btnSetRed;
+    private JLabel lblBlueSpawn;
+    private JButton btnSetBlue;
     private JPanel pnlRush;
-    private JLabel label2;
+    private JLabel label8;
     private JSeparator separator3;
     private JCheckBox cbRefreshAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
-    private JLabel label11;
+    private JCheckBox cbRefreshGameStatus;
     private JScrollPane scrollPane4;
-    private JTextPane textPane1;
+    private JTextArea txtLogger;
+    private JPanel pnlFiles;
+    private JLabel lblFile;
+    private JPanel hSpacer1;
+    private JButton btnFileNew;
+    private JButton btnLoadFile;
+    private JButton btnSaveFile;
     private JSeparator separator2;
     private JPanel panel2;
-    private JButton btnLoad2;
-    private JButton btnLoad;
-    private JButton btnStart;
-    private JButton btnPause;
-    private JButton btnResume;
-    private JButton btnUnload;
+    private JButton btnSendToServer;
+    private JButton btnStartGame;
+    private JButton btnPauseGame;
+    private JPanel hSpacer2;
+    private JToggleButton tbKeyLock;
+    private JButton btnResetGame;
+    private JButton btnUnloadGame;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -28,7 +28,8 @@
         <collections4.version>4.4</collections4.version>
         <commons.io.version>2.4</commons.io.version>
         <quartz.version>2.3.2</quartz.version>
-
+        <darcula.version>2018.2</darcula.version>
+        <lang3.version>3.12.0</lang3.version>
     </properties>
 
     <dependencies>
@@ -85,6 +86,11 @@
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
         <!--        <dependency>-->
         <!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
         <!--          <artifactId>jackson-datatype-guava</artifactId>-->
@@ -123,6 +129,11 @@
             <version>${log4j2.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${lang3.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
@@ -136,7 +147,7 @@
         <dependency>
             <groupId>org.freeplane.bulenkov</groupId>
             <artifactId>darcula</artifactId>
-            <version>2018.2</version>
+            <version>${darcula.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

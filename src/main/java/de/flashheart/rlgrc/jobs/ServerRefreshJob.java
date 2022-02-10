@@ -6,8 +6,8 @@ import org.quartz.*;
 
 @Log4j2
 @DisallowConcurrentExecution
-public class AgentRefreshJob implements InterruptableJob {
-    public static final String name = "networkingmonitor";
+public class ServerRefreshJob implements InterruptableJob {
+    public static final String name = "refreshserverjob";
 
 
     @Override
@@ -15,7 +15,7 @@ public class AgentRefreshJob implements InterruptableJob {
         try {
             log.trace(jobExecutionContext.getJobDetail().getKey() + " executed");
             FrameMain frameMain = (FrameMain) jobExecutionContext.getScheduler().getContext().get("rlgrc");
-            frameMain.refreshAgents();
+            frameMain.refreshServer();
         } catch (SchedulerException e) {
             log.fatal(e);
             System.exit(0);

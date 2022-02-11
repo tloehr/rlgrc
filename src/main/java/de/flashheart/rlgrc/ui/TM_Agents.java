@@ -25,6 +25,7 @@ public class TM_Agents extends AbstractTableModel {
     public void refresh_agents(JSONObject agent_states) {
         agents_states.clear();
         agents.clear();
+        
         agent_states.keySet().forEach(agent -> {
                     agent_states.getJSONObject(agent).toMap().forEach((s, o) ->
                             agents_states.put(agent, s, o.toString()));

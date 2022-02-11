@@ -1,5 +1,5 @@
 {
-  "comment": "7 CPs, Conquest",
+  "comment": "7 CPs, Conquest, 250 Tickets",
   "class": "de.flashheart.rlg.commander.games.Conquest",
   "mode": "conquest",
   "agents": {

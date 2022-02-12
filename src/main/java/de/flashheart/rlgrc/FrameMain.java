@@ -494,10 +494,14 @@ public class FrameMain extends JFrame {
         createUIComponents();
 
         mainPanel = new JPanel();
-        pnlGames = new JTabbedPane();
-        pnlOverview = new JPanel();
+        pnlMain = new JTabbedPane();
+        pnlConnection = new JPanel();
         label7 = new JLabel();
         txtURI = new JTextField();
+        lblRestServerStatus = new JLabel();
+        btnCheckServer = new JButton();
+        pnlParams = new JPanel();
+        pnlGameP = new JTabbedPane();
         pnlConquest = new JPanel();
         txtCnqComment = new JTextField();
         label3 = new JLabel();
@@ -525,21 +529,20 @@ public class FrameMain extends JFrame {
         btnSetBlue = new JButton();
         pnlRush = new JPanel();
         label8 = new JLabel();
-        separator3 = new JSeparator();
-        panel4 = new JSplitPane();
-        panel1 = new JPanel();
-        cbRefreshAgents = new JCheckBox();
         scrollPane3 = new JScrollPane();
-        panel3 = new JPanel();
-        cbRefreshGameStatus = new JCheckBox();
-        scrollPane4 = new JScrollPane();
-        txtLogger = new JTextArea();
+        button1 = new JButton();
         pnlFiles = new JPanel();
         lblFile = new JLabel();
         hSpacer1 = new JPanel(null);
         btnFileNew = new JButton();
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
+        pnlStatus = new JPanel();
+        separator3 = new JSeparator();
+        panel3 = new JPanel();
+        cbRefreshGameStatus = new JCheckBox();
+        scrollPane4 = new JScrollPane();
+        txtLogger = new JTextArea();
         separator2 = new JSeparator();
         panel2 = new JPanel();
         btnSendToServer = new JButton();
@@ -554,29 +557,29 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap, default, $rgap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow, $ugap, default:grow",
-                    "default, $rgap, default, $lgap, fill:default:grow, 2*($lgap, default)"));
+                "default:grow, $ugap, default:grow",
+                "default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
-            //======== pnlGames ========
+            //======== pnlMain ========
             {
-                pnlGames.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                pnlGames.addChangeListener(e -> pnlGamesStateChanged(e));
+                pnlMain.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                pnlMain.addChangeListener(e -> pnlGamesStateChanged(e));
 
-                //======== pnlOverview ========
+                //======== pnlConnection ========
                 {
-                    pnlOverview.setLayout(new FormLayout(
-                            "default, $lcgap, default:grow",
-                            "default, $lgap, default"));
+                    pnlConnection.setLayout(new FormLayout(
+                        "default, $lcgap, default:grow, $lcgap, default",
+                        "default, $lgap, default"));
 
                     //---- label7 ----
                     label7.setText("URI");
-                    pnlOverview.add(label7, CC.xy(1, 1));
+                    pnlConnection.add(label7, CC.xy(1, 1));
 
                     //---- txtURI ----
                     txtURI.setText("http://localhost:8090");
@@ -586,230 +589,246 @@ public class FrameMain extends JFrame {
                             txtURIFocusLost(e);
                         }
                     });
-                    pnlOverview.add(txtURI, CC.xy(3, 1));
+                    pnlConnection.add(txtURI, CC.xy(3, 1));
+
+                    //---- lblRestServerStatus ----
+                    lblRestServerStatus.setText(null);
+                    lblRestServerStatus.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                    pnlConnection.add(lblRestServerStatus, CC.xy(5, 1));
+
+                    //---- btnCheckServer ----
+                    btnCheckServer.setText("Check Rest Server");
+                    pnlConnection.add(btnCheckServer, CC.xywh(1, 3, 5, 1));
                 }
-                pnlGames.addTab("Overview", pnlOverview);
+                pnlMain.addTab("Connection", pnlConnection);
 
-                //======== pnlConquest ========
+                //======== pnlParams ========
                 {
-                    pnlConquest.setLayout(new FormLayout(
-                            "pref:grow, $rgap, default, $ugap, pref:grow, $rgap, default",
-                            "$lgap, default, $ugap, 3*(default, $lgap), fill:default:grow"));
+                    pnlParams.setLayout(new FormLayout(
+                        "default:grow, default",
+                        "default:grow, 2*($lgap, default)"));
 
-                    //---- txtCnqComment ----
-                    txtCnqComment.setToolTipText("Comment");
-                    pnlConquest.add(txtCnqComment, CC.xywh(1, 2, 7, 1));
-
-                    //---- label3 ----
-                    label3.setText("Respawn Tickets");
-                    pnlConquest.add(label3, CC.xy(1, 4));
-                    pnlConquest.add(txtCnqTickets, CC.xy(3, 4));
-
-                    //---- label4 ----
-                    label4.setText("Bleeding starts @");
-                    pnlConquest.add(label4, CC.xy(5, 4));
-                    pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 4));
-
-                    //---- label5 ----
-                    label5.setText("Start Bleed interval");
-                    pnlConquest.add(label5, CC.xy(1, 6));
-                    pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 6));
-
-                    //---- lbl12345 ----
-                    lbl12345.setText("Final Bleed interval");
-                    pnlConquest.add(lbl12345, CC.xy(5, 6));
-                    pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 6));
-
-                    //---- label9 ----
-                    label9.setText("Ticket Price");
-                    pnlConquest.add(label9, CC.xy(1, 8));
-                    pnlConquest.add(txtCnqTPrice, CC.xy(3, 8));
-
-                    //======== pnl1234 ========
+                    //======== pnlGameP ========
                     {
-                        pnl1234.setLayout(new FormLayout(
-                                "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                                "default, $rgap, 2*(default), default:grow, $lgap, default"));
-                        ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
+                        pnlGameP.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
 
-                        //---- label10 ----
-                        label10.setText("Capture Points");
-                        label10.setBackground(SystemColor.windowBorder);
-                        label10.setForeground(Color.black);
-                        label10.setOpaque(true);
-                        pnl1234.add(label10, CC.xy(1, 1));
-
-                        //======== scrollPane1 ========
+                        //======== pnlConquest ========
                         {
-                            scrollPane1.setViewportView(listCP);
-                        }
-                        pnl1234.add(scrollPane1, CC.xywh(1, 3, 1, 3, CC.DEFAULT, CC.FILL));
+                            pnlConquest.setLayout(new FormLayout(
+                                "pref:grow, $rgap, default, $ugap, pref:grow, $rgap, default",
+                                "$lgap, default, $ugap, 3*(default, $lgap), fill:default:grow"));
 
-                        //======== scrollPane2 ========
+                            //---- txtCnqComment ----
+                            txtCnqComment.setToolTipText("Comment");
+                            pnlConquest.add(txtCnqComment, CC.xywh(1, 2, 7, 1));
+
+                            //---- label3 ----
+                            label3.setText("Respawn Tickets");
+                            pnlConquest.add(label3, CC.xy(1, 4));
+                            pnlConquest.add(txtCnqTickets, CC.xy(3, 4));
+
+                            //---- label4 ----
+                            label4.setText("Bleeding starts @");
+                            pnlConquest.add(label4, CC.xy(5, 4));
+                            pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 4));
+
+                            //---- label5 ----
+                            label5.setText("Start Bleed interval");
+                            pnlConquest.add(label5, CC.xy(1, 6));
+                            pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 6));
+
+                            //---- lbl12345 ----
+                            lbl12345.setText("Final Bleed interval");
+                            pnlConquest.add(lbl12345, CC.xy(5, 6));
+                            pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 6));
+
+                            //---- label9 ----
+                            label9.setText("Ticket Price");
+                            pnlConquest.add(label9, CC.xy(1, 8));
+                            pnlConquest.add(txtCnqTPrice, CC.xy(3, 8));
+
+                            //======== pnl1234 ========
+                            {
+                                pnl1234.setLayout(new FormLayout(
+                                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                                    "default, $rgap, 2*(default), default:grow, $lgap, default"));
+                                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
+
+                                //---- label10 ----
+                                label10.setText("Capture Points");
+                                label10.setBackground(SystemColor.windowBorder);
+                                label10.setForeground(Color.black);
+                                label10.setOpaque(true);
+                                label10.setHorizontalAlignment(SwingConstants.CENTER);
+                                pnl1234.add(label10, CC.xy(1, 1, CC.DEFAULT, CC.FILL));
+
+                                //======== scrollPane1 ========
+                                {
+                                    scrollPane1.setViewportView(listCP);
+                                }
+                                pnl1234.add(scrollPane1, CC.xywh(1, 3, 3, 3, CC.DEFAULT, CC.FILL));
+
+                                //======== scrollPane2 ========
+                                {
+                                    scrollPane2.setViewportView(listSirens);
+                                }
+                                pnl1234.add(scrollPane2, CC.xywh(5, 3, 3, 3));
+
+                                //---- btnAddCP ----
+                                btnAddCP.setText(null);
+                                btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
+                                btnAddCP.addActionListener(e -> btnAddCP(e));
+                                pnl1234.add(btnAddCP, CC.xywh(3, 1, 1, 2));
+
+                                //---- label13 ----
+                                label13.setText("Sirens");
+                                label13.setBackground(SystemColor.windowBorder);
+                                label13.setForeground(Color.black);
+                                label13.setOpaque(true);
+                                label13.setHorizontalAlignment(SwingConstants.CENTER);
+                                pnl1234.add(label13, CC.xy(5, 1, CC.DEFAULT, CC.FILL));
+
+                                //---- btnAddSirens ----
+                                btnAddSirens.setText(null);
+                                btnAddSirens.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
+                                btnAddSirens.addActionListener(e -> btnAddSirens(e));
+                                pnl1234.add(btnAddSirens, CC.xy(7, 1));
+
+                                //---- lblRedSpawn ----
+                                lblRedSpawn.setText("test");
+                                lblRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                                lblRedSpawn.setAlignmentX(0.5F);
+                                lblRedSpawn.setBackground(new Color(255, 0, 51));
+                                lblRedSpawn.setOpaque(true);
+                                lblRedSpawn.setForeground(new Color(255, 255, 51));
+                                lblRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                                pnl1234.add(lblRedSpawn, CC.xy(1, 7, CC.DEFAULT, CC.FILL));
+
+                                //---- btnSetRed ----
+                                btnSetRed.setText(null);
+                                btnSetRed.setIcon(new ImageIcon(getClass().getResource("/artwork/previous.png")));
+                                btnSetRed.setMinimumSize(new Dimension(38, 38));
+                                btnSetRed.setPreferredSize(new Dimension(38, 38));
+                                btnSetRed.addActionListener(e -> btnSetRed(e));
+                                pnl1234.add(btnSetRed, CC.xy(3, 7));
+
+                                //---- lblBlueSpawn ----
+                                lblBlueSpawn.setText("test");
+                                lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                                lblBlueSpawn.setAlignmentX(0.5F);
+                                lblBlueSpawn.setBackground(new Color(51, 51, 255));
+                                lblBlueSpawn.setOpaque(true);
+                                lblBlueSpawn.setForeground(new Color(255, 255, 51));
+                                lblBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                                pnl1234.add(lblBlueSpawn, CC.xy(5, 7, CC.FILL, CC.FILL));
+
+                                //---- btnSetBlue ----
+                                btnSetBlue.setText(null);
+                                btnSetBlue.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
+                                btnSetBlue.setMinimumSize(new Dimension(38, 38));
+                                btnSetBlue.setPreferredSize(new Dimension(38, 38));
+                                btnSetBlue.addActionListener(e -> btnSetBlue(e));
+                                pnl1234.add(btnSetBlue, CC.xy(7, 7));
+                            }
+                            pnlConquest.add(pnl1234, CC.xywh(1, 10, 7, 1, CC.FILL, CC.DEFAULT));
+                        }
+                        pnlGameP.addTab("pnlConquest", pnlConquest);
+
+                        //======== pnlRush ========
                         {
-                            scrollPane2.setViewportView(listSirens);
+                            pnlRush.setLayout(new FormLayout(
+                                "default, $lcgap, default:grow",
+                                "default:grow, $lgap, default"));
+
+                            //---- label8 ----
+                            label8.setText("no rush yet...");
+                            pnlRush.add(label8, CC.xywh(1, 1, 3, 1));
                         }
-                        pnl1234.add(scrollPane2, CC.xywh(5, 3, 1, 3));
-
-                        //---- btnAddCP ----
-                        btnAddCP.setText(null);
-                        btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                        btnAddCP.addActionListener(e -> btnAddCP(e));
-                        pnl1234.add(btnAddCP, CC.xywh(3, 1, 1, 5));
-
-                        //---- label13 ----
-                        label13.setText("Sirens");
-                        label13.setBackground(SystemColor.windowBorder);
-                        label13.setForeground(Color.black);
-                        label13.setOpaque(true);
-                        pnl1234.add(label13, CC.xy(5, 1));
-
-                        //---- btnAddSirens ----
-                        btnAddSirens.setText(null);
-                        btnAddSirens.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                        btnAddSirens.addActionListener(e -> btnAddSirens(e));
-                        pnl1234.add(btnAddSirens, CC.xywh(7, 1, 1, 5));
-
-                        //---- lblRedSpawn ----
-                        lblRedSpawn.setText("test");
-                        lblRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                        lblRedSpawn.setAlignmentX(0.5F);
-                        lblRedSpawn.setBackground(new Color(255, 0, 51));
-                        lblRedSpawn.setOpaque(true);
-                        lblRedSpawn.setForeground(new Color(255, 255, 51));
-                        lblRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                        pnl1234.add(lblRedSpawn, CC.xy(1, 7, CC.DEFAULT, CC.FILL));
-
-                        //---- btnSetRed ----
-                        btnSetRed.setText(null);
-                        btnSetRed.setIcon(new ImageIcon(getClass().getResource("/artwork/previous.png")));
-                        btnSetRed.setMinimumSize(new Dimension(38, 38));
-                        btnSetRed.setPreferredSize(new Dimension(38, 38));
-                        btnSetRed.addActionListener(e -> btnSetRed(e));
-                        pnl1234.add(btnSetRed, CC.xy(3, 7));
-
-                        //---- lblBlueSpawn ----
-                        lblBlueSpawn.setText("test");
-                        lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                        lblBlueSpawn.setAlignmentX(0.5F);
-                        lblBlueSpawn.setBackground(new Color(51, 51, 255));
-                        lblBlueSpawn.setOpaque(true);
-                        lblBlueSpawn.setForeground(new Color(255, 255, 51));
-                        lblBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                        pnl1234.add(lblBlueSpawn, CC.xy(5, 7, CC.FILL, CC.FILL));
-
-                        //---- btnSetBlue ----
-                        btnSetBlue.setText(null);
-                        btnSetBlue.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                        btnSetBlue.setMinimumSize(new Dimension(38, 38));
-                        btnSetBlue.setPreferredSize(new Dimension(38, 38));
-                        btnSetBlue.addActionListener(e -> btnSetBlue(e));
-                        pnl1234.add(btnSetBlue, CC.xy(7, 7));
+                        pnlGameP.addTab("pnlRush", pnlRush);
                     }
-                    pnlConquest.add(pnl1234, CC.xywh(1, 10, 7, 1, CC.FILL, CC.DEFAULT));
-                }
-                pnlGames.addTab("Conquest", pnlConquest);
-
-                //======== pnlRush ========
-                {
-                    pnlRush.setLayout(new FormLayout(
-                            "default, $lcgap, default:grow",
-                            "default:grow, $lgap, default"));
-
-                    //---- label8 ----
-                    label8.setText("no rush yet...");
-                    pnlRush.add(label8, CC.xywh(1, 1, 3, 1));
-                }
-                pnlGames.addTab("Rush", pnlRush);
-                pnlGames.setEnabledAt(2, false);
-            }
-            mainPanel.add(pnlGames, CC.xywh(1, 1, 1, 7));
-
-            //---- separator3 ----
-            separator3.setOrientation(SwingConstants.VERTICAL);
-            mainPanel.add(separator3, CC.xywh(2, 1, 1, 7, CC.CENTER, CC.DEFAULT));
-
-            //======== panel4 ========
-            {
-                panel4.setOrientation(JSplitPane.VERTICAL_SPLIT);
-                panel4.setDividerLocation(150);
-
-                //======== panel1 ========
-                {
-                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
-
-                    //---- cbRefreshAgents ----
-                    cbRefreshAgents.setText("Autorefresh Agent List");
-                    cbRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                    panel1.add(cbRefreshAgents);
+                    pnlParams.add(pnlGameP, CC.xywh(1, 1, 1, 3));
 
                     //======== scrollPane3 ========
                     {
                         scrollPane3.setViewportView(tblAgents);
                     }
-                    panel1.add(scrollPane3);
-                }
-                panel4.setTopComponent(panel1);
+                    pnlParams.add(scrollPane3, CC.xy(2, 1, CC.DEFAULT, CC.FILL));
 
-                //======== panel3 ========
-                {
-                    panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
+                    //---- button1 ----
+                    button1.setText("text");
+                    pnlParams.add(button1, CC.xy(2, 3));
 
-                    //---- cbRefreshGameStatus ----
-                    cbRefreshGameStatus.setText("Autorefresh Game Status");
-                    cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                    panel3.add(cbRefreshGameStatus);
-
-                    //======== scrollPane4 ========
+                    //======== pnlFiles ========
                     {
+                        pnlFiles.setLayout(new BoxLayout(pnlFiles, BoxLayout.X_AXIS));
 
-                        //---- txtLogger ----
-                        txtLogger.setForeground(new Color(51, 255, 51));
-                        txtLogger.setLineWrap(true);
-                        txtLogger.setWrapStyleWord(true);
-                        scrollPane4.setViewportView(txtLogger);
+                        //---- lblFile ----
+                        lblFile.setText("no file");
+                        lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 12));
+                        pnlFiles.add(lblFile);
+                        pnlFiles.add(hSpacer1);
+
+                        //---- btnFileNew ----
+                        btnFileNew.setText(null);
+                        btnFileNew.setIcon(new ImageIcon(getClass().getResource("/artwork/filenew.png")));
+                        btnFileNew.setMinimumSize(new Dimension(38, 38));
+                        btnFileNew.setPreferredSize(new Dimension(38, 38));
+                        btnFileNew.addActionListener(e -> btnFileNew(e));
+                        pnlFiles.add(btnFileNew);
+
+                        //---- btnLoadFile ----
+                        btnLoadFile.setText(null);
+                        btnLoadFile.setIcon(new ImageIcon(getClass().getResource("/artwork/fileopen.png")));
+                        btnLoadFile.setMinimumSize(new Dimension(38, 38));
+                        btnLoadFile.setPreferredSize(new Dimension(38, 38));
+                        btnLoadFile.addActionListener(e -> btnLoadFile(e));
+                        pnlFiles.add(btnLoadFile);
+
+                        //---- btnSaveFile ----
+                        btnSaveFile.setText(null);
+                        btnSaveFile.setIcon(new ImageIcon(getClass().getResource("/artwork/filesave.png")));
+                        btnSaveFile.setMinimumSize(new Dimension(38, 38));
+                        btnSaveFile.setPreferredSize(new Dimension(38, 38));
+                        btnSaveFile.addActionListener(e -> btnSaveFile(e));
+                        pnlFiles.add(btnSaveFile);
                     }
-                    panel3.add(scrollPane4);
+                    pnlParams.add(pnlFiles, CC.xywh(1, 5, 2, 1));
                 }
-                panel4.setBottomComponent(panel3);
-            }
-            mainPanel.add(panel4, CC.xywh(3, 1, 1, 9));
+                pnlMain.addTab("Params", pnlParams);
 
-            //======== pnlFiles ========
+                //======== pnlStatus ========
+                {
+                    pnlStatus.setLayout(new BoxLayout(pnlStatus, BoxLayout.X_AXIS));
+                }
+                pnlMain.addTab("Status", pnlStatus);
+            }
+            mainPanel.add(pnlMain, CC.xywh(1, 1, 1, 7));
+
+            //---- separator3 ----
+            separator3.setOrientation(SwingConstants.VERTICAL);
+            mainPanel.add(separator3, CC.xywh(2, 1, 1, 7, CC.CENTER, CC.DEFAULT));
+
+            //======== panel3 ========
             {
-                pnlFiles.setLayout(new BoxLayout(pnlFiles, BoxLayout.X_AXIS));
+                panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
 
-                //---- lblFile ----
-                lblFile.setText("no file");
-                lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 12));
-                pnlFiles.add(lblFile);
-                pnlFiles.add(hSpacer1);
+                //---- cbRefreshGameStatus ----
+                cbRefreshGameStatus.setText("Autorefresh Game Status");
+                cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                panel3.add(cbRefreshGameStatus);
 
-                //---- btnFileNew ----
-                btnFileNew.setText(null);
-                btnFileNew.setIcon(new ImageIcon(getClass().getResource("/artwork/filenew.png")));
-                btnFileNew.setMinimumSize(new Dimension(38, 38));
-                btnFileNew.setPreferredSize(new Dimension(38, 38));
-                btnFileNew.addActionListener(e -> btnFileNew(e));
-                pnlFiles.add(btnFileNew);
+                //======== scrollPane4 ========
+                {
 
-                //---- btnLoadFile ----
-                btnLoadFile.setText(null);
-                btnLoadFile.setIcon(new ImageIcon(getClass().getResource("/artwork/fileopen.png")));
-                btnLoadFile.setMinimumSize(new Dimension(38, 38));
-                btnLoadFile.setPreferredSize(new Dimension(38, 38));
-                btnLoadFile.addActionListener(e -> btnLoadFile(e));
-                pnlFiles.add(btnLoadFile);
-
-                //---- btnSaveFile ----
-                btnSaveFile.setText(null);
-                btnSaveFile.setIcon(new ImageIcon(getClass().getResource("/artwork/filesave.png")));
-                btnSaveFile.setMinimumSize(new Dimension(38, 38));
-                btnSaveFile.setPreferredSize(new Dimension(38, 38));
-                btnSaveFile.addActionListener(e -> btnSaveFile(e));
-                pnlFiles.add(btnSaveFile);
+                    //---- txtLogger ----
+                    txtLogger.setForeground(new Color(51, 255, 51));
+                    txtLogger.setLineWrap(true);
+                    txtLogger.setWrapStyleWord(true);
+                    scrollPane4.setViewportView(txtLogger);
+                }
+                panel3.add(scrollPane4);
             }
-            mainPanel.add(pnlFiles, CC.xy(1, 9));
+            mainPanel.add(panel3, CC.xywh(3, 1, 1, 7));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         contentPane.add(separator2, CC.xy(2, 3));
@@ -869,10 +888,14 @@ public class FrameMain extends JFrame {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel mainPanel;
-    private JTabbedPane pnlGames;
-    private JPanel pnlOverview;
+    private JTabbedPane pnlMain;
+    private JPanel pnlConnection;
     private JLabel label7;
     private JTextField txtURI;
+    private JLabel lblRestServerStatus;
+    private JButton btnCheckServer;
+    private JPanel pnlParams;
+    private JTabbedPane pnlGameP;
     private JPanel pnlConquest;
     private JTextField txtCnqComment;
     private JLabel label3;
@@ -900,22 +923,21 @@ public class FrameMain extends JFrame {
     private JButton btnSetBlue;
     private JPanel pnlRush;
     private JLabel label8;
-    private JSeparator separator3;
-    private JSplitPane panel4;
-    private JPanel panel1;
-    private JCheckBox cbRefreshAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
-    private JPanel panel3;
-    private JCheckBox cbRefreshGameStatus;
-    private JScrollPane scrollPane4;
-    private JTextArea txtLogger;
+    private JButton button1;
     private JPanel pnlFiles;
     private JLabel lblFile;
     private JPanel hSpacer1;
     private JButton btnFileNew;
     private JButton btnLoadFile;
     private JButton btnSaveFile;
+    private JPanel pnlStatus;
+    private JSeparator separator3;
+    private JPanel panel3;
+    private JCheckBox cbRefreshGameStatus;
+    private JScrollPane scrollPane4;
+    private JTextArea txtLogger;
     private JSeparator separator2;
     private JPanel panel2;
     private JButton btnSendToServer;

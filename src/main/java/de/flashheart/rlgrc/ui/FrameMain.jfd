@@ -1,0 +1,202 @@
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.13" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+			"$columnSpecs": "unrelgap, default:grow, unrelgap"
+			"$rowSpecs": "relgap, default:grow, unrelgap, default, relgap"
+		} ) {
+			name: "this"
+			"defaultCloseOperation": 3
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default:grow"
+				"$rowSpecs": "default, linegap, default, relgap, default, linegap, fill:default:grow, linegap, default"
+			} ) {
+				name: "mainPanel"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label7"
+						"text": "URI"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "txtURI"
+						"text": "http://localhost:8090"
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "txtURIFocusLost", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "lblRestServerStatus"
+						"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
+				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
+					name: "pnlMain"
+					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "pnlGamesStateChanged", true ) )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+						"$columnSpecs": "default:grow, default"
+						"$rowSpecs": "default:grow, linegap, default, linegap, default"
+					} ) {
+						name: "pnlParams"
+						add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
+							name: "pnlGames"
+							"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+							"gridHeight": 3
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+							name: "pnlFiles"
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "lblFile"
+								"text": "no file"
+								"font": new java.awt.Font( ".SF NS Text", 0, 12 )
+							} )
+							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+								name: "hSpacer1"
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnFileNew"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/filenew.png" )
+								"minimumSize": &Dimension0 new java.awt.Dimension( 38, 38 )
+								"preferredSize": &Dimension1 new java.awt.Dimension( 38, 38 )
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnFileNew", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnLoadFile"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/fileopen.png" )
+								"minimumSize": #Dimension0
+								"preferredSize": #Dimension1
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadFile", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnSaveFile"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/filesave.png" )
+								"minimumSize": #Dimension0
+								"preferredSize": #Dimension1
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveFile", true ) )
+							} )
+						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+							"gridY": 5
+							"gridWidth": 2
+						} )
+					}, new FormLayoutConstraints( null ) {
+						"title": "Params"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "pnlStatus"
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+							"axis": 3
+						} ) {
+							name: "panel3"
+							add( new FormComponent( "javax.swing.JCheckBox" ) {
+								name: "cbRefreshGameStatus"
+								"text": "Autorefresh Game Status"
+								"font": new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+							} )
+							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+								name: "scrollLog"
+								add( new FormComponent( "javax.swing.JTextArea" ) {
+									name: "txtLogger"
+									"foreground": new java.awt.Color( 51, 255, 51, 255 )
+									"lineWrap": true
+									"wrapStyleWord": true
+								} )
+							} )
+							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+								name: "scrollPane3"
+								add( new FormComponent( "javax.swing.JTable" ) {
+									name: "tblAgents"
+									"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector )
+									auxiliary() {
+										"model.noCode": true
+										"JavaCodeGenerator.customCreate": true
+									}
+								} )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnRefreshAgents"
+								"text": "Refresh Agents"
+							} )
+						} )
+					}, new FormLayoutConstraints( null ) {
+						"title": "Status"
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridHeight": 7
+					"gridY": 3
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 2
+				"vAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
+				"gridY": 2
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator2"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 2
+				"gridY": 3
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+				name: "panel2"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnSendToServer"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
+					"toolTipText": "Loag game on the server"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSend", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnStartGame"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"toolTipText": "Start loaded game"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnPauseGame"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPauseGame", true ) )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+					name: "hSpacer2"
+				} )
+				add( new FormComponent( "javax.swing.JToggleButton" ) {
+					name: "tbKeyLock"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/decrypted.png" )
+					"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
+					"toolTipText": "Keylock"
+					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "tbKeyLockItemStateChanged", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnResetGame"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
+					"toolTipText": "Resume Game"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnUnloadGame"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"toolTipText": "Unload Game"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 2
+				"gridY": 4
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 5 )
+			"size": new java.awt.Dimension( 1030, 695 )
+		} )
+	}
+}

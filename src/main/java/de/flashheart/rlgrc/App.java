@@ -2,6 +2,7 @@ package de.flashheart.rlgrc;
 
 import com.bulenkov.darcula.DarculaLaf;
 import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
 
 import javax.swing.*;

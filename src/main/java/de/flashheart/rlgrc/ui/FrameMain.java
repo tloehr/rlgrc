@@ -2,7 +2,7 @@
  * Created by JFormDesigner on Sat Jan 29 13:35:07 CET 2022
  */
 
-package de.flashheart.rlgrc;
+package de.flashheart.rlgrc.ui;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -57,43 +57,34 @@ public class FrameMain extends JFrame {
     private final JobKey agentJob;
     private Client client = ClientBuilder.newClient();
     private final int MAX_LOG_LINES = 200;
-    private String current_mode = "overview";
-    private final String[] MODES = new String[]{"overview", "conquest", "rush"};
     //private Optional<File> loaded_file;
-    private HashMap<String, MutablePair<Optional<File>, JSONObject>> game_params;
+    //private final HashMap<String, MutablePair<Optional<File>, JSONObject>> game_params;
 
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
-        this.configs = configs;
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
+        this.configs = configs;
+        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
         this.scheduler.getContext().put("rlgrc", this);
         this.scheduler.start();
-        game_params = new HashMap<>();
-        game_params.put("conquest", new MutablePair<>(Optional.empty(), load_defaults("conquest")));
-        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
-        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
-        agentJob = new JobKey(ServerRefreshJob.name, "group1");
+        //this.game_params = new HashMap<>();
         initComponents();
-        initLogger();
-        setVerifiers();
-        initRefresh();
         initFrame();
         pack();
     }
 
-    private void initFrame() {
+    private void initFrame() throws IOException {
+        initLogger();
+        //game_params.put("conquest", new MutablePair<>(Optional.empty(), load_defaults("conquest")));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
-        params_to_dialog("conquest");
+        pnlGames.add("Conquest", new ConquestParams());
+        todod: params_to_dialog("conquest");
+
+
     }
 
-    private void setVerifiers() {
-        txtCnqComment.setInputVerifier(new NotEmptyVerifier());
-        txtCnqTickets.setInputVerifier(new NumberVerifier());
-        txtCnqTPrice.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
-        txtCnqBleedStarts.setInputVerifier(new NumberVerifier());
-        txtCnqSBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
-        txtCnqEBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, false));
-    }
 
     private void btnFileNew(ActionEvent e) {
         if (pnlGames.getSelectedIndex() == TAB_OVERVIEW) return;
@@ -419,23 +410,11 @@ public class FrameMain extends JFrame {
         log.debug(text);
         SwingUtilities.invokeLater(() -> {
             txtLogger.append(text + "\n");
-            scrollPane1.getVerticalScrollBar().setValue(scrollPane1.getVerticalScrollBar().getMaximum());
+            scrollLog.getVerticalScrollBar().setValue(scrollLog.getVerticalScrollBar().getMaximum());
         });
     }
 
-    private void btnSetRed(ActionEvent e) {
-        if (tblAgents.getSelectedRow() < 0) return;
-        lblRedSpawn.setText(tblAgents.getModel().getValueAt(tblAgents.getSelectedRow(), 0).toString());
-    }
 
-    private void btnSetBlue(ActionEvent e) {
-        if (tblAgents.getSelectedRow() < 0) return;
-        lblBlueSpawn.setText(tblAgents.getModel().getValueAt(tblAgents.getSelectedRow(), 0).toString());
-    }
-
-    private void btnAddCP(ActionEvent e) {
-        add_to_agents_list(listCP);
-    }
 
     private void add_to_agents_list(JList jList) {
         int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
@@ -494,43 +473,13 @@ public class FrameMain extends JFrame {
         createUIComponents();
 
         mainPanel = new JPanel();
-        pnlMain = new JTabbedPane();
-        pnlConnection = new JPanel();
+        panel1 = new JPanel();
         label7 = new JLabel();
         txtURI = new JTextField();
-        lblRestServerStatus = new JLabel();
-        btnCheckServer = new JButton();
+        lblRestServerStatus = new JButton();
+        pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
-        pnlGameP = new JTabbedPane();
-        pnlConquest = new JPanel();
-        txtCnqComment = new JTextField();
-        label3 = new JLabel();
-        txtCnqTickets = new JTextField();
-        label4 = new JLabel();
-        txtCnqBleedStarts = new JTextField();
-        label5 = new JLabel();
-        txtCnqSBleedInt = new JTextField();
-        lbl12345 = new JLabel();
-        txtCnqEBleedInt = new JTextField();
-        label9 = new JLabel();
-        txtCnqTPrice = new JTextField();
-        pnl1234 = new JPanel();
-        label10 = new JLabel();
-        scrollPane1 = new JScrollPane();
-        listCP = new JList();
-        scrollPane2 = new JScrollPane();
-        listSirens = new JList();
-        btnAddCP = new JButton();
-        label13 = new JLabel();
-        btnAddSirens = new JButton();
-        lblRedSpawn = new JLabel();
-        btnSetRed = new JButton();
-        lblBlueSpawn = new JLabel();
-        btnSetBlue = new JButton();
-        pnlRush = new JPanel();
-        label8 = new JLabel();
-        scrollPane3 = new JScrollPane();
-        button1 = new JButton();
+        pnlGames = new JTabbedPane();
         pnlFiles = new JPanel();
         lblFile = new JLabel();
         hSpacer1 = new JPanel(null);
@@ -538,11 +487,12 @@ public class FrameMain extends JFrame {
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
         pnlStatus = new JPanel();
-        separator3 = new JSeparator();
         panel3 = new JPanel();
         cbRefreshGameStatus = new JCheckBox();
-        scrollPane4 = new JScrollPane();
+        scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
+        scrollPane3 = new JScrollPane();
+        btnRefreshAgents = new JButton();
         separator2 = new JSeparator();
         panel2 = new JPanel();
         btnSendToServer = new JButton();
@@ -563,44 +513,38 @@ public class FrameMain extends JFrame {
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow, $ugap, default:grow",
-                "default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+
+            //======== panel1 ========
+            {
+                panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+
+                //---- label7 ----
+                label7.setText("URI");
+                panel1.add(label7);
+
+                //---- txtURI ----
+                txtURI.setText("http://localhost:8090");
+                txtURI.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        txtURIFocusLost(e);
+                    }
+                });
+                panel1.add(txtURI);
+
+                //---- lblRestServerStatus ----
+                lblRestServerStatus.setText(null);
+                lblRestServerStatus.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                panel1.add(lblRestServerStatus);
+            }
+            mainPanel.add(panel1, CC.xy(1, 1));
 
             //======== pnlMain ========
             {
                 pnlMain.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 pnlMain.addChangeListener(e -> pnlGamesStateChanged(e));
-
-                //======== pnlConnection ========
-                {
-                    pnlConnection.setLayout(new FormLayout(
-                        "default, $lcgap, default:grow, $lcgap, default",
-                        "default, $lgap, default"));
-
-                    //---- label7 ----
-                    label7.setText("URI");
-                    pnlConnection.add(label7, CC.xy(1, 1));
-
-                    //---- txtURI ----
-                    txtURI.setText("http://localhost:8090");
-                    txtURI.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            txtURIFocusLost(e);
-                        }
-                    });
-                    pnlConnection.add(txtURI, CC.xy(3, 1));
-
-                    //---- lblRestServerStatus ----
-                    lblRestServerStatus.setText(null);
-                    lblRestServerStatus.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
-                    pnlConnection.add(lblRestServerStatus, CC.xy(5, 1));
-
-                    //---- btnCheckServer ----
-                    btnCheckServer.setText("Check Rest Server");
-                    pnlConnection.add(btnCheckServer, CC.xywh(1, 3, 5, 1));
-                }
-                pnlMain.addTab("Connection", pnlConnection);
 
                 //======== pnlParams ========
                 {
@@ -608,155 +552,11 @@ public class FrameMain extends JFrame {
                         "default:grow, default",
                         "default:grow, 2*($lgap, default)"));
 
-                    //======== pnlGameP ========
+                    //======== pnlGames ========
                     {
-                        pnlGameP.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-
-                        //======== pnlConquest ========
-                        {
-                            pnlConquest.setLayout(new FormLayout(
-                                "pref:grow, $rgap, default, $ugap, pref:grow, $rgap, default",
-                                "$lgap, default, $ugap, 3*(default, $lgap), fill:default:grow"));
-
-                            //---- txtCnqComment ----
-                            txtCnqComment.setToolTipText("Comment");
-                            pnlConquest.add(txtCnqComment, CC.xywh(1, 2, 7, 1));
-
-                            //---- label3 ----
-                            label3.setText("Respawn Tickets");
-                            pnlConquest.add(label3, CC.xy(1, 4));
-                            pnlConquest.add(txtCnqTickets, CC.xy(3, 4));
-
-                            //---- label4 ----
-                            label4.setText("Bleeding starts @");
-                            pnlConquest.add(label4, CC.xy(5, 4));
-                            pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 4));
-
-                            //---- label5 ----
-                            label5.setText("Start Bleed interval");
-                            pnlConquest.add(label5, CC.xy(1, 6));
-                            pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 6));
-
-                            //---- lbl12345 ----
-                            lbl12345.setText("Final Bleed interval");
-                            pnlConquest.add(lbl12345, CC.xy(5, 6));
-                            pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 6));
-
-                            //---- label9 ----
-                            label9.setText("Ticket Price");
-                            pnlConquest.add(label9, CC.xy(1, 8));
-                            pnlConquest.add(txtCnqTPrice, CC.xy(3, 8));
-
-                            //======== pnl1234 ========
-                            {
-                                pnl1234.setLayout(new FormLayout(
-                                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                                    "default, $rgap, 2*(default), default:grow, $lgap, default"));
-                                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
-
-                                //---- label10 ----
-                                label10.setText("Capture Points");
-                                label10.setBackground(SystemColor.windowBorder);
-                                label10.setForeground(Color.black);
-                                label10.setOpaque(true);
-                                label10.setHorizontalAlignment(SwingConstants.CENTER);
-                                pnl1234.add(label10, CC.xy(1, 1, CC.DEFAULT, CC.FILL));
-
-                                //======== scrollPane1 ========
-                                {
-                                    scrollPane1.setViewportView(listCP);
-                                }
-                                pnl1234.add(scrollPane1, CC.xywh(1, 3, 3, 3, CC.DEFAULT, CC.FILL));
-
-                                //======== scrollPane2 ========
-                                {
-                                    scrollPane2.setViewportView(listSirens);
-                                }
-                                pnl1234.add(scrollPane2, CC.xywh(5, 3, 3, 3));
-
-                                //---- btnAddCP ----
-                                btnAddCP.setText(null);
-                                btnAddCP.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                                btnAddCP.addActionListener(e -> btnAddCP(e));
-                                pnl1234.add(btnAddCP, CC.xywh(3, 1, 1, 2));
-
-                                //---- label13 ----
-                                label13.setText("Sirens");
-                                label13.setBackground(SystemColor.windowBorder);
-                                label13.setForeground(Color.black);
-                                label13.setOpaque(true);
-                                label13.setHorizontalAlignment(SwingConstants.CENTER);
-                                pnl1234.add(label13, CC.xy(5, 1, CC.DEFAULT, CC.FILL));
-
-                                //---- btnAddSirens ----
-                                btnAddSirens.setText(null);
-                                btnAddSirens.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                                btnAddSirens.addActionListener(e -> btnAddSirens(e));
-                                pnl1234.add(btnAddSirens, CC.xy(7, 1));
-
-                                //---- lblRedSpawn ----
-                                lblRedSpawn.setText("test");
-                                lblRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                                lblRedSpawn.setAlignmentX(0.5F);
-                                lblRedSpawn.setBackground(new Color(255, 0, 51));
-                                lblRedSpawn.setOpaque(true);
-                                lblRedSpawn.setForeground(new Color(255, 255, 51));
-                                lblRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                                pnl1234.add(lblRedSpawn, CC.xy(1, 7, CC.DEFAULT, CC.FILL));
-
-                                //---- btnSetRed ----
-                                btnSetRed.setText(null);
-                                btnSetRed.setIcon(new ImageIcon(getClass().getResource("/artwork/previous.png")));
-                                btnSetRed.setMinimumSize(new Dimension(38, 38));
-                                btnSetRed.setPreferredSize(new Dimension(38, 38));
-                                btnSetRed.addActionListener(e -> btnSetRed(e));
-                                pnl1234.add(btnSetRed, CC.xy(3, 7));
-
-                                //---- lblBlueSpawn ----
-                                lblBlueSpawn.setText("test");
-                                lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                                lblBlueSpawn.setAlignmentX(0.5F);
-                                lblBlueSpawn.setBackground(new Color(51, 51, 255));
-                                lblBlueSpawn.setOpaque(true);
-                                lblBlueSpawn.setForeground(new Color(255, 255, 51));
-                                lblBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                                pnl1234.add(lblBlueSpawn, CC.xy(5, 7, CC.FILL, CC.FILL));
-
-                                //---- btnSetBlue ----
-                                btnSetBlue.setText(null);
-                                btnSetBlue.setIcon(new ImageIcon(getClass().getResource("/artwork/back.png")));
-                                btnSetBlue.setMinimumSize(new Dimension(38, 38));
-                                btnSetBlue.setPreferredSize(new Dimension(38, 38));
-                                btnSetBlue.addActionListener(e -> btnSetBlue(e));
-                                pnl1234.add(btnSetBlue, CC.xy(7, 7));
-                            }
-                            pnlConquest.add(pnl1234, CC.xywh(1, 10, 7, 1, CC.FILL, CC.DEFAULT));
-                        }
-                        pnlGameP.addTab("pnlConquest", pnlConquest);
-
-                        //======== pnlRush ========
-                        {
-                            pnlRush.setLayout(new FormLayout(
-                                "default, $lcgap, default:grow",
-                                "default:grow, $lgap, default"));
-
-                            //---- label8 ----
-                            label8.setText("no rush yet...");
-                            pnlRush.add(label8, CC.xywh(1, 1, 3, 1));
-                        }
-                        pnlGameP.addTab("pnlRush", pnlRush);
+                        pnlGames.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                     }
-                    pnlParams.add(pnlGameP, CC.xywh(1, 1, 1, 3));
-
-                    //======== scrollPane3 ========
-                    {
-                        scrollPane3.setViewportView(tblAgents);
-                    }
-                    pnlParams.add(scrollPane3, CC.xy(2, 1, CC.DEFAULT, CC.FILL));
-
-                    //---- button1 ----
-                    button1.setText("text");
-                    pnlParams.add(button1, CC.xy(2, 3));
+                    pnlParams.add(pnlGames, CC.xywh(1, 1, 1, 3));
 
                     //======== pnlFiles ========
                     {
@@ -799,36 +599,42 @@ public class FrameMain extends JFrame {
                 //======== pnlStatus ========
                 {
                     pnlStatus.setLayout(new BoxLayout(pnlStatus, BoxLayout.X_AXIS));
+
+                    //======== panel3 ========
+                    {
+                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
+
+                        //---- cbRefreshGameStatus ----
+                        cbRefreshGameStatus.setText("Autorefresh Game Status");
+                        cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        panel3.add(cbRefreshGameStatus);
+
+                        //======== scrollLog ========
+                        {
+
+                            //---- txtLogger ----
+                            txtLogger.setForeground(new Color(51, 255, 51));
+                            txtLogger.setLineWrap(true);
+                            txtLogger.setWrapStyleWord(true);
+                            scrollLog.setViewportView(txtLogger);
+                        }
+                        panel3.add(scrollLog);
+
+                        //======== scrollPane3 ========
+                        {
+                            scrollPane3.setViewportView(tblAgents);
+                        }
+                        panel3.add(scrollPane3);
+
+                        //---- btnRefreshAgents ----
+                        btnRefreshAgents.setText("Refresh Agents");
+                        panel3.add(btnRefreshAgents);
+                    }
+                    pnlStatus.add(panel3);
                 }
                 pnlMain.addTab("Status", pnlStatus);
             }
-            mainPanel.add(pnlMain, CC.xywh(1, 1, 1, 7));
-
-            //---- separator3 ----
-            separator3.setOrientation(SwingConstants.VERTICAL);
-            mainPanel.add(separator3, CC.xywh(2, 1, 1, 7, CC.CENTER, CC.DEFAULT));
-
-            //======== panel3 ========
-            {
-                panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
-
-                //---- cbRefreshGameStatus ----
-                cbRefreshGameStatus.setText("Autorefresh Game Status");
-                cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                panel3.add(cbRefreshGameStatus);
-
-                //======== scrollPane4 ========
-                {
-
-                    //---- txtLogger ----
-                    txtLogger.setForeground(new Color(51, 255, 51));
-                    txtLogger.setLineWrap(true);
-                    txtLogger.setWrapStyleWord(true);
-                    scrollPane4.setViewportView(txtLogger);
-                }
-                panel3.add(scrollPane4);
-            }
-            mainPanel.add(panel3, CC.xywh(3, 1, 1, 7));
+            mainPanel.add(pnlMain, CC.xywh(1, 3, 1, 7));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         contentPane.add(separator2, CC.xy(2, 3));
@@ -888,44 +694,13 @@ public class FrameMain extends JFrame {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel mainPanel;
-    private JTabbedPane pnlMain;
-    private JPanel pnlConnection;
+    private JPanel panel1;
     private JLabel label7;
     private JTextField txtURI;
-    private JLabel lblRestServerStatus;
-    private JButton btnCheckServer;
+    private JButton lblRestServerStatus;
+    private JTabbedPane pnlMain;
     private JPanel pnlParams;
-    private JTabbedPane pnlGameP;
-    private JPanel pnlConquest;
-    private JTextField txtCnqComment;
-    private JLabel label3;
-    private JTextField txtCnqTickets;
-    private JLabel label4;
-    private JTextField txtCnqBleedStarts;
-    private JLabel label5;
-    private JTextField txtCnqSBleedInt;
-    private JLabel lbl12345;
-    private JTextField txtCnqEBleedInt;
-    private JLabel label9;
-    private JTextField txtCnqTPrice;
-    private JPanel pnl1234;
-    private JLabel label10;
-    private JScrollPane scrollPane1;
-    private JList listCP;
-    private JScrollPane scrollPane2;
-    private JList listSirens;
-    private JButton btnAddCP;
-    private JLabel label13;
-    private JButton btnAddSirens;
-    private JLabel lblRedSpawn;
-    private JButton btnSetRed;
-    private JLabel lblBlueSpawn;
-    private JButton btnSetBlue;
-    private JPanel pnlRush;
-    private JLabel label8;
-    private JScrollPane scrollPane3;
-    private JTable tblAgents;
-    private JButton button1;
+    private JTabbedPane pnlGames;
     private JPanel pnlFiles;
     private JLabel lblFile;
     private JPanel hSpacer1;
@@ -933,11 +708,13 @@ public class FrameMain extends JFrame {
     private JButton btnLoadFile;
     private JButton btnSaveFile;
     private JPanel pnlStatus;
-    private JSeparator separator3;
     private JPanel panel3;
     private JCheckBox cbRefreshGameStatus;
-    private JScrollPane scrollPane4;
+    private JScrollPane scrollLog;
     private JTextArea txtLogger;
+    private JScrollPane scrollPane3;
+    private JTable tblAgents;
+    private JButton btnRefreshAgents;
     private JSeparator separator2;
     private JPanel panel2;
     private JButton btnSendToServer;

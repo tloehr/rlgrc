@@ -1,6 +1,6 @@
 package de.flashheart.rlgrc.jobs;
 
-import de.flashheart.rlgrc.FrameMain;
+import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
 import org.quartz.*;
 

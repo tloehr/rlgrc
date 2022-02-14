@@ -4,37 +4,39 @@
 
 package de.flashheart.rlgrc.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.math.BigDecimal;
-import javax.swing.*;
-
-import com.jgoodies.forms.factories.*;
-import com.jgoodies.forms.layout.*;
+import com.jgoodies.forms.factories.CC;
+import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import javax.swing.*;
+import java.awt.*;
+import java.math.BigDecimal;
 
 /**
  * @author Torsten Löhr
  */
-public class ConquestParams extends JPanel implements GameParams {
+public class ConquestParams extends GameParams {
     public ConquestParams() {
+        super();
         initComponents();
         initPanel();
     }
 
     void initPanel() {
-
-    }
-
-    private void setVerifiers() {
+        load_defaults();
         txtComment.setInputVerifier(new NotEmptyVerifier());
         txtCnqTickets.setInputVerifier(new NumberVerifier());
         txtCnqTPrice.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
         txtCnqBleedStarts.setInputVerifier(new NumberVerifier());
         txtCnqSBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
         txtCnqEBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, false));
+        txtCPs.setInputVerifier(new NotEmptyVerifier());
+        txtSirens.setInputVerifier(new NotEmptyVerifier());
+        txtRedSpawn.setInputVerifier(new NotEmptyVerifier());
+        txtBlueSpawn.setInputVerifier(new NotEmptyVerifier());
     }
 
     private void initComponents() {
@@ -58,8 +60,8 @@ public class ConquestParams extends JPanel implements GameParams {
         scrollPane2 = new JScrollPane();
         txtSirens = new JTextArea();
         label13 = new JLabel();
-        lblRedSpawn = new JTextField();
-        lblBlueSpawn = new JTextField();
+        txtRedSpawn = new JTextField();
+        txtBlueSpawn = new JTextField();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -137,25 +139,25 @@ public class ConquestParams extends JPanel implements GameParams {
                 label13.setHorizontalAlignment(SwingConstants.CENTER);
                 pnl1234.add(label13, CC.xywh(5, 1, 3, 1, CC.DEFAULT, CC.FILL));
 
-                //---- lblRedSpawn ----
-                lblRedSpawn.setText("test");
-                lblRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                lblRedSpawn.setAlignmentX(0.5F);
-                lblRedSpawn.setBackground(new Color(255, 0, 51));
-                lblRedSpawn.setOpaque(true);
-                lblRedSpawn.setForeground(new Color(255, 255, 51));
-                lblRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                pnl1234.add(lblRedSpawn, CC.xywh(1, 7, 3, 1, CC.DEFAULT, CC.FILL));
+                //---- txtRedSpawn ----
+                txtRedSpawn.setText("test");
+                txtRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                txtRedSpawn.setAlignmentX(0.5F);
+                txtRedSpawn.setBackground(new Color(255, 0, 51));
+                txtRedSpawn.setOpaque(true);
+                txtRedSpawn.setForeground(new Color(255, 255, 51));
+                txtRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                pnl1234.add(txtRedSpawn, CC.xywh(1, 7, 3, 1, CC.DEFAULT, CC.FILL));
 
-                //---- lblBlueSpawn ----
-                lblBlueSpawn.setText("test");
-                lblBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
-                lblBlueSpawn.setAlignmentX(0.5F);
-                lblBlueSpawn.setBackground(new Color(51, 51, 255));
-                lblBlueSpawn.setOpaque(true);
-                lblBlueSpawn.setForeground(new Color(255, 255, 51));
-                lblBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                pnl1234.add(lblBlueSpawn, CC.xywh(5, 7, 3, 1, CC.FILL, CC.FILL));
+                //---- txtBlueSpawn ----
+                txtBlueSpawn.setText("test");
+                txtBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                txtBlueSpawn.setAlignmentX(0.5F);
+                txtBlueSpawn.setBackground(new Color(51, 51, 255));
+                txtBlueSpawn.setOpaque(true);
+                txtBlueSpawn.setForeground(new Color(255, 255, 51));
+                txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                pnl1234.add(txtBlueSpawn, CC.xywh(5, 7, 3, 1, CC.FILL, CC.FILL));
             }
             pnlConquest.add(pnl1234, CC.xywh(1, 9, 7, 1, CC.FILL, CC.DEFAULT));
         }
@@ -168,14 +170,41 @@ public class ConquestParams extends JPanel implements GameParams {
         return "conquest";
     }
 
-    @Override
-    public void set_parameters(JSONObject params) {
 
+    @Override
+    void set_parameters() {
+        txtCnqTickets.setText(params.get("respawn_tickets").toString());
+        txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
+        txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
+        txtCnqSBleedInt.setText(params.get("start_bleed_interval").toString());
+        txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
+        txtCPs.setText(params.getJSONObject("agents").getJSONArray("capture_points").toString());
+        txtSirens.setText(params.getJSONObject("agents").getJSONArray("sirens").toString());
+        txtRedSpawn.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
+        txtBlueSpawn.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
     }
 
     @Override
-    public JSONObject get_parameters() {
-        return null;
+    JSONObject read_parameters(String comment) {
+        params.clear();
+        params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
+        params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
+        params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
+        params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
+        params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
+        params.put("comment", comment);
+
+        JSONObject agents = new JSONObject();
+        agents.put("capture_points", new JSONArray());
+        agents.put("sirens", new JSONArray());
+        agents.put("red_spawn", new JSONArray().put(txtRedSpawn.getText()));
+        agents.put("blue_spawn", new JSONArray().put(txtBlueSpawn.getText()));
+        agents.put("spawns", new JSONArray().put(txtRedSpawn.getText()).put(txtBlueSpawn.getText()));
+        params.put("agents", agents);
+
+        params.put("class", "de.flashheart.rlg.commander.games.Conquest");
+        params.put("mode", getMode());
+        return params;
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -198,7 +227,7 @@ public class ConquestParams extends JPanel implements GameParams {
     private JScrollPane scrollPane2;
     private JTextArea txtSirens;
     private JLabel label13;
-    private JTextField lblRedSpawn;
-    private JTextField lblBlueSpawn;
+    private JTextField txtRedSpawn;
+    private JTextField txtBlueSpawn;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -8,9 +8,6 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.ServerRefreshJob;
 import de.flashheart.rlgrc.misc.Configs;
-import de.flashheart.rlgrc.misc.NotEmptyVerifier;
-import de.flashheart.rlgrc.misc.NumberVerifier;
-import de.flashheart.rlgrc.ui.TM_Agents;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -18,8 +15,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -32,11 +27,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Optional;
+import java.io.File;
+import java.io.IOException;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -80,58 +72,9 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
         pnlGames.add("Conquest", new ConquestParams());
-        todod: params_to_dialog("conquest");
-
 
     }
 
-
-    private void btnFileNew(ActionEvent e) {
-        if (pnlGames.getSelectedIndex() == TAB_OVERVIEW) return;
-        game_params.put(current_mode, new MutablePair<>(Optional.empty(), load_defaults(current_mode)));
-        params_to_dialog();
-    }
-
-
-    private JSONObject load_file(File file) {
-        JSONObject params;
-        try {
-            params = new JSONObject(FileUtils.readFileToString(file));
-            game_params.get(current_mode).setRight(params);
-            game_params.get(current_mode).setLeft(Optional.of(file));
-        } catch (IOException e) {
-            log.error(e);
-            addLog(e.getMessage());
-            params = new JSONObject();
-            game_params.get(current_mode).setLeft(Optional.empty());
-        }
-        game_params.get(current_mode).setRight(params);
-        return params;
-    }
-
-    private void save_file(JSONObject params) {
-        if (game_params.get(current_mode).getLeft().isEmpty()) {
-            game_params.get(current_mode).setLeft(choose_file(true));
-        }
-
-        game_params.get(current_mode).getLeft().ifPresent(file -> {
-            try {
-                FileUtils.writeStringToFile(file, params.toString(4));
-            } catch (IOException e) {
-                log.error(e);
-                addLog(e.getMessage());
-            }
-        });
-
-    }
-
-    private JSONObject load_defaults(String mode) {
-        StringBuffer stringBuffer = new StringBuffer();
-        InputStream in = getClass().getResourceAsStream("/defaults/" + mode + ".json");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        reader.lines().forEach(s -> stringBuffer.append(s));
-        return new JSONObject(stringBuffer.toString());
-    }
 
 //    private DefaultComboBoxModel<File> list_files() {
 //        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
@@ -141,7 +84,7 @@ public class FrameMain extends JFrame {
 //    }
 
     private void btnSend(ActionEvent e) {
-        if (current_mode.equals("overview")) return;
+
         addLog("--------------");
         addLog(post("game/load", GAMEID, params_from_dialog().toString()).toString());
 
@@ -287,94 +230,27 @@ public class FrameMain extends JFrame {
     }
 
 
-    private void fill_list(JList mylist, JSONArray myarray) {
-        DefaultListModel dlm = new DefaultListModel();
-        dlm.addAll(myarray.toList());
-        SwingUtilities.invokeLater(() -> {
-            mylist.setModel(dlm);
-            mylist.repaint();
-        });
-    }
-
-    private JSONArray list_to_jsonarray(JList mylist) {
-        return new JSONArray(Arrays.asList(((DefaultListModel) mylist.getModel()).toArray()));
-    }
-
-    private Optional<File> choose_file(boolean save) {
-        if (current_mode.equals("overview")) return null;
-        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("workspace") + File.separator + current_mode));
-        int result;// = JFileChooser.CANCEL_OPTION;
-        if (save) result = fileChooser.showSaveDialog(this);
-        else result = fileChooser.showOpenDialog(this);
-        Optional<File> file = Optional.empty();
-        if (result == JFileChooser.APPROVE_OPTION) {
-            file = Optional.of(fileChooser.getSelectedFile());
-            lblFile.setText(file.get().getAbsolutePath());
-        } else {
-            lblFile.setText(null);
-        }
-        return file;
-    }
-
     private void btnSaveFile(ActionEvent e) {
-        if (current_mode.equals("overview")) return;
-        if (game_params.get(current_mode).getLeft().isEmpty()) game_params.get(current_mode).setLeft(choose_file(true));
-        game_params.get(current_mode).getLeft().ifPresent(file -> save_file(params_from_dialog()));
+        try {
+            ((GameParams) pnlGames.getSelectedComponent()).save_file();
+        } catch (IOException ex) {
+            log.error(ex);
+            addLog(ex.getMessage());
+        }
     }
 
     private void btnLoadFile(ActionEvent e) {
-        if (current_mode.equals("overview")) return;
-
-        game_params.get(current_mode).setLeft(choose_file(false));
-        game_params.get(current_mode).getLeft().ifPresent(file -> game_params.get(current_mode).setRight(load_file(file)));
-        params_to_dialog();
-    }
-
-    private void params_to_dialog(String mode) {
-        JSONObject params = game_params.get(mode).getRight();
-        if (params.isEmpty()) return;
-        if (!params.has("mode")) return;
-        if (params.get("mode").equals("conquest")) {
-            txtCnqComment.setText(params.get("comment").toString());
-            txtCnqTickets.setText(params.get("respawn_tickets").toString());
-            txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
-            txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
-            txtCnqSBleedInt.setText(params.get("start_bleed_interval").toString());
-            txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
-            fill_list(listCP, params.getJSONObject("agents").getJSONArray("capture_points"));
-            fill_list(listSirens, params.getJSONObject("agents").getJSONArray("sirens"));
-            lblRedSpawn.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
-            lblBlueSpawn.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
+        try {
+            ((GameParams) pnlGames.getSelectedComponent()).load_file();
+        } catch (IOException ex) {
+            log.error(ex);
+            addLog(ex.getMessage());
         }
     }
 
-    private void params_to_dialog() {
-        params_to_dialog(current_mode);
-    }
 
-    private JSONObject params_from_dialog() {
-        JSONObject params = new JSONObject();
-        if (current_mode.equals("conquest")) {
-            params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
-            params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
-            params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
-            params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
-            params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
-            params.put("class", "de.flashheart.rlg.commander.games.Conquest");
-            params.put("comment", txtCnqComment.getText().trim());
-
-            JSONObject agents = new JSONObject();
-            agents.put("capture_points", list_to_jsonarray(listCP));
-            agents.put("sirens", list_to_jsonarray(listSirens));
-            agents.put("red_spawn", new JSONArray().put(lblRedSpawn.getText()));
-            agents.put("blue_spawn", new JSONArray().put(lblBlueSpawn.getText()));
-            agents.put("spawns", new JSONArray().put(lblRedSpawn.getText()).put(lblBlueSpawn.getText()));
-            params.put("agents", agents);
-        }
-        params.put("mode", current_mode);
-        log.debug(params.toString(4));
-        game_params.get(current_mode).setRight(params);
-        return params;
+    private void btnFileNew(ActionEvent e) {
+        ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
     }
 
 
@@ -413,7 +289,6 @@ public class FrameMain extends JFrame {
             scrollLog.getVerticalScrollBar().setValue(scrollLog.getVerticalScrollBar().getMaximum());
         });
     }
-
 
 
     private void add_to_agents_list(JList jList) {
@@ -468,6 +343,7 @@ public class FrameMain extends JFrame {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
@@ -486,6 +362,11 @@ public class FrameMain extends JFrame {
         btnFileNew = new JButton();
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
+        hSpacer3 = new JPanel(null);
+        btnSendToServer = new JButton();
+        btnStartGame = new JButton();
+        btnUnloadGame = new JButton();
+        btnResetGame = new JButton();
         pnlStatus = new JPanel();
         panel3 = new JPanel();
         cbRefreshGameStatus = new JCheckBox();
@@ -495,26 +376,22 @@ public class FrameMain extends JFrame {
         btnRefreshAgents = new JButton();
         separator2 = new JSeparator();
         panel2 = new JPanel();
-        btnSendToServer = new JButton();
-        btnStartGame = new JButton();
         btnPauseGame = new JButton();
         hSpacer2 = new JPanel(null);
         tbKeyLock = new JToggleButton();
-        btnResetGame = new JButton();
-        btnUnloadGame = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap, default, $rgap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                    "default:grow",
+                    "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -549,8 +426,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow, default",
-                        "default:grow, 2*($lgap, default)"));
+                            "default:grow, default",
+                            "default:grow, 2*($lgap, default)"));
 
                     //======== pnlGames ========
                     {
@@ -591,6 +468,38 @@ public class FrameMain extends JFrame {
                         btnSaveFile.setPreferredSize(new Dimension(38, 38));
                         btnSaveFile.addActionListener(e -> btnSaveFile(e));
                         pnlFiles.add(btnSaveFile);
+                        pnlFiles.add(hSpacer3);
+
+                        //---- btnSendToServer ----
+                        btnSendToServer.setText(null);
+                        btnSendToServer.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        btnSendToServer.setToolTipText("Loag game on the server");
+                        btnSendToServer.setMinimumSize(new Dimension(38, 38));
+                        btnSendToServer.setPreferredSize(new Dimension(38, 38));
+                        btnSendToServer.addActionListener(e -> btnSend(e));
+                        pnlFiles.add(btnSendToServer);
+
+                        //---- btnStartGame ----
+                        btnStartGame.setText(null);
+                        btnStartGame.setToolTipText("Start loaded game");
+                        btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
+                        btnStartGame.setPreferredSize(new Dimension(38, 38));
+                        btnStartGame.addActionListener(e -> btnStartGame(e));
+                        pnlFiles.add(btnStartGame);
+
+                        //---- btnUnloadGame ----
+                        btnUnloadGame.setText(null);
+                        btnUnloadGame.setToolTipText("Unload Game");
+                        btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+                        btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
+                        pnlFiles.add(btnUnloadGame);
+
+                        //---- btnResetGame ----
+                        btnResetGame.setText(null);
+                        btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
+                        btnResetGame.setToolTipText("Resume Game");
+                        btnResetGame.addActionListener(e -> btnResetGame(e));
+                        pnlFiles.add(btnResetGame);
                     }
                     pnlParams.add(pnlFiles, CC.xywh(1, 5, 2, 1));
                 }
@@ -643,20 +552,6 @@ public class FrameMain extends JFrame {
         {
             panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
-            //---- btnSendToServer ----
-            btnSendToServer.setText(null);
-            btnSendToServer.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-            btnSendToServer.setToolTipText("Loag game on the server");
-            btnSendToServer.addActionListener(e -> btnSend(e));
-            panel2.add(btnSendToServer);
-
-            //---- btnStartGame ----
-            btnStartGame.setText(null);
-            btnStartGame.setToolTipText("Start loaded game");
-            btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
-            btnStartGame.addActionListener(e -> btnStartGame(e));
-            panel2.add(btnStartGame);
-
             //---- btnPauseGame ----
             btnPauseGame.setText(null);
             btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
@@ -671,20 +566,6 @@ public class FrameMain extends JFrame {
             tbKeyLock.setToolTipText("Keylock");
             tbKeyLock.addItemListener(e -> tbKeyLockItemStateChanged(e));
             panel2.add(tbKeyLock);
-
-            //---- btnResetGame ----
-            btnResetGame.setText(null);
-            btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
-            btnResetGame.setToolTipText("Resume Game");
-            btnResetGame.addActionListener(e -> btnResetGame(e));
-            panel2.add(btnResetGame);
-
-            //---- btnUnloadGame ----
-            btnUnloadGame.setText(null);
-            btnUnloadGame.setToolTipText("Unload Game");
-            btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-            btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
-            panel2.add(btnUnloadGame);
         }
         contentPane.add(panel2, CC.xy(2, 4));
         pack();
@@ -707,6 +588,11 @@ public class FrameMain extends JFrame {
     private JButton btnFileNew;
     private JButton btnLoadFile;
     private JButton btnSaveFile;
+    private JPanel hSpacer3;
+    private JButton btnSendToServer;
+    private JButton btnStartGame;
+    private JButton btnUnloadGame;
+    private JButton btnResetGame;
     private JPanel pnlStatus;
     private JPanel panel3;
     private JCheckBox cbRefreshGameStatus;
@@ -717,12 +603,8 @@ public class FrameMain extends JFrame {
     private JButton btnRefreshAgents;
     private JSeparator separator2;
     private JPanel panel2;
-    private JButton btnSendToServer;
-    private JButton btnStartGame;
     private JButton btnPauseGame;
     private JPanel hSpacer2;
     private JToggleButton tbKeyLock;
-    private JButton btnResetGame;
-    private JButton btnUnloadGame;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

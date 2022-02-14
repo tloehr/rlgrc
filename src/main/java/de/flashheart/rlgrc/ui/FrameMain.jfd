@@ -80,6 +80,40 @@ new FormModel {
 								"preferredSize": #Dimension1
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveFile", true ) )
 							} )
+							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+								name: "hSpacer3"
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnSendToServer"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
+								"toolTipText": "Loag game on the server"
+								"minimumSize": new java.awt.Dimension( 38, 38 )
+								"preferredSize": new java.awt.Dimension( 38, 38 )
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSend", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnStartGame"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"toolTipText": "Start loaded game"
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
+								"preferredSize": new java.awt.Dimension( 38, 38 )
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnUnloadGame"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"toolTipText": "Unload Game"
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnResetGame"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
+								"toolTipText": "Resume Game"
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
+							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridY": 5
 							"gridWidth": 2
@@ -146,20 +180,6 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 				name: "panel2"
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "btnSendToServer"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
-					"toolTipText": "Loag game on the server"
-					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSend", true ) )
-				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "btnStartGame"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"toolTipText": "Start loaded game"
-					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
-					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
-				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnPauseGame"
 					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
@@ -175,20 +195,6 @@ new FormModel {
 					"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
 					"toolTipText": "Keylock"
 					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "tbKeyLockItemStateChanged", true ) )
-				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "btnResetGame"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
-					"toolTipText": "Resume Game"
-					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
-				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "btnUnloadGame"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"toolTipText": "Unload Game"
-					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
-					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 2

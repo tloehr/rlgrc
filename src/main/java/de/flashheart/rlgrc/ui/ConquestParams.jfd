@@ -131,7 +131,7 @@ new FormModel {
 						"gridWidth": 3
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "lblRedSpawn"
+						name: "txtRedSpawn"
 						"text": "test"
 						"font": &Font0 new java.awt.Font( ".AppleSystemUIFont", 0, 22 )
 						"alignmentX": 0.5f
@@ -145,7 +145,7 @@ new FormModel {
 						"gridWidth": 3
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "lblBlueSpawn"
+						name: "txtBlueSpawn"
 						"text": "test"
 						"font": #Font0
 						"alignmentX": 0.5f

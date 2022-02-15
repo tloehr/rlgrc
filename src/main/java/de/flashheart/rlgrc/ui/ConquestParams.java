@@ -71,6 +71,9 @@ public class ConquestParams extends GameParams {
             pnlConquest.setLayout(new FormLayout(
                 "pref:grow, $rgap, default, $ugap, pref:grow, $rgap, default",
                 "4*(default, $lgap), fill:default:grow"));
+
+            //---- txtComment ----
+            txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
             pnlConquest.add(txtComment, CC.xywh(1, 1, 7, 1));
 
             //---- label3 ----
@@ -118,6 +121,7 @@ public class ConquestParams extends GameParams {
 
                     //---- txtCPs ----
                     txtCPs.setLineWrap(true);
+                    txtCPs.setWrapStyleWord(true);
                     scrollPane1.setViewportView(txtCPs);
                 }
                 pnl1234.add(scrollPane1, CC.xywh(1, 3, 3, 3, CC.DEFAULT, CC.FILL));
@@ -127,6 +131,7 @@ public class ConquestParams extends GameParams {
 
                     //---- txtSirens ----
                     txtSirens.setLineWrap(true);
+                    txtSirens.setWrapStyleWord(true);
                     scrollPane2.setViewportView(txtSirens);
                 }
                 pnl1234.add(scrollPane2, CC.xywh(5, 3, 3, 3));
@@ -170,33 +175,33 @@ public class ConquestParams extends GameParams {
         return "conquest";
     }
 
-
     @Override
     void set_parameters() {
+        txtComment.setText(params.getString("comment"));
         txtCnqTickets.setText(params.get("respawn_tickets").toString());
         txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
         txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
         txtCnqSBleedInt.setText(params.get("start_bleed_interval").toString());
         txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
-        txtCPs.setText(params.getJSONObject("agents").getJSONArray("capture_points").toString());
-        txtSirens.setText(params.getJSONObject("agents").getJSONArray("sirens").toString());
+        txtCPs.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
+        txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
         txtRedSpawn.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
         txtBlueSpawn.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
     }
 
     @Override
-    JSONObject read_parameters(String comment) {
+    JSONObject read_parameters() {
         params.clear();
         params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
         params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
         params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
         params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
         params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
-        params.put("comment", comment);
+        params.put("comment", txtComment.getText());
 
         JSONObject agents = new JSONObject();
-        agents.put("capture_points", new JSONArray());
-        agents.put("sirens", new JSONArray());
+        agents.put("capture_points", to_jsonarray(txtCPs.getText()));
+        agents.put("sirens", to_jsonarray(txtSirens.getText()));
         agents.put("red_spawn", new JSONArray().put(txtRedSpawn.getText()));
         agents.put("blue_spawn", new JSONArray().put(txtBlueSpawn.getText()));
         agents.put("spawns", new JSONArray().put(txtRedSpawn.getText()).put(txtBlueSpawn.getText()));

@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -72,21 +73,10 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
         pnlGames.add("Conquest", new ConquestParams());
-
+        get("system/list_games");
     }
 
-
-//    private DefaultComboBoxModel<File> list_files() {
-//        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
-//        Collection<File> files = FileUtils.listFiles(new File(System.getProperty("workspace") + File.separator + current_mode + File.separator), new String[]{"json"}, false);
-//        files.forEach(file -> dcbm.addElement(file));
-//        return dcbm;
-//    }
-
     private void btnSend(ActionEvent e) {
-
-        addLog("--------------");
-        addLog(post("game/load", GAMEID, params_from_dialog().toString()).toString());
 
     }
 
@@ -119,8 +109,8 @@ public class FrameMain extends JFrame {
     }
 
     public void refreshServer() {
-        if (cbRefreshAgents.isSelected()) refreshAgents();
-        if (cbRefreshGameStatus.isSelected()) refreshStatus();
+//        if (cbRefreshAgents.isSelected()) refreshAgents();
+//        if (cbRefreshGameStatus.isSelected()) refreshStatus();
     }
 
     private void refreshStatus() {
@@ -188,12 +178,13 @@ public class FrameMain extends JFrame {
                     .post(Entity.json(body));
             addLog("----------\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n");
             String entity = response.readEntity(String.class);
+            set_response_status(response);
             response.close();
             if (entity.isEmpty()) result = new JSONObject();
             else result = new JSONObject(entity);
-
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
+            set_server_status(connectException);
         }
         return result;
     }
@@ -207,9 +198,11 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
+            set_response_status(response);
             response.close();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
+            set_server_status(connectException);
         }
         return json;
     }
@@ -222,13 +215,32 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
+            set_response_status(response);
             response.close();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
+            set_server_status(connectException);
         }
         return json;
     }
 
+    void set_response_status(Response response) {
+        String icon = "/artwork/ledyellow.png";
+        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("CLIENT_ERROR") || response.getStatusInfo().getFamily().name().equalsIgnoreCase("SERVER_ERROR"))
+            icon = "/artwork/ledred.png";
+        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("SUCCESSFUL"))
+            icon = "/artwork/ledgreen.png";
+        btnServer.setIcon(new ImageIcon(getClass().getResource(icon)));
+        btnServer.setText(Integer.toString(response.getStatusInfo().getStatusCode()));
+        lblHTML.setText(response.getStatusInfo().getReasonPhrase());
+    }
+
+    void set_server_status(Exception exception) {
+        btnServer.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+        btnServer.setText(null);
+        btnServer.setToolTipText(exception.getMessage());
+        lblHTML.setText("Connection Error");
+    }
 
     private void btnSaveFile(ActionEvent e) {
         try {
@@ -290,6 +302,10 @@ public class FrameMain extends JFrame {
         });
     }
 
+    public void addLog(JSONObject jsonObject) {
+        addLog(jsonObject.toString(4));
+    }
+
 
     private void add_to_agents_list(JList jList) {
         int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
@@ -303,17 +319,12 @@ public class FrameMain extends JFrame {
         });
     }
 
-    private void btnAddSirens(ActionEvent e) {
-        add_to_agents_list(listSirens);
-    }
 
     private void tbKeyLockItemStateChanged(ItemEvent e) {
         btnPauseGame.setEnabled(e.getStateChange() != ItemEvent.SELECTED);
     }
 
     private void pnlGamesStateChanged(ChangeEvent e) {
-        log.debug(e.toString());
-        current_mode = MODES[pnlGames.getSelectedIndex()];
 
 
         //    private void show_mode(String mode) {
@@ -343,6 +354,34 @@ public class FrameMain extends JFrame {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
+    private void btnServer(ActionEvent e) {
+        get("system/list_games");
+    }
+
+    /**
+     * http://stackoverflow.com/questions/8741479/automatically-determine-optimal-fontcolor-by-backgroundcolor
+     *
+     * @param background
+     * @return
+     */
+    public Color getForeground(Color background) {
+        int red = 0;
+        int green = 0;
+        int blue = 0;
+
+        if (background.getRed() + background.getGreen() + background.getBlue() < 383) {
+            red = 255;
+            green = 255;
+            blue = 255;
+        }
+        return new Color(red, green, blue);
+    }
+
+    private void btnLoadGame(ActionEvent e) {
+        addLog("--------------");
+        addLog(post("game/load", GAMEID, ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString()));
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -352,7 +391,8 @@ public class FrameMain extends JFrame {
         panel1 = new JPanel();
         label7 = new JLabel();
         txtURI = new JTextField();
-        lblRestServerStatus = new JButton();
+        btnServer = new JButton();
+        lblHTML = new JLabel();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
@@ -362,21 +402,21 @@ public class FrameMain extends JFrame {
         btnFileNew = new JButton();
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
-        hSpacer3 = new JPanel(null);
-        btnSendToServer = new JButton();
-        btnStartGame = new JButton();
-        btnUnloadGame = new JButton();
-        btnResetGame = new JButton();
-        pnlStatus = new JPanel();
+        pnlServer = new JPanel();
         panel3 = new JPanel();
         cbRefreshGameStatus = new JCheckBox();
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
+        pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
         btnRefreshAgents = new JButton();
         separator2 = new JSeparator();
         panel2 = new JPanel();
+        btnLoadGame = new JButton();
+        btnStartGame = new JButton();
         btnPauseGame = new JButton();
+        btnResetGame = new JButton();
+        btnUnloadGame = new JButton();
         hSpacer2 = new JPanel(null);
         tbKeyLock = new JToggleButton();
 
@@ -384,14 +424,14 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap, default, $rgap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -399,10 +439,13 @@ public class FrameMain extends JFrame {
 
                 //---- label7 ----
                 label7.setText("URI");
+                label7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                label7.setLabelFor(txtURI);
                 panel1.add(label7);
 
                 //---- txtURI ----
                 txtURI.setText("http://localhost:8090");
+                txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
                 txtURI.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
@@ -411,10 +454,17 @@ public class FrameMain extends JFrame {
                 });
                 panel1.add(txtURI);
 
-                //---- lblRestServerStatus ----
-                lblRestServerStatus.setText(null);
-                lblRestServerStatus.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
-                panel1.add(lblRestServerStatus);
+                //---- btnServer ----
+                btnServer.setText(null);
+                btnServer.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                btnServer.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnServer.addActionListener(e -> btnServer(e));
+                panel1.add(btnServer);
+
+                //---- lblHTML ----
+                lblHTML.setText("text");
+                lblHTML.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                panel1.add(lblHTML);
             }
             mainPanel.add(panel1, CC.xy(1, 1));
 
@@ -426,14 +476,14 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow, default",
-                            "default:grow, 2*($lgap, default)"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
                         pnlGames.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                     }
-                    pnlParams.add(pnlGames, CC.xywh(1, 1, 1, 3));
+                    pnlParams.add(pnlGames, CC.xy(1, 1, CC.DEFAULT, CC.FILL));
 
                     //======== pnlFiles ========
                     {
@@ -441,7 +491,7 @@ public class FrameMain extends JFrame {
 
                         //---- lblFile ----
                         lblFile.setText("no file");
-                        lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 12));
+                        lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
                         pnlFiles.add(lblFile);
                         pnlFiles.add(hSpacer1);
 
@@ -468,46 +518,14 @@ public class FrameMain extends JFrame {
                         btnSaveFile.setPreferredSize(new Dimension(38, 38));
                         btnSaveFile.addActionListener(e -> btnSaveFile(e));
                         pnlFiles.add(btnSaveFile);
-                        pnlFiles.add(hSpacer3);
-
-                        //---- btnSendToServer ----
-                        btnSendToServer.setText(null);
-                        btnSendToServer.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                        btnSendToServer.setToolTipText("Loag game on the server");
-                        btnSendToServer.setMinimumSize(new Dimension(38, 38));
-                        btnSendToServer.setPreferredSize(new Dimension(38, 38));
-                        btnSendToServer.addActionListener(e -> btnSend(e));
-                        pnlFiles.add(btnSendToServer);
-
-                        //---- btnStartGame ----
-                        btnStartGame.setText(null);
-                        btnStartGame.setToolTipText("Start loaded game");
-                        btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
-                        btnStartGame.setPreferredSize(new Dimension(38, 38));
-                        btnStartGame.addActionListener(e -> btnStartGame(e));
-                        pnlFiles.add(btnStartGame);
-
-                        //---- btnUnloadGame ----
-                        btnUnloadGame.setText(null);
-                        btnUnloadGame.setToolTipText("Unload Game");
-                        btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-                        btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
-                        pnlFiles.add(btnUnloadGame);
-
-                        //---- btnResetGame ----
-                        btnResetGame.setText(null);
-                        btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
-                        btnResetGame.setToolTipText("Resume Game");
-                        btnResetGame.addActionListener(e -> btnResetGame(e));
-                        pnlFiles.add(btnResetGame);
                     }
-                    pnlParams.add(pnlFiles, CC.xywh(1, 5, 2, 1));
+                    pnlParams.add(pnlFiles, CC.xy(1, 3));
                 }
-                pnlMain.addTab("Params", pnlParams);
+                pnlMain.addTab("Games", pnlParams);
 
-                //======== pnlStatus ========
+                //======== pnlServer ========
                 {
-                    pnlStatus.setLayout(new BoxLayout(pnlStatus, BoxLayout.X_AXIS));
+                    pnlServer.setLayout(new BoxLayout(pnlServer, BoxLayout.X_AXIS));
 
                     //======== panel3 ========
                     {
@@ -528,20 +546,26 @@ public class FrameMain extends JFrame {
                             scrollLog.setViewportView(txtLogger);
                         }
                         panel3.add(scrollLog);
-
-                        //======== scrollPane3 ========
-                        {
-                            scrollPane3.setViewportView(tblAgents);
-                        }
-                        panel3.add(scrollPane3);
-
-                        //---- btnRefreshAgents ----
-                        btnRefreshAgents.setText("Refresh Agents");
-                        panel3.add(btnRefreshAgents);
                     }
-                    pnlStatus.add(panel3);
+                    pnlServer.add(panel3);
                 }
-                pnlMain.addTab("Status", pnlStatus);
+                pnlMain.addTab("Server", pnlServer);
+
+                //======== pnlAgents ========
+                {
+                    pnlAgents.setLayout(new BoxLayout(pnlAgents, BoxLayout.X_AXIS));
+
+                    //======== scrollPane3 ========
+                    {
+                        scrollPane3.setViewportView(tblAgents);
+                    }
+                    pnlAgents.add(scrollPane3);
+
+                    //---- btnRefreshAgents ----
+                    btnRefreshAgents.setText("Refresh Agents");
+                    pnlAgents.add(btnRefreshAgents);
+                }
+                pnlMain.addTab("Agents", pnlAgents);
             }
             mainPanel.add(pnlMain, CC.xywh(1, 3, 1, 7));
         }
@@ -552,11 +576,43 @@ public class FrameMain extends JFrame {
         {
             panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
+            //---- btnLoadGame ----
+            btnLoadGame.setText("Send");
+            btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+            btnLoadGame.setToolTipText("Loag game on the server");
+            btnLoadGame.setMinimumSize(new Dimension(38, 38));
+            btnLoadGame.setPreferredSize(null);
+            btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+            btnLoadGame.addActionListener(e -> btnLoadGame(e));
+            panel2.add(btnLoadGame);
+
+            //---- btnStartGame ----
+            btnStartGame.setText("Run");
+            btnStartGame.setToolTipText("Start loaded game");
+            btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
+            btnStartGame.setPreferredSize(null);
+            btnStartGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+            btnStartGame.addActionListener(e -> btnStartGame(e));
+            panel2.add(btnStartGame);
+
             //---- btnPauseGame ----
             btnPauseGame.setText(null);
             btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
             btnPauseGame.addActionListener(e -> btnPauseGame(e));
             panel2.add(btnPauseGame);
+
+            //---- btnResetGame ----
+            btnResetGame.setText(null);
+            btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
+            btnResetGame.setToolTipText("Resume Game");
+            btnResetGame.addActionListener(e -> btnResetGame(e));
+            panel2.add(btnResetGame);
+
+            //---- btnUnloadGame ----
+            btnUnloadGame.setText("Unload");
+            btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+            btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
+            panel2.add(btnUnloadGame);
             panel2.add(hSpacer2);
 
             //---- tbKeyLock ----
@@ -578,7 +634,8 @@ public class FrameMain extends JFrame {
     private JPanel panel1;
     private JLabel label7;
     private JTextField txtURI;
-    private JButton lblRestServerStatus;
+    private JButton btnServer;
+    private JLabel lblHTML;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
     private JTabbedPane pnlGames;
@@ -588,22 +645,22 @@ public class FrameMain extends JFrame {
     private JButton btnFileNew;
     private JButton btnLoadFile;
     private JButton btnSaveFile;
-    private JPanel hSpacer3;
-    private JButton btnSendToServer;
-    private JButton btnStartGame;
-    private JButton btnUnloadGame;
-    private JButton btnResetGame;
-    private JPanel pnlStatus;
+    private JPanel pnlServer;
     private JPanel panel3;
     private JCheckBox cbRefreshGameStatus;
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
+    private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
     private JButton btnRefreshAgents;
     private JSeparator separator2;
     private JPanel panel2;
+    private JButton btnLoadGame;
+    private JButton btnStartGame;
     private JButton btnPauseGame;
+    private JButton btnResetGame;
+    private JButton btnUnloadGame;
     private JPanel hSpacer2;
     private JToggleButton tbKeyLock;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

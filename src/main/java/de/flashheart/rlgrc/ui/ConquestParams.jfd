@@ -12,6 +12,7 @@ new FormModel {
 				name: "pnlConquest"
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtComment"
+					"font": new java.awt.Font( ".SF NS Text", 0, 16 )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridWidth": 7
 				} )
@@ -99,6 +100,7 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JTextArea" ) {
 							name: "txtCPs"
 							"lineWrap": true
+							"wrapStyleWord": true
 						} )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 						"gridHeight": 3
@@ -111,6 +113,7 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JTextArea" ) {
 							name: "txtSirens"
 							"lineWrap": true
+							"wrapStyleWord": true
 						} )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 						"gridX": 5

@@ -2,11 +2,16 @@ package de.flashheart.rlgrc.ui;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 @Log4j2
 public abstract class GameParams extends JPanel {
@@ -15,7 +20,6 @@ public abstract class GameParams extends JPanel {
 
     public GameParams() {
         super();
-        load_defaults();
         file = Optional.empty();
     }
 
@@ -23,7 +27,7 @@ public abstract class GameParams extends JPanel {
 
     abstract void set_parameters();
 
-    abstract JSONObject read_parameters(String comment);
+    abstract JSONObject read_parameters();
 
     void load_defaults() {
         StringBuffer stringBuffer = new StringBuffer();
@@ -59,6 +63,14 @@ public abstract class GameParams extends JPanel {
             file = Optional.of(fileChooser.getSelectedFile());
         }
         return file;
+    }
+
+    String to_string_list(JSONArray jsonArray) {
+        return jsonArray.toList().toString().replaceAll("\\[|\\]| ", "").replaceAll(",", "\n");
+    }
+
+    JSONArray to_jsonarray(String list) {
+        return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
     }
 
 }

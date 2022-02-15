@@ -19,16 +19,26 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label7"
 						"text": "URI"
+						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+						"labelFor": new FormReference( "txtURI" )
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "txtURI"
 						"text": "http://localhost:8090"
+						"font": new java.awt.Font( ".SF NS Text", 0, 16 )
 						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "txtURIFocusLost", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "lblRestServerStatus"
+						name: "btnServer"
 						"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
+						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnServer", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblHTML"
+						"text": "text"
+						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
@@ -36,22 +46,22 @@ new FormModel {
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "pnlGamesStateChanged", true ) )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-						"$columnSpecs": "default:grow, default"
-						"$rowSpecs": "default:grow, linegap, default, linegap, default"
+						"$columnSpecs": "default:grow"
+						"$rowSpecs": "default:grow, linegap, default"
 					} ) {
 						name: "pnlParams"
 						add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 							name: "pnlGames"
 							"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-							"gridHeight": 3
+							"vAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 							name: "pnlFiles"
 							add( new FormComponent( "javax.swing.JLabel" ) {
 								name: "lblFile"
 								"text": "no file"
-								"font": new java.awt.Font( ".SF NS Text", 0, 12 )
+								"font": new java.awt.Font( ".SF NS Text", 0, 16 )
 							} )
 							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
 								name: "hSpacer1"
@@ -80,51 +90,16 @@ new FormModel {
 								"preferredSize": #Dimension1
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveFile", true ) )
 							} )
-							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-								name: "hSpacer3"
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnSendToServer"
-								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
-								"toolTipText": "Loag game on the server"
-								"minimumSize": new java.awt.Dimension( 38, 38 )
-								"preferredSize": new java.awt.Dimension( 38, 38 )
-								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSend", true ) )
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnStartGame"
-								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Start loaded game"
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
-								"preferredSize": new java.awt.Dimension( 38, 38 )
-								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnUnloadGame"
-								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Unload Game"
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
-								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnResetGame"
-								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
-								"toolTipText": "Resume Game"
-								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
-							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-							"gridY": 5
-							"gridWidth": 2
+							"gridY": 3
 						} )
 					}, new FormLayoutConstraints( null ) {
-						"title": "Params"
+						"title": "Games"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 						"axis": 0
 					} ) {
-						name: "pnlStatus"
+						name: "pnlServer"
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 							"axis": 3
 						} ) {
@@ -143,24 +118,31 @@ new FormModel {
 									"wrapStyleWord": true
 								} )
 							} )
-							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-								name: "scrollPane3"
-								add( new FormComponent( "javax.swing.JTable" ) {
-									name: "tblAgents"
-									"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector )
-									auxiliary() {
-										"model.noCode": true
-										"JavaCodeGenerator.customCreate": true
-									}
-								} )
-							} )
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnRefreshAgents"
-								"text": "Refresh Agents"
-							} )
 						} )
 					}, new FormLayoutConstraints( null ) {
-						"title": "Status"
+						"title": "Server"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+						"axis": 0
+					} ) {
+						name: "pnlAgents"
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "scrollPane3"
+							add( new FormComponent( "javax.swing.JTable" ) {
+								name: "tblAgents"
+								"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector )
+								auxiliary() {
+									"model.noCode": true
+									"JavaCodeGenerator.customCreate": true
+								}
+							} )
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "btnRefreshAgents"
+							"text": "Refresh Agents"
+						} )
+					}, new FormLayoutConstraints( null ) {
+						"title": "Agents"
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridHeight": 7
@@ -180,10 +162,42 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 				name: "panel2"
 				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnLoadGame"
+					"text": "Send"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
+					"toolTipText": "Loag game on the server"
+					"minimumSize": new java.awt.Dimension( 38, 38 )
+					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnStartGame"
+					"text": "Run"
+					"toolTipText": "Start loaded game"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
+					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"font": #Font0
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnPauseGame"
 					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPauseGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnResetGame"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
+					"toolTipText": "Resume Game"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnUnloadGame"
+					"text": "Unload"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
 				} )
 				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
 					name: "hSpacer2"

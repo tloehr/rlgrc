@@ -577,7 +577,7 @@ public class FrameMain extends JFrame {
             panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
             //---- btnLoadGame ----
-            btnLoadGame.setText("Send");
+            btnLoadGame.setText("Load Game");
             btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
             btnLoadGame.setToolTipText("Loag game on the server");
             btnLoadGame.setMinimumSize(new Dimension(38, 38));
@@ -596,21 +596,24 @@ public class FrameMain extends JFrame {
             panel2.add(btnStartGame);
 
             //---- btnPauseGame ----
-            btnPauseGame.setText(null);
+            btnPauseGame.setText("Pause");
             btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
+            btnPauseGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
             btnPauseGame.addActionListener(e -> btnPauseGame(e));
             panel2.add(btnPauseGame);
 
             //---- btnResetGame ----
-            btnResetGame.setText(null);
+            btnResetGame.setText("Reset");
             btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
             btnResetGame.setToolTipText("Resume Game");
+            btnResetGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
             btnResetGame.addActionListener(e -> btnResetGame(e));
             panel2.add(btnResetGame);
 
             //---- btnUnloadGame ----
             btnUnloadGame.setText("Unload");
             btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+            btnUnloadGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
             btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
             panel2.add(btnUnloadGame);
             panel2.add(hSpacer2);

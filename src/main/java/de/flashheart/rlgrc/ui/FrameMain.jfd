@@ -163,7 +163,7 @@ new FormModel {
 				name: "panel2"
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnLoadGame"
-					"text": "Send"
+					"text": "Load Game"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
 					"toolTipText": "Loag game on the server"
 					"minimumSize": new java.awt.Dimension( 38, 38 )
@@ -182,21 +182,24 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnPauseGame"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"text": "Pause"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
+					"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPauseGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnResetGame"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"text": "Reset"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
 					"toolTipText": "Resume Game"
+					"font": #Font1
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnUnloadGame"
 					"text": "Unload"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
+					"font": #Font1
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
 				} )
 				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {

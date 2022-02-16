@@ -1,41 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <FSM>
-    <STATE id="START" type="ID">
-        <MESSAGE id="START" nextState="BLUE"/>
+    <STATE id="TRY_TO_CONNECT" type="ID">
+        <!--
+            load list of games
+            - cmb list games
+            - Load Game
+            - Run
+            - Pause
+            - Reset
+            - Unload
+        -->
+        <MESSAGE id="EXCEPTION" nextState="TRY_TO_CONNECT"/>
+        <MESSAGE id="SUCCESS" nextState="CONNECTED"/>
     </STATE>
-    <STATE id="BLUE">
-        <MESSAGE id="BTN01" nextState="RED"/>
-        <MESSAGE id="GAME_OVER" nextState="DEFENDED"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="CONNECTED">
+        <!--
+            load list of games
+            Position 0 is always new game
+        -->
+        <MESSAGE id="DISCONNECT" nextState="TRY_TO_CONNECT"/>
     </STATE>
-    <STATE id="RED">
-        <MESSAGE id="BTN01" nextState="BLUE"/>
-        <MESSAGE id="OVERTIME" nextState="RED_OVERTIME"/>
-        <MESSAGE id="GAME_OVER" nextState="CAPTURED"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+</FSM>
+
+<FSM>
+    <STATE id="NOTHING_" type="ID">
+        <!--
+            Load Server Status and print to log
+        -->
+        <MESSAGE id="" nextState="SHOW_GAME"/>
     </STATE>
-    <STATE id="RED_OVERTIME">
-        <MESSAGE id="BTN01" nextState="DEFENDED_OVERTIME"/>
-        <MESSAGE id="GAME_OVER" nextState="CAPTURED_OVERTIME"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="NOT_LOADED">
+
     </STATE>
-    <!-- ENDING STATES -->
-    <STATE id="DEFENDED">
-        <MESSAGE id="START" nextState="BLUE"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="PROLOG">
+
     </STATE>
-    <STATE id="DEFENDED_OVERTIME">
-        <MESSAGE id="START" nextState="BLUE"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="PAUSING">
+
     </STATE>
-    <STATE id="CAPTURED">
-        <MESSAGE id="START" nextState="BLUE"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="RUNNING">
+
     </STATE>
-    <STATE id="CAPTURED_OVERTIME">
-        <MESSAGE id="START" nextState="BLUE"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
+    <STATE id="EPILOG">
+
     </STATE>
+
 </FSM>
 

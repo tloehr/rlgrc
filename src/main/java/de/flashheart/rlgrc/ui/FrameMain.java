@@ -4,6 +4,8 @@
 
 package de.flashheart.rlgrc.ui;
 
+import com.github.ankzz.dynamicfsm.action.FSMAction;
+import com.github.ankzz.dynamicfsm.fsm.FSM;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.ServerRefreshJob;
@@ -18,18 +20,19 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.xml.sax.SAXException;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -50,16 +53,19 @@ public class FrameMain extends JFrame {
     private final JobKey agentJob;
     private Client client = ClientBuilder.newClient();
     private final int MAX_LOG_LINES = 200;
+    private final FSM connectionFSM, guiFSM;
     //private Optional<File> loaded_file;
     //private final HashMap<String, MutablePair<Optional<File>, JSONObject>> game_params;
 
 
-    public FrameMain(Configs configs) throws SchedulerException, IOException {
+    public FrameMain(Configs configs) throws SchedulerException, IOException, ParserConfigurationException, SAXException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
         this.configs = configs;
         this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
         this.scheduler.getContext().put("rlgrc", this);
         this.scheduler.start();
+        connectionFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/connection.xml"), null);
+        guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
         //this.game_params = new HashMap<>();
         initComponents();
         initFrame();
@@ -74,6 +80,22 @@ public class FrameMain extends JFrame {
         txtURI.setText(configs.get(Configs.REST_URI));
         pnlGames.add("Conquest", new ConquestParams());
         get("system/list_games");
+    }
+
+    private void config_connection_fsm() {
+        fsm_try_to_connect();
+        connectionFSM.setAction("TRY_TO_CONNECT", "EXCEPTION", new FSMAction() {
+            @Override
+            public boolean action(String curState, String message, String nextState, Object args) {
+                fsm_try_to_connect();
+                return true;
+            }
+        });
+    }
+
+    private void fsm_try_to_connect() {
+        get("system/list_games");
+        connectionFSM.ProcessFSM("exception");
     }
 
     private void btnSend(ActionEvent e) {
@@ -217,9 +239,9 @@ public class FrameMain extends JFrame {
             json = new JSONObject(response.readEntity(String.class));
             set_response_status(response);
             response.close();
+            connectionFSM.ProcessFSM("connected");
         } catch (Exception connectException) {
-            addLog(connectException.getMessage());
-            set_server_status(connectException);
+            connectionFSM.ProcessFSM("exception");
         }
         return json;
     }
@@ -324,38 +346,13 @@ public class FrameMain extends JFrame {
         btnPauseGame.setEnabled(e.getStateChange() != ItemEvent.SELECTED);
     }
 
-    private void pnlGamesStateChanged(ChangeEvent e) {
-
-
-        //    private void show_mode(String mode) {
-        //        current_mode = mode;
-        //        params = new JSONObject(load_file());
-        //        configs.put(Configs.LAST_GAME_MODE, mode);
-        //        params_to_dialog();
-        //        //cmbFiles.setModel(list_files());
-        //        cardLayout.show(cardPanel, mode);
-        //    }
-
-        //    private void btnConquest(ActionEvent e) {
-        //        show_mode("conquest");
-        //    }
-        //
-        //    private void btnRush(ActionEvent e) {
-        //        cardLayout.show(cardPanel, "rush");
-        //    }
-        //
-        //    private void btnSetup(ActionEvent e) {
-        //        cardLayout.show(cardPanel, "setup");
-        //    }
-
-    }
 
     private void txtURIFocusLost(FocusEvent e) {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
     private void btnServer(ActionEvent e) {
-        get("system/list_games");
+
     }
 
     /**
@@ -380,6 +377,11 @@ public class FrameMain extends JFrame {
     private void btnLoadGame(ActionEvent e) {
         addLog("--------------");
         addLog(post("game/load", GAMEID, ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString()));
+    }
+
+    private void pnlGamesPropertyChange(PropertyChangeEvent e) {
+        log.debug(e);
+        //btnLoadFile.setEnabled();
     }
 
 
@@ -417,21 +419,19 @@ public class FrameMain extends JFrame {
         btnPauseGame = new JButton();
         btnResetGame = new JButton();
         btnUnloadGame = new JButton();
-        hSpacer2 = new JPanel(null);
-        tbKeyLock = new JToggleButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap, default, $rgap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                    "default:grow",
+                    "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -471,17 +471,17 @@ public class FrameMain extends JFrame {
             //======== pnlMain ========
             {
                 pnlMain.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                pnlMain.addChangeListener(e -> pnlGamesStateChanged(e));
 
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "default:grow, $lgap, default"));
+                            "default:grow",
+                            "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
                         pnlGames.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        pnlGames.addPropertyChangeListener("enabled", e -> pnlGamesPropertyChange(e));
                     }
                     pnlParams.add(pnlGames, CC.xy(1, 1, CC.DEFAULT, CC.FILL));
 
@@ -583,6 +583,7 @@ public class FrameMain extends JFrame {
             btnLoadGame.setMinimumSize(new Dimension(38, 38));
             btnLoadGame.setPreferredSize(null);
             btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+            btnLoadGame.setEnabled(false);
             btnLoadGame.addActionListener(e -> btnLoadGame(e));
             panel2.add(btnLoadGame);
 
@@ -592,6 +593,7 @@ public class FrameMain extends JFrame {
             btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
             btnStartGame.setPreferredSize(null);
             btnStartGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+            btnStartGame.setEnabled(false);
             btnStartGame.addActionListener(e -> btnStartGame(e));
             panel2.add(btnStartGame);
 
@@ -599,6 +601,7 @@ public class FrameMain extends JFrame {
             btnPauseGame.setText("Pause");
             btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
             btnPauseGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+            btnPauseGame.setEnabled(false);
             btnPauseGame.addActionListener(e -> btnPauseGame(e));
             panel2.add(btnPauseGame);
 
@@ -607,6 +610,7 @@ public class FrameMain extends JFrame {
             btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
             btnResetGame.setToolTipText("Resume Game");
             btnResetGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+            btnResetGame.setEnabled(false);
             btnResetGame.addActionListener(e -> btnResetGame(e));
             panel2.add(btnResetGame);
 
@@ -614,17 +618,9 @@ public class FrameMain extends JFrame {
             btnUnloadGame.setText("Unload");
             btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
             btnUnloadGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+            btnUnloadGame.setEnabled(false);
             btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
             panel2.add(btnUnloadGame);
-            panel2.add(hSpacer2);
-
-            //---- tbKeyLock ----
-            tbKeyLock.setText(null);
-            tbKeyLock.setIcon(new ImageIcon(getClass().getResource("/artwork/decrypted.png")));
-            tbKeyLock.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/encrypted.png")));
-            tbKeyLock.setToolTipText("Keylock");
-            tbKeyLock.addItemListener(e -> tbKeyLockItemStateChanged(e));
-            panel2.add(tbKeyLock);
         }
         contentPane.add(panel2, CC.xy(2, 4));
         pack();
@@ -664,7 +660,5 @@ public class FrameMain extends JFrame {
     private JButton btnPauseGame;
     private JButton btnResetGame;
     private JButton btnUnloadGame;
-    private JPanel hSpacer2;
-    private JToggleButton tbKeyLock;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

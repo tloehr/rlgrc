@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FSM>
+    <STATE id="NO_GAME_SELECTED" type="ID">
+        <!--
+            Load Server Status and print to log
+        -->
+        <MESSAGE id="GAME_SELECTED" nextState="SHOW_GAME"/>
+        <MESSAGE id="CREATE_NEW_GAME" nextState="EDIT_GAME"/>
+    </STATE>
+
+    <STATE id="EDIT_GAME">
+        <!--
+                 enable params
+                 disable all buttons besides load
+              -->
+        <MESSAGE id="LOAD_GAME" nextState="SHOW_GAME"/>
+        <MESSAGE id="LOAD_ERROR" nextState="EDIT_GAME"/>
+    </STATE>
+
+    <STATE id="SHOW_GAME">
+        <!--
+           disable params
+           determine state of the game
+        -->
+        <MESSAGE id="PROLOG" nextState="PROLOG"/>
+        <MESSAGE id="PAUSING" nextState="PAUSING"/>
+        <MESSAGE id="RUNNING" nextState="RUNNING"/>
+        <MESSAGE id="EPILOG" nextState="EPILOG"/>
+    </STATE>
+
+    <STATE id="PROLOG">
+        <!--
+                          -load
+                          +run
+                          -PAUSE
+                          +RESET
+                          +UNLOAD
+                       -->
+        <MESSAGE id="RUN" nextState="RUNNING"/>
+        <MESSAGE id="RESET" nextState="PROLOG"/>
+        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+    </STATE>
+
+    <STATE id="PAUSING">
+        <!--
+                  -load
+                  -run
+                  +PAUSE -> RESUME Icon change
+                  +RESET
+                  +UNLOAD
+               -->
+        <MESSAGE id="RESUME" nextState="RUNNING"/>
+        <MESSAGE id="RESET" nextState="PROLOG"/>
+        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+    </STATE>
+    <STATE id="RUNNING">
+        <!--
+                          -load
+                          -run
+                          +RESUME  -> PAUSE Icon change
+                          -RESET
+                          -UNLOAD
+
+                          determine state of the game
+                       -->
+        <MESSAGE id="PAUSE" nextState="PAUSING"/>
+    </STATE>
+    <STATE id="EPILOG">
+        <!--
+                       -load
+                       -run
+                       -PAUSE
+                       +RESET
+                       +UNLOAD
+
+                       determine state of the game
+                    -->
+        <MESSAGE id="RESET" nextState="PROLOG"/>
+        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+    </STATE>
+
+</FSM>

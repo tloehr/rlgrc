@@ -30,6 +30,7 @@
         <quartz.version>2.3.2</quartz.version>
         <darcula.version>2018.2</darcula.version>
         <lang3.version>3.12.0</lang3.version>
+        <dynamicfsm.version>0.01</dynamicfsm.version>
     </properties>
 
     <dependencies>
@@ -154,6 +155,12 @@
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.ankzz/dynamicfsm -->
+         <dependency>
+             <groupId>com.github.ankzz</groupId>
+             <artifactId>dynamicfsm</artifactId>
+             <version>${dynamicfsm.version}</version>
+         </dependency>
     </dependencies>
 
     <build>

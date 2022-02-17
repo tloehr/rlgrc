@@ -44,7 +44,6 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "pnlMain"
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
-					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "pnlGamesStateChanged", true ) )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 						"$columnSpecs": "default:grow"
 						"$rowSpecs": "default:grow, linegap, default"
@@ -53,6 +52,7 @@ new FormModel {
 						add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 							name: "pnlGames"
 							"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "pnlGamesPropertyChange", true, "enabled" ) )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"vAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 						} )
@@ -169,6 +169,7 @@ new FormModel {
 					"minimumSize": new java.awt.Dimension( 38, 38 )
 					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
@@ -178,6 +179,7 @@ new FormModel {
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
 					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					"font": #Font0
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
@@ -185,6 +187,7 @@ new FormModel {
 					"text": "Pause"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
 					"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPauseGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
@@ -193,6 +196,7 @@ new FormModel {
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
 					"toolTipText": "Resume Game"
 					"font": #Font1
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
@@ -200,18 +204,8 @@ new FormModel {
 					"text": "Unload"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
 					"font": #Font1
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
-				} )
-				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-					name: "hSpacer2"
-				} )
-				add( new FormComponent( "javax.swing.JToggleButton" ) {
-					name: "tbKeyLock"
-					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/decrypted.png" )
-					"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
-					"toolTipText": "Keylock"
-					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "tbKeyLockItemStateChanged", true ) )
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 2

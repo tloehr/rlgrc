@@ -4,7 +4,7 @@
         <!--
             Load Server Status and print to log
         -->
-        <MESSAGE id="GAME_SELECTED" nextState="SHOW_GAME"/>
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="CREATE_NEW_GAME" nextState="EDIT_GAME"/>
     </STATE>
 
@@ -13,6 +13,7 @@
                  enable params
                  disable all buttons besides load
               -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="LOAD_GAME" nextState="SHOW_GAME"/>
         <MESSAGE id="LOAD_ERROR" nextState="EDIT_GAME"/>
     </STATE>
@@ -22,6 +23,7 @@
            disable params
            determine state of the game
         -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="PROLOG" nextState="PROLOG"/>
         <MESSAGE id="PAUSING" nextState="PAUSING"/>
         <MESSAGE id="RUNNING" nextState="RUNNING"/>
@@ -36,6 +38,7 @@
                           +RESET
                           +UNLOAD
                        -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="RUN" nextState="RUNNING"/>
         <MESSAGE id="RESET" nextState="PROLOG"/>
         <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
@@ -49,6 +52,7 @@
                   +RESET
                   +UNLOAD
                -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="RESUME" nextState="RUNNING"/>
         <MESSAGE id="RESET" nextState="PROLOG"/>
         <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
@@ -63,6 +67,7 @@
 
                           determine state of the game
                        -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="PAUSE" nextState="PAUSING"/>
     </STATE>
     <STATE id="EPILOG">
@@ -75,6 +80,7 @@
 
                        determine state of the game
                     -->
+        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
         <MESSAGE id="RESET" nextState="PROLOG"/>
         <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
     </STATE>

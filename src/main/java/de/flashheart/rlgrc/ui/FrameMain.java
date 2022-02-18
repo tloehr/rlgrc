@@ -33,6 +33,9 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -54,8 +57,9 @@ public class FrameMain extends JFrame {
     private Client client = ClientBuilder.newClient();
     private final int MAX_LOG_LINES = 200;
     private final FSM connectionFSM, guiFSM;
+
     //private Optional<File> loaded_file;
-    //private final HashMap<String, MutablePair<Optional<File>, JSONObject>> game_params;
+    private final HashMap<String, JSONObject> loaded_games;
 
 
     public FrameMain(Configs configs) throws SchedulerException, IOException, ParserConfigurationException, SAXException {
@@ -66,6 +70,7 @@ public class FrameMain extends JFrame {
         this.scheduler.start();
         connectionFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/connection.xml"), null);
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
+        loaded_games = new HashMap<>();
         //this.game_params = new HashMap<>();
         initComponents();
         initFrame();
@@ -79,28 +84,54 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
         pnlGames.add("Conquest", new ConquestParams());
-        get("system/list_games");
+        config_connection_fsm();
+        fsm_try_to_connect();
     }
 
     private void config_connection_fsm() {
-        fsm_try_to_connect();
-        connectionFSM.setAction("TRY_TO_CONNECT", "EXCEPTION", new FSMAction() {
+        connectionFSM.setAction("NOT_CONNECTED", "connect", new FSMAction() {
+            JSONObject json;
             @Override
             public boolean action(String curState, String message, String nextState, Object args) {
-                fsm_try_to_connect();
+                try {
+                    json = get("system/list_games");
+                    return true;
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public void afterTransition(String curState, String message, String nextState, Object args) {
+                loaded_games.clear();
+                json.toMap().forEach((s, o) -> loaded_games.put(s, (JSONObject) o));
+                cmbGameList.setModel(new DefaultComboBoxModel<>(json.toMap().keySet().toArray()));
+
+                log.debug("transistion to " + curState);
+            }
+        });
+        connectionFSM.setAction("CONNECTED", "disconnect", new FSMAction() {
+            @Override
+            public boolean action(String curState, String message, String nextState, Object args) {
+
                 return true;
             }
         });
     }
 
+    private void btnConnect(ActionEvent e) {
+        connectionFSM.ProcessFSM("connect");
+    }
+
     private void fsm_try_to_connect() {
-        get("system/list_games");
-        connectionFSM.ProcessFSM("exception");
-    }
-
-    private void btnSend(ActionEvent e) {
 
     }
+
+
+    private void cmbGameListItemStateChanged(ItemEvent e) {
+        guiFSM.ProcessFSM("game_selected");
+    }
+
 
     private void initRefresh() throws SchedulerException {
         if (scheduler.checkExists(agentJob)) return;
@@ -123,28 +154,28 @@ public class FrameMain extends JFrame {
     }
 
 
-    private void refreshAgents() {
-        JSONObject request = get("system/list_agents");
-        SwingUtilities.invokeLater(() -> {
-            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
-        });
-    }
+//    private void refreshAgents() {
+//        JSONObject request = get("system/list_agents");
+//        SwingUtilities.invokeLater(() -> {
+//            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+//        });
+//    }
 
     public void refreshServer() {
 //        if (cbRefreshAgents.isSelected()) refreshAgents();
 //        if (cbRefreshGameStatus.isSelected()) refreshStatus();
     }
 
-    private void refreshStatus() {
-        JSONObject request = get("game/status", GAMEID);
-        try {
-            request.getJSONObject("payload").getString("message");
-            addLog("Game " + GAMEID + " not loaded on the server");
-        } catch (Exception e) {
-            addLog("--------------\n" + request.toString());
-            // funny - when an exception means NO EXPCETION on the server side
-        }
-    }
+//    private void refreshStatus() {
+//        JSONObject request = get("game/status", GAMEID);
+//        try {
+//            request.getJSONObject("payload").getString("message");
+//            addLog("Game " + GAMEID + " not loaded on the server");
+//        } catch (Exception e) {
+//            addLog("--------------\n" + request.toString());
+//            // funny - when an exception means NO EXPCETION on the server side
+//        }
+//    }
 
     private void createUIComponents() {
         tblAgents = new JTable(new TM_Agents(new JSONObject())) {
@@ -204,45 +235,36 @@ public class FrameMain extends JFrame {
             response.close();
             if (entity.isEmpty()) result = new JSONObject();
             else result = new JSONObject(entity);
+            connectionFSM.ProcessFSM("connected");
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
-            set_server_status(connectException);
+            connectionFSM.ProcessFSM("disconnected");
         }
         return result;
     }
 
-    private JSONObject get(String uri, String id) {
-        JSONObject json = new JSONObject();
-        try {
-            Response response = client
-                    .target(txtURI.getText().trim() + "/api/" + uri)
-                    .queryParam("id", id)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-            json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response);
-            response.close();
-        } catch (Exception connectException) {
-            addLog(connectException.getMessage());
-            set_server_status(connectException);
-        }
+    private JSONObject get(String uri, String id) throws Exception {
+        Response response = client
+                .target(txtURI.getText().trim() + "/api/" + uri)
+                .queryParam("id", id)
+                .request(MediaType.APPLICATION_JSON)
+                .get();
+        JSONObject json = new JSONObject(response.readEntity(String.class));
+        set_response_status(response);
+        response.close();
+        connectionFSM.ProcessFSM("connected");
         return json;
     }
 
-    private JSONObject get(String uri) {
-        JSONObject json = new JSONObject();
-        try {
-            Response response = client
-                    .target(txtURI.getText() + "/api/" + uri)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-            json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response);
-            response.close();
-            connectionFSM.ProcessFSM("connected");
-        } catch (Exception connectException) {
-            connectionFSM.ProcessFSM("exception");
-        }
+    private JSONObject get(String uri) throws Exception {
+        Response response = client
+                .target(txtURI.getText() + "/api/" + uri)
+                .request(MediaType.APPLICATION_JSON)
+                .get();
+        JSONObject json = new JSONObject(response.readEntity(String.class));
+        set_response_status(response);
+        response.close();
+        connectionFSM.ProcessFSM("connected");
         return json;
     }
 
@@ -252,15 +274,15 @@ public class FrameMain extends JFrame {
             icon = "/artwork/ledred.png";
         if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("SUCCESSFUL"))
             icon = "/artwork/ledgreen.png";
-        btnServer.setIcon(new ImageIcon(getClass().getResource(icon)));
-        btnServer.setText(Integer.toString(response.getStatusInfo().getStatusCode()));
+        btnConnect.setIcon(new ImageIcon(getClass().getResource(icon)));
+        btnConnect.setText(Integer.toString(response.getStatusInfo().getStatusCode()));
         lblHTML.setText(response.getStatusInfo().getReasonPhrase());
     }
 
     void set_server_status(Exception exception) {
-        btnServer.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
-        btnServer.setText(null);
-        btnServer.setToolTipText(exception.getMessage());
+        btnConnect.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+        btnConnect.setText(null);
+        btnConnect.setToolTipText(exception.getMessage());
         lblHTML.setText("Connection Error");
     }
 
@@ -351,10 +373,6 @@ public class FrameMain extends JFrame {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
-    private void btnServer(ActionEvent e) {
-
-    }
-
     /**
      * http://stackoverflow.com/questions/8741479/automatically-determine-optimal-fontcolor-by-backgroundcolor
      *
@@ -391,10 +409,12 @@ public class FrameMain extends JFrame {
 
         mainPanel = new JPanel();
         panel1 = new JPanel();
-        label7 = new JLabel();
         txtURI = new JTextField();
-        btnServer = new JButton();
+        btnConnect = new JButton();
         lblHTML = new JLabel();
+        panel4 = new JPanel();
+        cmbGameList = new JComboBox();
+        btnAddGame = new JButton();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
@@ -431,21 +451,15 @@ public class FrameMain extends JFrame {
         {
             mainPanel.setLayout(new FormLayout(
                     "default:grow",
-                    "default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                    "default, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
                 panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
-                //---- label7 ----
-                label7.setText("URI");
-                label7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                label7.setLabelFor(txtURI);
-                panel1.add(label7);
-
                 //---- txtURI ----
                 txtURI.setText("http://localhost:8090");
-                txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
+                txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 txtURI.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
@@ -454,12 +468,12 @@ public class FrameMain extends JFrame {
                 });
                 panel1.add(txtURI);
 
-                //---- btnServer ----
-                btnServer.setText(null);
-                btnServer.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
-                btnServer.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnServer.addActionListener(e -> btnServer(e));
-                panel1.add(btnServer);
+                //---- btnConnect ----
+                btnConnect.setText(null);
+                btnConnect.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                btnConnect.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnConnect.addActionListener(e -> btnConnect(e));
+                panel1.add(btnConnect);
 
                 //---- lblHTML ----
                 lblHTML.setText("text");
@@ -467,6 +481,22 @@ public class FrameMain extends JFrame {
                 panel1.add(lblHTML);
             }
             mainPanel.add(panel1, CC.xy(1, 1));
+
+            //======== panel4 ========
+            {
+                panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
+
+                //---- cmbGameList ----
+                cmbGameList.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                cmbGameList.addItemListener(e -> cmbGameListItemStateChanged(e));
+                panel4.add(cmbGameList);
+
+                //---- btnAddGame ----
+                btnAddGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnAddGame.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
+                panel4.add(btnAddGame);
+            }
+            mainPanel.add(panel4, CC.xy(1, 3));
 
             //======== pnlMain ========
             {
@@ -567,7 +597,7 @@ public class FrameMain extends JFrame {
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
-            mainPanel.add(pnlMain, CC.xywh(1, 3, 1, 7));
+            mainPanel.add(pnlMain, CC.xywh(1, 5, 1, 7));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         contentPane.add(separator2, CC.xy(2, 3));
@@ -631,10 +661,12 @@ public class FrameMain extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel mainPanel;
     private JPanel panel1;
-    private JLabel label7;
     private JTextField txtURI;
-    private JButton btnServer;
+    private JButton btnConnect;
     private JLabel lblHTML;
+    private JPanel panel4;
+    private JComboBox cmbGameList;
+    private JButton btnAddGame;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
     private JTabbedPane pnlGames;

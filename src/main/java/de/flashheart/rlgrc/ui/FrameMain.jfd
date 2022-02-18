@@ -11,29 +11,23 @@ new FormModel {
 			"defaultCloseOperation": 3
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 				"$columnSpecs": "default:grow"
-				"$rowSpecs": "default, linegap, default, relgap, default, linegap, fill:default:grow, linegap, default"
+				"$rowSpecs": "default, relgap, default, linegap, default, relgap, default, linegap, fill:default:grow, linegap, default"
 			} ) {
 				name: "mainPanel"
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 					name: "panel1"
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label7"
-						"text": "URI"
-						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
-						"labelFor": new FormReference( "txtURI" )
-					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "txtURI"
 						"text": "http://localhost:8090"
-						"font": new java.awt.Font( ".SF NS Text", 0, 16 )
+						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "txtURIFocusLost", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnServer"
+						name: "btnConnect"
 						"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
 						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnServer", true ) )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnConnect", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblHTML"
@@ -41,6 +35,21 @@ new FormModel {
 						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+					name: "panel4"
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "cmbGameList"
+						"font": &Font0 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "cmbGameListItemStateChanged", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnAddGame"
+						"font": #Font0
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/edit_add.png" )
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridY": 3
+				} )
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "pnlMain"
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
@@ -146,7 +155,7 @@ new FormModel {
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridHeight": 7
-					"gridY": 3
+					"gridY": 5
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 2
@@ -168,7 +177,7 @@ new FormModel {
 					"toolTipText": "Loag game on the server"
 					"minimumSize": new java.awt.Dimension( 38, 38 )
 					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
+					"font": &Font1 new java.awt.Font( ".SF NS Text", 0, 18 )
 					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
 				} )
@@ -178,7 +187,7 @@ new FormModel {
 					"toolTipText": "Start loaded game"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
 					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
-					"font": #Font0
+					"font": #Font1
 					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnStartGame", true ) )
 				} )
@@ -186,7 +195,7 @@ new FormModel {
 					name: "btnPauseGame"
 					"text": "Pause"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
-					"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+					"font": &Font2 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
 					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPauseGame", true ) )
 				} )
@@ -195,7 +204,7 @@ new FormModel {
 					"text": "Reset"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_rew.png" )
 					"toolTipText": "Resume Game"
-					"font": #Font1
+					"font": #Font2
 					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnResetGame", true ) )
 				} )
@@ -203,7 +212,7 @@ new FormModel {
 					name: "btnUnloadGame"
 					"text": "Unload"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
-					"font": #Font1
+					"font": #Font2
 					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadGame", true ) )
 				} )

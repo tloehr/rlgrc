@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <FSM>
-    <STATE id="TRY_TO_CONNECT" type="ID">
+    <STATE id="NOT_CONNECTED" type="ID">
         <!--
             load list of games
             - cmb list games
@@ -11,8 +11,7 @@
             - Reset
             - Unload
         -->
-        <MESSAGE id="disconnected" nextState="TRY_TO_CONNECT"/>
-        <MESSAGE id="connected" nextState="CONNECTED"/>
+        <MESSAGE id="connect" nextState="CONNECTED"/>
     </STATE>
     <STATE id="CONNECTED">
         <!--
@@ -20,7 +19,7 @@
             add button is enabled (as long as now game is in list - maybe for later use with more games)
             gameids are created automatically
         -->
-        <MESSAGE id="disconnected" nextState="TRY_TO_CONNECT"/>
+        <MESSAGE id="disconnect" nextState="NOT_CONNECTED"/>
     </STATE>
 </FSM>
 

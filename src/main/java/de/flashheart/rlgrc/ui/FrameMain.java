@@ -4,6 +4,7 @@
 
 package de.flashheart.rlgrc.ui;
 
+import javax.swing.border.*;
 import com.github.ankzz.dynamicfsm.action.FSMAction;
 import com.github.ankzz.dynamicfsm.fsm.FSM;
 import com.jgoodies.forms.factories.CC;
@@ -412,9 +413,19 @@ public class FrameMain extends JFrame {
         txtURI = new JTextField();
         btnConnect = new JButton();
         lblHTML = new JLabel();
-        panel4 = new JPanel();
-        cmbGameList = new JComboBox();
-        btnAddGame = new JButton();
+        pnlLoadedGames = new JPanel();
+        tb01 = new JToggleButton();
+        tb02 = new JToggleButton();
+        tb03 = new JToggleButton();
+        tb04 = new JToggleButton();
+        tb05 = new JToggleButton();
+        lblSelectedGameMode = new JLabel();
+        panel2 = new JPanel();
+        btnLoadGame = new JButton();
+        btnStartGame = new JButton();
+        btnPauseGame = new JButton();
+        btnResetGame = new JButton();
+        btnUnloadGame = new JButton();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
@@ -433,25 +444,19 @@ public class FrameMain extends JFrame {
         scrollPane3 = new JScrollPane();
         btnRefreshAgents = new JButton();
         separator2 = new JSeparator();
-        panel2 = new JPanel();
-        btnLoadGame = new JButton();
-        btnStartGame = new JButton();
-        btnPauseGame = new JButton();
-        btnResetGame = new JButton();
-        btnUnloadGame = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap, default, $rgap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap, default, $rgap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -482,21 +487,103 @@ public class FrameMain extends JFrame {
             }
             mainPanel.add(panel1, CC.xy(1, 1));
 
-            //======== panel4 ========
+            //======== pnlLoadedGames ========
             {
-                panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
+                pnlLoadedGames.setLayout(new BoxLayout(pnlLoadedGames, BoxLayout.X_AXIS));
 
-                //---- cmbGameList ----
-                cmbGameList.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                cmbGameList.addItemListener(e -> cmbGameListItemStateChanged(e));
-                panel4.add(cmbGameList);
+                //---- tb01 ----
+                tb01.setText("1");
+                tb01.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
+                tb01.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                tb01.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                pnlLoadedGames.add(tb01);
 
-                //---- btnAddGame ----
-                btnAddGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnAddGame.setIcon(new ImageIcon(getClass().getResource("/artwork/edit_add.png")));
-                panel4.add(btnAddGame);
+                //---- tb02 ----
+                tb02.setText("2");
+                tb02.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                tb02.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
+                tb02.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                pnlLoadedGames.add(tb02);
+
+                //---- tb03 ----
+                tb03.setText("3");
+                tb03.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                tb03.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
+                tb03.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                pnlLoadedGames.add(tb03);
+
+                //---- tb04 ----
+                tb04.setText("4");
+                tb04.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                tb04.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
+                tb04.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                pnlLoadedGames.add(tb04);
+
+                //---- tb05 ----
+                tb05.setText("5");
+                tb05.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                tb05.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
+                tb05.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                pnlLoadedGames.add(tb05);
+
+                //---- lblSelectedGameMode ----
+                lblSelectedGameMode.setText("text");
+                lblSelectedGameMode.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                pnlLoadedGames.add(lblSelectedGameMode);
             }
-            mainPanel.add(panel4, CC.xy(1, 3));
+            mainPanel.add(pnlLoadedGames, CC.xy(1, 3));
+
+            //======== panel2 ========
+            {
+                panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+                //---- btnLoadGame ----
+                btnLoadGame.setText("Load Game");
+                btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                btnLoadGame.setToolTipText("Loag game on the server");
+                btnLoadGame.setMinimumSize(new Dimension(38, 38));
+                btnLoadGame.setPreferredSize(null);
+                btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnLoadGame.setEnabled(false);
+                btnLoadGame.addActionListener(e -> btnLoadGame(e));
+                panel2.add(btnLoadGame);
+
+                //---- btnStartGame ----
+                btnStartGame.setText("Run");
+                btnStartGame.setToolTipText("Start loaded game");
+                btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
+                btnStartGame.setPreferredSize(null);
+                btnStartGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnStartGame.setEnabled(false);
+                btnStartGame.addActionListener(e -> btnStartGame(e));
+                panel2.add(btnStartGame);
+
+                //---- btnPauseGame ----
+                btnPauseGame.setText("Pause");
+                btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
+                btnPauseGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnPauseGame.setEnabled(false);
+                btnPauseGame.addActionListener(e -> btnPauseGame(e));
+                panel2.add(btnPauseGame);
+
+                //---- btnResetGame ----
+                btnResetGame.setText("Reset");
+                btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player-reset.png")));
+                btnResetGame.setToolTipText("Resume Game");
+                btnResetGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnResetGame.setEnabled(false);
+                btnResetGame.addActionListener(e -> btnResetGame(e));
+                panel2.add(btnResetGame);
+
+                //---- btnUnloadGame ----
+                btnUnloadGame.setText("Unload");
+                btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+                btnUnloadGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnUnloadGame.setEnabled(false);
+                btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
+                panel2.add(btnUnloadGame);
+            }
+            mainPanel.add(panel2, CC.xy(1, 5));
 
             //======== pnlMain ========
             {
@@ -505,8 +592,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "default:grow, $lgap, default"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -597,64 +684,20 @@ public class FrameMain extends JFrame {
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
-            mainPanel.add(pnlMain, CC.xywh(1, 5, 1, 7));
+            mainPanel.add(pnlMain, CC.xywh(1, 7, 1, 7));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         contentPane.add(separator2, CC.xy(2, 3));
-
-        //======== panel2 ========
-        {
-            panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
-
-            //---- btnLoadGame ----
-            btnLoadGame.setText("Load Game");
-            btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-            btnLoadGame.setToolTipText("Loag game on the server");
-            btnLoadGame.setMinimumSize(new Dimension(38, 38));
-            btnLoadGame.setPreferredSize(null);
-            btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-            btnLoadGame.setEnabled(false);
-            btnLoadGame.addActionListener(e -> btnLoadGame(e));
-            panel2.add(btnLoadGame);
-
-            //---- btnStartGame ----
-            btnStartGame.setText("Run");
-            btnStartGame.setToolTipText("Start loaded game");
-            btnStartGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
-            btnStartGame.setPreferredSize(null);
-            btnStartGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-            btnStartGame.setEnabled(false);
-            btnStartGame.addActionListener(e -> btnStartGame(e));
-            panel2.add(btnStartGame);
-
-            //---- btnPauseGame ----
-            btnPauseGame.setText("Pause");
-            btnPauseGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
-            btnPauseGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-            btnPauseGame.setEnabled(false);
-            btnPauseGame.addActionListener(e -> btnPauseGame(e));
-            panel2.add(btnPauseGame);
-
-            //---- btnResetGame ----
-            btnResetGame.setText("Reset");
-            btnResetGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_rew.png")));
-            btnResetGame.setToolTipText("Resume Game");
-            btnResetGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-            btnResetGame.setEnabled(false);
-            btnResetGame.addActionListener(e -> btnResetGame(e));
-            panel2.add(btnResetGame);
-
-            //---- btnUnloadGame ----
-            btnUnloadGame.setText("Unload");
-            btnUnloadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-            btnUnloadGame.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-            btnUnloadGame.setEnabled(false);
-            btnUnloadGame.addActionListener(e -> btnUnloadGame(e));
-            panel2.add(btnUnloadGame);
-        }
-        contentPane.add(panel2, CC.xy(2, 4));
         pack();
         setLocationRelativeTo(getOwner());
+
+        //---- buttonGroup1 ----
+        var buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(tb01);
+        buttonGroup1.add(tb02);
+        buttonGroup1.add(tb03);
+        buttonGroup1.add(tb04);
+        buttonGroup1.add(tb05);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -664,9 +707,19 @@ public class FrameMain extends JFrame {
     private JTextField txtURI;
     private JButton btnConnect;
     private JLabel lblHTML;
-    private JPanel panel4;
-    private JComboBox cmbGameList;
-    private JButton btnAddGame;
+    private JPanel pnlLoadedGames;
+    private JToggleButton tb01;
+    private JToggleButton tb02;
+    private JToggleButton tb03;
+    private JToggleButton tb04;
+    private JToggleButton tb05;
+    private JLabel lblSelectedGameMode;
+    private JPanel panel2;
+    private JButton btnLoadGame;
+    private JButton btnStartGame;
+    private JButton btnPauseGame;
+    private JButton btnResetGame;
+    private JButton btnUnloadGame;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
     private JTabbedPane pnlGames;
@@ -686,11 +739,5 @@ public class FrameMain extends JFrame {
     private JTable tblAgents;
     private JButton btnRefreshAgents;
     private JSeparator separator2;
-    private JPanel panel2;
-    private JButton btnLoadGame;
-    private JButton btnStartGame;
-    private JButton btnPauseGame;
-    private JButton btnResetGame;
-    private JButton btnUnloadGame;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

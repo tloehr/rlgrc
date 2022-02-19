@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FSM>
-    <STATE id="NO_GAME_SELECTED" type="ID">
+    <STATE id="GAME_SLOT_SELECTED" type="ID">
         <!--
             Load Server Status and print to log
+            determine state of the game
         -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="CREATE_NEW_GAME" nextState="EDIT_GAME"/>
+        <MESSAGE id="prolog" nextState="PROLOG"/>
+        <MESSAGE id="pausing" nextState="PAUSING"/>
+        <MESSAGE id="running" nextState="RUNNING"/>
+        <MESSAGE id="epilog" nextState="EPILOG"/>
+        <MESSAGE id="no_game_loaded" nextState="EDIT_GAME"/>
     </STATE>
 
     <STATE id="EDIT_GAME">
@@ -13,35 +17,22 @@
                  enable params
                  disable all buttons besides load
               -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="LOAD_GAME" nextState="SHOW_GAME"/>
-        <MESSAGE id="LOAD_ERROR" nextState="EDIT_GAME"/>
-    </STATE>
-
-    <STATE id="SHOW_GAME">
-        <!--
-           disable params
-           determine state of the game
-        -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="PROLOG" nextState="PROLOG"/>
-        <MESSAGE id="PAUSING" nextState="PAUSING"/>
-        <MESSAGE id="RUNNING" nextState="RUNNING"/>
-        <MESSAGE id="EPILOG" nextState="EPILOG"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="load_game" nextState="prolog"/>
     </STATE>
 
     <STATE id="PROLOG">
         <!--
-                          -load
+
+                          +load
                           +run
                           -PAUSE
-                          +RESET
+                          -RESET
                           +UNLOAD
                        -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="RUN" nextState="RUNNING"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
-        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="run" nextState="RUNNING"/>
+        <MESSAGE id="unload" nextState="EDIT_GAME"/>
     </STATE>
 
     <STATE id="PAUSING">
@@ -52,13 +43,14 @@
                   +RESET
                   +UNLOAD
                -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="RESUME" nextState="RUNNING"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
-        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="resume" nextState="RUNNING"/>
+        <MESSAGE id="reset" nextState="PROLOG"/>
+        <MESSAGE id="unload" nextState="GAME_SLOT_SELECTED"/>
     </STATE>
     <STATE id="RUNNING">
         <!--
+                            disable params
                           -load
                           -run
                           +RESUME  -> PAUSE Icon change
@@ -67,8 +59,8 @@
 
                           determine state of the game
                        -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="PAUSE" nextState="PAUSING"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="pause" nextState="PAUSING"/>
     </STATE>
     <STATE id="EPILOG">
         <!--
@@ -80,9 +72,9 @@
 
                        determine state of the game
                     -->
-        <MESSAGE id="game_selected" nextState="SHOW_GAME"/>
-        <MESSAGE id="RESET" nextState="PROLOG"/>
-        <MESSAGE id="UNLOAD" nextState="NO_GAME_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="reset" nextState="PROLOG"/>
+        <MESSAGE id="unload" nextState="EDIT_GAME"/>
     </STATE>
 
 </FSM>

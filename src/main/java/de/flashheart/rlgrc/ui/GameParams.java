@@ -43,21 +43,21 @@ public abstract class GameParams extends JPanel {
         set_parameters();
     }
 
-    void load_file() throws IOException {
+    File load_file() throws IOException {
         file = choose_file(false);
-        if (file.isEmpty()) return;
+        if (file.isEmpty()) return null;
         params = new JSONObject(FileUtils.readFileToString(file.get()));
         set_parameters();
+        return file.get();
     }
 
-    void save_file() throws IOException {
-        if (params.isEmpty()) return;
+    File save_file() throws IOException {
+        if (params.isEmpty()) return null;
         if (file.isEmpty()) file = choose_file(true);
-        if (file.isEmpty()) return;
+        if (file.isEmpty()) return null;
         FileUtils.writeStringToFile(file.get(), params.toString(4));
+        return file.get();
     }
-
-
 
     Optional<File> choose_file(boolean save) {
         JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("workspace") + File.separator + getMode()));
@@ -66,7 +66,12 @@ public abstract class GameParams extends JPanel {
         else result = fileChooser.showOpenDialog(this);
         Optional<File> file = Optional.empty();
         if (result == JFileChooser.APPROVE_OPTION) {
-            file = Optional.of(fileChooser.getSelectedFile());
+            File chosen = fileChooser.getSelectedFile();
+            String filePath = chosen.getAbsolutePath();
+            if(!filePath.endsWith(".json")) {
+                chosen = new File(filePath + ".json");
+            }
+            file = Optional.of(chosen);
         }
         return file;
     }

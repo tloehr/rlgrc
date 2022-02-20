@@ -5,14 +5,15 @@
         <MESSAGE id="pausing" nextState="PAUSING"/>
         <MESSAGE id="running" nextState="RUNNING"/>
         <MESSAGE id="epilog" nextState="EPILOG"/>
-        <MESSAGE id="no_game_loaded" nextState="EDIT_GAME"/>
+        <MESSAGE id="create_game" nextState="CREATE_GAME"/>
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
     </STATE>
-    <STATE id="EDIT_GAME">
+    <STATE id="CREATE_GAME">
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="load_game" nextState="PROLOG"/>
     </STATE>
     <STATE id="PROLOG">
+        <MESSAGE id="load_game" nextState="PROLOG"/>
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="run" nextState="RUNNING"/>
         <MESSAGE id="unload" nextState="EDIT_GAME"/>

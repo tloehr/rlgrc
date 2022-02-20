@@ -76,9 +76,7 @@ public class FrameMain extends JFrame {
         this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
         this.scheduler.getContext().put("rlgrc", this);
         this.scheduler.start();
-        //connectionFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/connection.xml"), null);
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
-        //this.game_params = new HashMap<>();
         initComponents();
         initFrame();
         initRefresh();
@@ -87,7 +85,6 @@ public class FrameMain extends JFrame {
 
     private void initFrame() throws IOException {
         initLogger();
-        //game_params.put("conquest", new MutablePair<>(Optional.empty(), load_defaults("conquest")));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
@@ -100,12 +97,12 @@ public class FrameMain extends JFrame {
             log.debug("FSM State: {}", state);
             JSONObject game_status = get("game/status", GAMEID);
             if (game_status.isEmpty()) {
-                guiFSM.ProcessFSM("no_game_loaded");
+                guiFSM.ProcessFSM("create_game");
             } else {
                 guiFSM.ProcessFSM(game_status.getString("state"));
             }
         });
-        guiFSM.setStatesAfterTransition("EDIT_GAME", (state, obj) -> {
+        guiFSM.setStatesAfterTransition("CREATE_GAME", (state, obj) -> {
             log.debug("FSM State: {}", state);
             pnlMain.setEnabledAt(TAB_GAMES, true);
             btnLoadGame.setEnabled(true);
@@ -116,7 +113,7 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("PROLOG", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            pnlGames.setEnabledAt(0, true);
+            set_params_enabled(true);
             JSONObject params = get("game/parameters", GAMEID);
             if (params.isEmpty()) ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
             else ((GameParams) pnlGames.getSelectedComponent()).set_parameters(params);
@@ -136,7 +133,7 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("RUNNING", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            pnlGames.setEnabledAt(0, false);
+            set_params_enabled(false);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(false);
             btnPause.setEnabled(true);
@@ -151,6 +148,10 @@ public class FrameMain extends JFrame {
             btnReset.setEnabled(true);
             btnUnload.setEnabled(true);
         });
+    }
+
+    private void set_params_enabled(boolean enabled) {
+        pnlGames.setEnabledAt(0, enabled);
     }
 
     private void btnConnect(ActionEvent e) {
@@ -222,15 +223,6 @@ public class FrameMain extends JFrame {
 
     private void resfreshServerStatus() {
         get("game/status", GAMEID);
-
-//        JSONObject request = get("game/status", GAMEID);
-//        try {
-//            request.getJSONObject("payload").getString("message");
-//            addLog("Game " + GAMEID + " not loaded on the server");
-//        } catch (Exception e) {
-//            addLog("--------------\n" + request.toString());
-//            // funny - when an exception means NO EXPCETION on the server side
-//        }
     }
 
     private void createUIComponents() {
@@ -240,8 +232,6 @@ public class FrameMain extends JFrame {
                 //Implement table cell tool tips.
                 java.awt.Point p = e.getPoint();
                 int rowIndex = rowAtPoint(p);
-                int colIndex = columnAtPoint(p);
-                int realColumnIndex = convertColumnIndexToModel(colIndex);
                 TM_Agents model = (TM_Agents) getModel();
                 log.debug(model.getValueAt(rowIndex));
                 return "<html><p>" + model.getValueAt(rowIndex) + "</p></html>";
@@ -341,7 +331,9 @@ public class FrameMain extends JFrame {
 
     private void btnSaveFile(ActionEvent e) {
         try {
-            ((GameParams) pnlGames.getSelectedComponent()).save_file();
+            File file = ((GameParams) pnlGames.getSelectedComponent()).save_file();
+            if (file == null) lblFile.setText("no file");
+            else lblFile.setText(file.getPath());
         } catch (IOException ex) {
             log.error(ex);
             addLog(ex.getMessage());
@@ -350,7 +342,9 @@ public class FrameMain extends JFrame {
 
     private void btnLoadFile(ActionEvent e) {
         try {
-            ((GameParams) pnlGames.getSelectedComponent()).load_file();
+            File file =((GameParams) pnlGames.getSelectedComponent()).load_file();
+            if (file == null) lblFile.setText("no file");
+            else lblFile.setText(file.getPath());
         } catch (IOException ex) {
             log.error(ex);
             addLog(ex.getMessage());
@@ -359,6 +353,7 @@ public class FrameMain extends JFrame {
 
     private void btnFileNew(ActionEvent e) {
         ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
+        lblFile.setText("no file");
     }
 
     private void initLogger() {
@@ -397,29 +392,12 @@ public class FrameMain extends JFrame {
         });
     }
 
-    public void addLog(JSONObject jsonObject) {
-        addLog(jsonObject.toString(4));
-    }
-
-//    private void add_to_agents_list(JList jList) {
-//        int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
-//        DefaultListModel dlm = new DefaultListModel();
-//        for (int s : selection) {
-//            dlm.addElement(tblAgents.getModel().getValueAt(s, 0).toString());
-//        }
-//        SwingUtilities.invokeLater(() -> {
-//            jList.setModel(dlm);
-//            jList.repaint();
-//        });
-//    }
-
     private void txtURIFocusLost(FocusEvent e) {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
     private void pnlGamesPropertyChange(PropertyChangeEvent e) {
         log.debug(e);
-        //btnLoadFile.setEnabled();
     }
 
     private void add_game_select_button(int gameid) {

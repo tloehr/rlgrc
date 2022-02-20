@@ -1,80 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FSM>
-    <STATE id="GAME_SLOT_SELECTED" type="ID">
-        <!--
-            Load Server Status and print to log
-            determine state of the game
-        -->
+    <STATE id="GAME_SLOT_CHANGED" type="ID">
         <MESSAGE id="prolog" nextState="PROLOG"/>
         <MESSAGE id="pausing" nextState="PAUSING"/>
         <MESSAGE id="running" nextState="RUNNING"/>
         <MESSAGE id="epilog" nextState="EPILOG"/>
         <MESSAGE id="no_game_loaded" nextState="EDIT_GAME"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
     </STATE>
-
     <STATE id="EDIT_GAME">
-        <!--
-                 enable params
-                 disable all buttons besides load
-              -->
-        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
-        <MESSAGE id="load_game" nextState="prolog"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
+        <MESSAGE id="load_game" nextState="PROLOG"/>
     </STATE>
-
     <STATE id="PROLOG">
-        <!--
-
-                          +load
-                          +run
-                          -PAUSE
-                          -RESET
-                          +UNLOAD
-                       -->
-        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="run" nextState="RUNNING"/>
         <MESSAGE id="unload" nextState="EDIT_GAME"/>
     </STATE>
-
     <STATE id="PAUSING">
-        <!--
-                  -load
-                  -run
-                  +PAUSE -> RESUME Icon change
-                  +RESET
-                  +UNLOAD
-               -->
-        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
-        <MESSAGE id="resume" nextState="RUNNING"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="reset" nextState="PROLOG"/>
         <MESSAGE id="unload" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="run" nextState="RUNNING"/>
     </STATE>
     <STATE id="RUNNING">
-        <!--
-                            disable params
-                          -load
-                          -run
-                          +RESUME  -> PAUSE Icon change
-                          -RESET
-                          -UNLOAD
-
-                          determine state of the game
-                       -->
-        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="pause" nextState="PAUSING"/>
+        <MESSAGE id="epilog" nextState="EPILOG"/>
     </STATE>
     <STATE id="EPILOG">
-        <!--
-                       -load
-                       -run
-                       -PAUSE
-                       +RESET
-                       +UNLOAD
-
-                       determine state of the game
-                    -->
-        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="reset" nextState="PROLOG"/>
         <MESSAGE id="unload" nextState="EDIT_GAME"/>
     </STATE>
-
 </FSM>

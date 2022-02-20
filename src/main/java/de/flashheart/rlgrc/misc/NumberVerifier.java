@@ -3,6 +3,7 @@ package de.flashheart.rlgrc.misc;
 import lombok.AllArgsConstructor;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.math.BigDecimal;
 
 @AllArgsConstructor
@@ -19,7 +20,7 @@ public class NumberVerifier extends InputVerifier {
 
     @Override
     public boolean verify(JComponent input) {
-        String text = ((JTextField) input).getText();
+        String text = ((JTextComponent) input).getText();
         try {
             BigDecimal value = new BigDecimal(text);
             if (only_integer && !isInteger(value)) return false;

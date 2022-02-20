@@ -27,6 +27,11 @@ public abstract class GameParams extends JPanel {
 
     abstract void set_parameters();
 
+    void set_parameters(JSONObject params){
+        this.params = params;
+        set_parameters();
+    }
+
     abstract JSONObject read_parameters();
 
     void load_defaults() {
@@ -51,6 +56,7 @@ public abstract class GameParams extends JPanel {
         if (file.isEmpty()) return;
         FileUtils.writeStringToFile(file.get(), params.toString(4));
     }
+
 
 
     Optional<File> choose_file(boolean save) {

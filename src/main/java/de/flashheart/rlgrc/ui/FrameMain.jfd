@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 			"$columnSpecs": "unrelgap, default:grow, unrelgap"
-			"$rowSpecs": "relgap, default:grow, unrelgap, default, relgap"
+			"$rowSpecs": "relgap, default:grow"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 3
@@ -145,35 +145,35 @@ new FormModel {
 					}, new FormLayoutConstraints( null ) {
 						"title": "Games"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-						"axis": 0
-					} ) {
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 						name: "pnlServer"
-						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-							"axis": 3
-						} ) {
-							name: "panel3"
-							add( new FormComponent( "javax.swing.JCheckBox" ) {
-								name: "cbRefreshGameStatus"
-								"text": "Autorefresh Game Status"
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "scrollLog"
+							add( new FormComponent( "javax.swing.JTextArea" ) {
+								name: "txtLogger"
+								"foreground": new java.awt.Color( 51, 255, 51, 255 )
+								"lineWrap": true
+								"wrapStyleWord": true
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+							name: "panel4"
+							add( new FormComponent( "javax.swing.JToggleButton" ) {
+								name: "tbRefreshServer"
+								"text": "Autorefresh Server Status"
 								"font": new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-off.png" )
+								"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
 							} )
-							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-								name: "scrollLog"
-								add( new FormComponent( "javax.swing.JTextArea" ) {
-									name: "txtLogger"
-									"foreground": new java.awt.Color( 51, 255, 51, 255 )
-									"lineWrap": true
-									"wrapStyleWord": true
-								} )
-							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "South"
 						} )
 					}, new FormLayoutConstraints( null ) {
 						"title": "Server"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-						"axis": 0
-					} ) {
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 						name: "pnlAgents"
 						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 							name: "scrollPane3"
@@ -185,10 +185,20 @@ new FormModel {
 									"JavaCodeGenerator.customCreate": true
 								}
 							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
 						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "btnRefreshAgents"
-							"text": "Refresh Agents"
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+							name: "panel3"
+							add( new FormComponent( "javax.swing.JToggleButton" ) {
+								name: "tbRefreshAgents"
+								"text": "Refresh Agents"
+								"font": new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-off.png" )
+								"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "South"
 						} )
 					}, new FormLayoutConstraints( null ) {
 						"title": "Agents"
@@ -201,12 +211,6 @@ new FormModel {
 				"gridX": 2
 				"vAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 				"gridY": 2
-			} )
-			add( new FormComponent( "javax.swing.JSeparator" ) {
-				name: "separator2"
-			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 2
-				"gridY": 3
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 5 )

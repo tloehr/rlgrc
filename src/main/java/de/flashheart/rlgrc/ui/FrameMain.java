@@ -4,9 +4,7 @@
 
 package de.flashheart.rlgrc.ui;
 
-import com.github.ankzz.dynamicfsm.action.FSMAction;
 import com.github.ankzz.dynamicfsm.fsm.FSM;
-import com.github.ankzz.dynamicfsm.states.FSMStateAction;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.ServerRefreshJob;
@@ -35,6 +33,9 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 
 import static org.quartz.JobBuilder.newJob;
@@ -48,7 +49,6 @@ public class FrameMain extends JFrame {
     private static final int TAB_GAMES = 0;
     private static final int TAB_SERVER = 1;
     private static final int TAB_AGENTS = 2;
-    private boolean GAME_PAUSED;
     private final Scheduler scheduler;
     private final Configs configs;
     private SimpleTrigger agentTrigger;
@@ -81,6 +81,7 @@ public class FrameMain extends JFrame {
         //this.game_params = new HashMap<>();
         initComponents();
         initFrame();
+        initRefresh();
         pack();
     }
 
@@ -92,8 +93,6 @@ public class FrameMain extends JFrame {
         txtURI.setText(configs.get(Configs.REST_URI));
         pnlGames.add("Conquest", new ConquestParams());
         config_fsm();
-        guiFSM.getCurrentState();
-        guiFSM.getAllStates();
     }
 
     private void config_fsm() {
@@ -117,7 +116,10 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("PROLOG", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, true);
+            pnlGames.setEnabledAt(0, true);
+            JSONObject params = get("game/parameters", GAMEID);
+            if (params.isEmpty()) ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
+            else ((GameParams) pnlGames.getSelectedComponent()).set_parameters(params);
             btnLoadGame.setEnabled(true);
             btnRun.setEnabled(true);
             btnPause.setEnabled(false);
@@ -128,13 +130,13 @@ public class FrameMain extends JFrame {
             log.debug("FSM State: {}", state);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(true);
-            btnPause.setEnabled(true);
+            btnPause.setEnabled(false);
             btnReset.setEnabled(true);
             btnUnload.setEnabled(true);
         });
         guiFSM.setStatesAfterTransition("RUNNING", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, false);
+            pnlGames.setEnabledAt(0, false);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(false);
             btnPause.setEnabled(true);
@@ -162,7 +164,7 @@ public class FrameMain extends JFrame {
             connected = true;
             for (int i = 0; i < max_number_of_games; i++) add_game_select_button(i + 1);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
-            pnlMain.setEnabledAt(TAB_GAMES, false);
+            pnlMain.setEnabledAt(TAB_GAMES, true);
             pnlMain.setEnabledAt(TAB_SERVER, true);
             pnlMain.setEnabledAt(TAB_AGENTS, true);
         } catch (JSONException e) {
@@ -206,25 +208,21 @@ public class FrameMain extends JFrame {
         scheduler.scheduleJob(job, agentTrigger);
     }
 
-    private void set_pause_mode(boolean paused) {
-        this.GAME_PAUSED = paused;
-        btnPause.setIcon(new ImageIcon(getClass().getResource(GAME_PAUSED ? "/artwork/player_fwd.png" : "/artwork/player_pause.png")));
+    private void refreshAgents() {
+        JSONObject request = get("system/list_agents");
+        SwingUtilities.invokeLater(() -> {
+            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+        });
     }
-
-
-//    private void refreshAgents() {
-//        JSONObject request = get("system/list_agents");
-//        SwingUtilities.invokeLater(() -> {
-//            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
-//        });
-//    }
 
     public void refreshServer() {
-//        if (cbRefreshAgents.isSelected()) refreshAgents();
-//        if (cbRefreshGameStatus.isSelected()) refreshStatus();
+        if (tbRefreshAgents.isSelected()) refreshAgents();
+        if (tbRefreshServer.isSelected()) resfreshServerStatus();
     }
 
-//    private void refreshStatus() {
+    private void resfreshServerStatus() {
+        get("game/status", GAMEID);
+
 //        JSONObject request = get("game/status", GAMEID);
 //        try {
 //            request.getJSONObject("payload").getString("message");
@@ -233,7 +231,7 @@ public class FrameMain extends JFrame {
 //            addLog("--------------\n" + request.toString());
 //            // funny - when an exception means NO EXPCETION on the server side
 //        }
-//    }
+    }
 
     private void createUIComponents() {
         tblAgents = new JTable(new TM_Agents(new JSONObject())) {
@@ -256,7 +254,7 @@ public class FrameMain extends JFrame {
     }
 
     private JSONObject post(String uri, String id, String body) {
-        JSONObject result = new JSONObject();
+        JSONObject json = new JSONObject();
 
         try {
             Response response = client
@@ -264,19 +262,21 @@ public class FrameMain extends JFrame {
                     .queryParam("id", id)
                     .request(MediaType.APPLICATION_JSON)
                     .post(Entity.json(body));
-            addLog("----------\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n");
             String entity = response.readEntity(String.class);
+            if (entity.isEmpty()) json = new JSONObject();
+            else json = new JSONObject(entity);
             set_response_status(response);
+            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
-            if (entity.isEmpty()) result = new JSONObject();
-            else result = new JSONObject(entity);
+
+
             connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
             set_response_status(connectException);
             disconnect();
         }
-        return result;
+        return json;
     }
 
     private JSONObject get(String uri, String id) {
@@ -289,6 +289,7 @@ public class FrameMain extends JFrame {
                     .get();
             json = new JSONObject(response.readEntity(String.class));
             set_response_status(response);
+            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
             connect();
         } catch (Exception connectException) {
@@ -308,6 +309,7 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
+            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             set_response_status(response);
             response.close();
             disconnect();
@@ -390,7 +392,7 @@ public class FrameMain extends JFrame {
     public void addLog(String text) {
         log.debug(text);
         SwingUtilities.invokeLater(() -> {
-            txtLogger.append(text + "\n");
+            txtLogger.append(LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT)) + text + "\n");
             scrollLog.getVerticalScrollBar().setValue(scrollLog.getVerticalScrollBar().getMaximum());
         });
     }
@@ -399,41 +401,21 @@ public class FrameMain extends JFrame {
         addLog(jsonObject.toString(4));
     }
 
-    private void add_to_agents_list(JList jList) {
-        int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
-        DefaultListModel dlm = new DefaultListModel();
-        for (int s : selection) {
-            dlm.addElement(tblAgents.getModel().getValueAt(s, 0).toString());
-        }
-        SwingUtilities.invokeLater(() -> {
-            jList.setModel(dlm);
-            jList.repaint();
-        });
-    }
+//    private void add_to_agents_list(JList jList) {
+//        int[] selection = tblAgents.getSelectionModel().getSelectedIndices();
+//        DefaultListModel dlm = new DefaultListModel();
+//        for (int s : selection) {
+//            dlm.addElement(tblAgents.getModel().getValueAt(s, 0).toString());
+//        }
+//        SwingUtilities.invokeLater(() -> {
+//            jList.setModel(dlm);
+//            jList.repaint();
+//        });
+//    }
 
     private void txtURIFocusLost(FocusEvent e) {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
-
-    /**
-     * http://stackoverflow.com/questions/8741479/automatically-determine-optimal-fontcolor-by-backgroundcolor
-     *
-     * @param background
-     * @return
-     */
-    public Color getForeground(Color background) {
-        int red = 0;
-        int green = 0;
-        int blue = 0;
-
-        if (background.getRed() + background.getGreen() + background.getBlue() < 383) {
-            red = 255;
-            green = 255;
-            blue = 255;
-        }
-        return new Color(red, green, blue);
-    }
-
 
     private void pnlGamesPropertyChange(PropertyChangeEvent e) {
         log.debug(e);
@@ -512,27 +494,27 @@ public class FrameMain extends JFrame {
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
         pnlServer = new JPanel();
-        panel3 = new JPanel();
-        cbRefreshGameStatus = new JCheckBox();
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
+        panel4 = new JPanel();
+        tbRefreshServer = new JToggleButton();
         pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
-        btnRefreshAgents = new JButton();
-        separator2 = new JSeparator();
+        panel3 = new JPanel();
+        tbRefreshAgents = new JToggleButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap, default, $rgap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                    "default:grow",
+                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -577,9 +559,9 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
                 btnLoadGame.addActionListener(e -> {
-			btnLoadGame(e);
-			btnLoadGame(e);
-		});
+                    btnLoadGame(e);
+                    btnLoadGame(e);
+                });
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----
@@ -626,8 +608,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "default:grow, $lgap, default"));
+                            "default:grow",
+                            "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -676,52 +658,62 @@ public class FrameMain extends JFrame {
 
                 //======== pnlServer ========
                 {
-                    pnlServer.setLayout(new BoxLayout(pnlServer, BoxLayout.X_AXIS));
+                    pnlServer.setLayout(new BorderLayout());
 
-                    //======== panel3 ========
+                    //======== scrollLog ========
                     {
-                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
 
-                        //---- cbRefreshGameStatus ----
-                        cbRefreshGameStatus.setText("Autorefresh Game Status");
-                        cbRefreshGameStatus.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        panel3.add(cbRefreshGameStatus);
-
-                        //======== scrollLog ========
-                        {
-
-                            //---- txtLogger ----
-                            txtLogger.setForeground(new Color(51, 255, 51));
-                            txtLogger.setLineWrap(true);
-                            txtLogger.setWrapStyleWord(true);
-                            scrollLog.setViewportView(txtLogger);
-                        }
-                        panel3.add(scrollLog);
+                        //---- txtLogger ----
+                        txtLogger.setForeground(new Color(51, 255, 51));
+                        txtLogger.setLineWrap(true);
+                        txtLogger.setWrapStyleWord(true);
+                        scrollLog.setViewportView(txtLogger);
                     }
-                    pnlServer.add(panel3);
+                    pnlServer.add(scrollLog, BorderLayout.CENTER);
+
+                    //======== panel4 ========
+                    {
+                        panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
+
+                        //---- tbRefreshServer ----
+                        tbRefreshServer.setText("Autorefresh Server Status");
+                        tbRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        tbRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-off.png")));
+                        tbRefreshServer.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        panel4.add(tbRefreshServer);
+                    }
+                    pnlServer.add(panel4, BorderLayout.SOUTH);
                 }
                 pnlMain.addTab("Server", pnlServer);
 
                 //======== pnlAgents ========
                 {
-                    pnlAgents.setLayout(new BoxLayout(pnlAgents, BoxLayout.X_AXIS));
+                    pnlAgents.setLayout(new BorderLayout());
 
                     //======== scrollPane3 ========
                     {
                         scrollPane3.setViewportView(tblAgents);
                     }
-                    pnlAgents.add(scrollPane3);
+                    pnlAgents.add(scrollPane3, BorderLayout.CENTER);
 
-                    //---- btnRefreshAgents ----
-                    btnRefreshAgents.setText("Refresh Agents");
-                    pnlAgents.add(btnRefreshAgents);
+                    //======== panel3 ========
+                    {
+                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
+
+                        //---- tbRefreshAgents ----
+                        tbRefreshAgents.setText("Refresh Agents");
+                        tbRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        tbRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-off.png")));
+                        tbRefreshAgents.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        panel3.add(tbRefreshAgents);
+                    }
+                    pnlAgents.add(panel3, BorderLayout.SOUTH);
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
             mainPanel.add(pnlMain, CC.xywh(1, 7, 1, 7));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
-        contentPane.add(separator2, CC.xy(2, 3));
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
@@ -749,14 +741,14 @@ public class FrameMain extends JFrame {
     private JButton btnLoadFile;
     private JButton btnSaveFile;
     private JPanel pnlServer;
-    private JPanel panel3;
-    private JCheckBox cbRefreshGameStatus;
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
+    private JPanel panel4;
+    private JToggleButton tbRefreshServer;
     private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
-    private JButton btnRefreshAgents;
-    private JSeparator separator2;
+    private JPanel panel3;
+    private JToggleButton tbRefreshAgents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

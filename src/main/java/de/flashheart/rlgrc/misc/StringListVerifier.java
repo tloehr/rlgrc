@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.checkerframework.checker.units.qual.min;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,7 @@ public class StringListVerifier extends InputVerifier {
 
     @Override
     public boolean verify(JComponent input) {
-        String text = ((JTextField) input).getText();
+        String text = ((JTextComponent) input).getText();
 
         try {
             text = text.replaceAll("\"|[|]", "");

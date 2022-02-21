@@ -74,12 +74,12 @@ public class FrameMain extends JFrame {
         this.connected = false;
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
         this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
-        this.scheduler.getContext().put("rlgrc", this);
-        this.scheduler.start();
+//        this.scheduler.getContext().put("rlgrc", this);
+//        this.scheduler.start();
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
         initComponents();
         initFrame();
-        initRefresh();
+//        initRefresh();
         pack();
     }
 
@@ -113,7 +113,7 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("PROLOG", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            set_params_enabled(true);
+            pnlMain.setEnabledAt(TAB_GAMES, true);
             JSONObject params = get("game/parameters", GAMEID);
             if (params.isEmpty()) ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
             else ((GameParams) pnlGames.getSelectedComponent()).set_parameters(params);
@@ -125,6 +125,8 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("PAUSING", (state, obj) -> {
             log.debug("FSM State: {}", state);
+            pnlMain.setEnabledAt(TAB_GAMES, false);
+            pnlMain.setSelectedIndex(TAB_SERVER);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(true);
             btnPause.setEnabled(false);
@@ -133,15 +135,18 @@ public class FrameMain extends JFrame {
         });
         guiFSM.setStatesAfterTransition("RUNNING", (state, obj) -> {
             log.debug("FSM State: {}", state);
-            set_params_enabled(false);
+            pnlMain.setEnabledAt(TAB_GAMES, false);
+            pnlMain.setSelectedIndex(TAB_SERVER);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(false);
             btnPause.setEnabled(true);
             btnReset.setEnabled(false);
             btnUnload.setEnabled(false);
         });
+        // todo: how does we know that its over ?
         guiFSM.setStatesAfterTransition("EPILOG", (state, obj) -> {
             log.debug("FSM State: {}", state);
+            pnlMain.setEnabledAt(TAB_GAMES, true);
             btnLoadGame.setEnabled(false);
             btnRun.setEnabled(false);
             btnPause.setEnabled(false);
@@ -150,24 +155,26 @@ public class FrameMain extends JFrame {
         });
     }
 
-    private void set_params_enabled(boolean enabled) {
-        pnlGames.setEnabledAt(0, enabled);
-    }
+//    private void set_params_enabled(boolean enabled) {
+//        pnlGames.setEnabledAt(0, enabled);
+//    }
 
     private void btnConnect(ActionEvent e) {
         connect();
     }
 
     private void connect() {
-        if (connected) return;
+        if (connected) disconnect();
         try {
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
             for (int i = 0; i < max_number_of_games; i++) add_game_select_button(i + 1);
-            GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
             pnlMain.setEnabledAt(TAB_GAMES, true);
             pnlMain.setEnabledAt(TAB_SERVER, true);
             pnlMain.setEnabledAt(TAB_AGENTS, true);
+            btnRefreshServer.setEnabled(true);
+            btnRefreshAgents.setEnabled(true);
+            GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
         } catch (JSONException e) {
             log.error(e);
             disconnect();
@@ -192,6 +199,8 @@ public class FrameMain extends JFrame {
         pnlMain.setEnabledAt(TAB_GAMES, false);
         pnlMain.setEnabledAt(TAB_SERVER, false);
         pnlMain.setEnabledAt(TAB_AGENTS, false);
+        btnRefreshServer.setEnabled(false);
+        btnRefreshAgents.setEnabled(false);
     }
 
     private void initRefresh() throws SchedulerException {
@@ -217,8 +226,8 @@ public class FrameMain extends JFrame {
     }
 
     public void refreshServer() {
-        if (tbRefreshAgents.isSelected()) refreshAgents();
-        if (tbRefreshServer.isSelected()) resfreshServerStatus();
+//        if (tbRefreshAgents.isSelected()) refreshAgents();
+//        if (tbRefreshServer.isSelected()) resfreshServerStatus();
     }
 
     private void resfreshServerStatus() {
@@ -258,9 +267,7 @@ public class FrameMain extends JFrame {
             set_response_status(response);
             addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
-
-
-            connect();
+            //connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
             set_response_status(connectException);
@@ -281,7 +288,7 @@ public class FrameMain extends JFrame {
             set_response_status(response);
             addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
-            connect();
+            //connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
             set_response_status(connectException);
@@ -302,7 +309,7 @@ public class FrameMain extends JFrame {
             addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             set_response_status(response);
             response.close();
-            disconnect();
+            //connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
             set_response_status(connectException);
@@ -447,6 +454,14 @@ public class FrameMain extends JFrame {
         guiFSM.ProcessFSM("unload");
     }
 
+    private void btnRefreshAgents(ActionEvent e) {
+        refreshAgents();
+    }
+
+    private void btnRefreshServer(ActionEvent e) {
+        resfreshServerStatus();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
@@ -475,24 +490,24 @@ public class FrameMain extends JFrame {
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
         panel4 = new JPanel();
-        tbRefreshServer = new JToggleButton();
+        btnRefreshServer = new JButton();
         pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
         panel3 = new JPanel();
-        tbRefreshAgents = new JToggleButton();
+        btnRefreshAgents = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -537,9 +552,9 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
                 btnLoadGame.addActionListener(e -> {
-                    btnLoadGame(e);
-                    btnLoadGame(e);
-                });
+			btnLoadGame(e);
+			btnLoadGame(e);
+		});
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----
@@ -586,8 +601,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "default:grow, $lgap, default"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -653,12 +668,13 @@ public class FrameMain extends JFrame {
                     {
                         panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
 
-                        //---- tbRefreshServer ----
-                        tbRefreshServer.setText("Autorefresh Server Status");
-                        tbRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        tbRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-off.png")));
-                        tbRefreshServer.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
-                        panel4.add(tbRefreshServer);
+                        //---- btnRefreshServer ----
+                        btnRefreshServer.setText("Server Status");
+                        btnRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        btnRefreshServer.setEnabled(false);
+                        btnRefreshServer.addActionListener(e -> btnRefreshServer(e));
+                        panel4.add(btnRefreshServer);
                     }
                     pnlServer.add(panel4, BorderLayout.SOUTH);
                 }
@@ -678,12 +694,13 @@ public class FrameMain extends JFrame {
                     {
                         panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
 
-                        //---- tbRefreshAgents ----
-                        tbRefreshAgents.setText("Refresh Agents");
-                        tbRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        tbRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-off.png")));
-                        tbRefreshAgents.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
-                        panel3.add(tbRefreshAgents);
+                        //---- btnRefreshAgents ----
+                        btnRefreshAgents.setText("Refresh Agents");
+                        btnRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        btnRefreshAgents.setEnabled(false);
+                        btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
+                        panel3.add(btnRefreshAgents);
                     }
                     pnlAgents.add(panel3, BorderLayout.SOUTH);
                 }
@@ -722,11 +739,11 @@ public class FrameMain extends JFrame {
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
     private JPanel panel4;
-    private JToggleButton tbRefreshServer;
+    private JButton btnRefreshServer;
     private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
     private JPanel panel3;
-    private JToggleButton tbRefreshAgents;
+    private JButton btnRefreshAgents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

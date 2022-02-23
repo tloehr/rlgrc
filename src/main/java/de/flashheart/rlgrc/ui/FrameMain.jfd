@@ -160,14 +160,6 @@ new FormModel {
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 							name: "panel4"
-							add( new FormComponent( "javax.swing.JButton" ) {
-								name: "btnRefreshServer"
-								"text": "Server Status"
-								"font": new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
-								"enabled": false
-								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshServer", true ) )
-							} )
 						}, new FormLayoutConstraints( class java.lang.String ) {
 							"value": "South"
 						} )

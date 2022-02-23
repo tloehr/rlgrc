@@ -155,10 +155,6 @@ public class FrameMain extends JFrame {
         });
     }
 
-//    private void set_params_enabled(boolean enabled) {
-//        pnlGames.setEnabledAt(0, enabled);
-//    }
-
     private void btnConnect(ActionEvent e) {
         connect();
     }
@@ -172,7 +168,7 @@ public class FrameMain extends JFrame {
             pnlMain.setEnabledAt(TAB_GAMES, true);
             pnlMain.setEnabledAt(TAB_SERVER, true);
             pnlMain.setEnabledAt(TAB_AGENTS, true);
-            btnRefreshServer.setEnabled(true);
+            //btnRefreshServer.setEnabled(true);
             btnRefreshAgents.setEnabled(true);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
         } catch (JSONException e) {
@@ -199,24 +195,24 @@ public class FrameMain extends JFrame {
         pnlMain.setEnabledAt(TAB_GAMES, false);
         pnlMain.setEnabledAt(TAB_SERVER, false);
         pnlMain.setEnabledAt(TAB_AGENTS, false);
-        btnRefreshServer.setEnabled(false);
+        //btnRefreshServer.setEnabled(false);
         btnRefreshAgents.setEnabled(false);
     }
 
-    private void initRefresh() throws SchedulerException {
-        if (scheduler.checkExists(agentJob)) return;
-        JobDetail job = newJob(ServerRefreshJob.class)
-                .withIdentity(agentJob)
-                .build();
-
-        agentTrigger = newTrigger()
-                .withIdentity(ServerRefreshJob.name + "-trigger", "group1")
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInSeconds(15)
-                        .repeatForever())
-                .build();
-        scheduler.scheduleJob(job, agentTrigger);
-    }
+//    private void initRefresh() throws SchedulerException {
+//        if (scheduler.checkExists(agentJob)) return;
+//        JobDetail job = newJob(ServerRefreshJob.class)
+//                .withIdentity(agentJob)
+//                .build();
+//
+//        agentTrigger = newTrigger()
+//                .withIdentity(ServerRefreshJob.name + "-trigger", "group1")
+//                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+//                        .withIntervalInSeconds(15)
+//                        .repeatForever())
+//                .build();
+//        scheduler.scheduleJob(job, agentTrigger);
+//    }
 
     private void refreshAgents() {
         JSONObject request = get("system/list_agents");
@@ -231,6 +227,7 @@ public class FrameMain extends JFrame {
     }
 
     private void resfreshServerStatus() {
+        guiFSM.ProcessFSM("game_slot_changed");
         get("game/status", GAMEID);
     }
 
@@ -490,7 +487,6 @@ public class FrameMain extends JFrame {
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
         panel4 = new JPanel();
-        btnRefreshServer = new JButton();
         pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
         panel3 = new JPanel();
@@ -667,14 +663,6 @@ public class FrameMain extends JFrame {
                     //======== panel4 ========
                     {
                         panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
-
-                        //---- btnRefreshServer ----
-                        btnRefreshServer.setText("Server Status");
-                        btnRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        btnRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
-                        btnRefreshServer.setEnabled(false);
-                        btnRefreshServer.addActionListener(e -> btnRefreshServer(e));
-                        panel4.add(btnRefreshServer);
                     }
                     pnlServer.add(panel4, BorderLayout.SOUTH);
                 }
@@ -739,7 +727,6 @@ public class FrameMain extends JFrame {
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
     private JPanel panel4;
-    private JButton btnRefreshServer;
     private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;

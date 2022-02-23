@@ -16,12 +16,12 @@
         <MESSAGE id="load_game" nextState="PROLOG"/>
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="run" nextState="RUNNING"/>
-        <MESSAGE id="unload" nextState="EDIT_GAME"/>
+        <MESSAGE id="unload" nextState="CREATE_GAME"/>
     </STATE>
     <STATE id="PAUSING">
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="reset" nextState="PROLOG"/>
-        <MESSAGE id="unload" nextState="GAME_SLOT_SELECTED"/>
+        <MESSAGE id="unload" nextState="CREATE_GAME"/>
         <MESSAGE id="run" nextState="RUNNING"/>
     </STATE>
     <STATE id="RUNNING">
@@ -32,6 +32,6 @@
     <STATE id="EPILOG">
         <MESSAGE id="game_slot_changed" nextState="GAME_SLOT_CHANGED"/>
         <MESSAGE id="reset" nextState="PROLOG"/>
-        <MESSAGE id="unload" nextState="EDIT_GAME"/>
+        <MESSAGE id="unload" nextState="CREATE_GAME"/>
     </STATE>
 </FSM>

@@ -51,10 +51,10 @@ public class FrameMain extends JFrame {
     private static final int TAB_AGENTS = 2;
     private final Scheduler scheduler;
     private final Configs configs;
-    private SimpleTrigger agentTrigger;
-    private final JobKey agentJob;
+//    private SimpleTrigger agentTrigger;
+//    private final JobKey agentJob;
     private Client client = ClientBuilder.newClient();
-    private final int MAX_LOG_LINES = 200;
+    private final int MAX_LOG_LINES = 400;
     private final FSM guiFSM;
     private ArrayList<JToggleButton> GAME_SELECT_BUTTONS;
     private boolean connected;
@@ -73,7 +73,7 @@ public class FrameMain extends JFrame {
         this.configs = configs;
         this.connected = false;
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
-        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
+//        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
 //        this.scheduler.getContext().put("rlgrc", this);
 //        this.scheduler.start();
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
@@ -105,6 +105,7 @@ public class FrameMain extends JFrame {
         guiFSM.setStatesAfterTransition("CREATE_GAME", (state, obj) -> {
             log.debug("FSM State: {}", state);
             pnlMain.setEnabledAt(TAB_GAMES, true);
+            pnlMain.setSelectedIndex(TAB_GAMES);
             btnLoadGame.setEnabled(true);
             btnRun.setEnabled(false);
             btnPause.setEnabled(false);
@@ -228,7 +229,6 @@ public class FrameMain extends JFrame {
 
     private void resfreshServerStatus() {
         guiFSM.ProcessFSM("game_slot_changed");
-        get("game/status", GAMEID);
     }
 
     private void createUIComponents() {
@@ -487,6 +487,7 @@ public class FrameMain extends JFrame {
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
         panel4 = new JPanel();
+        btnRefreshServer = new JButton();
         pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
         panel3 = new JPanel();
@@ -663,6 +664,14 @@ public class FrameMain extends JFrame {
                     //======== panel4 ========
                     {
                         panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
+
+                        //---- btnRefreshServer ----
+                        btnRefreshServer.setText("Refresh Server Status");
+                        btnRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        btnRefreshServer.setEnabled(false);
+                        btnRefreshServer.addActionListener(e -> btnRefreshServer(e));
+                        panel4.add(btnRefreshServer);
                     }
                     pnlServer.add(panel4, BorderLayout.SOUTH);
                 }
@@ -727,6 +736,7 @@ public class FrameMain extends JFrame {
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
     private JPanel panel4;
+    private JButton btnRefreshServer;
     private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;

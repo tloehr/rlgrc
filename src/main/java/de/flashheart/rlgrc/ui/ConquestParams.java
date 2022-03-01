@@ -69,7 +69,7 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                "pref:grow, $rgap, default, $ugap, pref:grow, $rgap, default",
+                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
                 "4*(default, $lgap), fill:default:grow"));
 
             //---- txtComment ----

@@ -161,7 +161,7 @@ public class FrameMain extends JFrame {
     }
 
     private void connect() {
-        if (connected) disconnect();
+        if (connected) return;
         try {
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
@@ -169,7 +169,7 @@ public class FrameMain extends JFrame {
             pnlMain.setEnabledAt(TAB_GAMES, true);
             pnlMain.setEnabledAt(TAB_SERVER, true);
             pnlMain.setEnabledAt(TAB_AGENTS, true);
-            //btnRefreshServer.setEnabled(true);
+            btnRefreshServer.setEnabled(true);
             btnRefreshAgents.setEnabled(true);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
         } catch (JSONException e) {
@@ -196,7 +196,7 @@ public class FrameMain extends JFrame {
         pnlMain.setEnabledAt(TAB_GAMES, false);
         pnlMain.setEnabledAt(TAB_SERVER, false);
         pnlMain.setEnabledAt(TAB_AGENTS, false);
-        //btnRefreshServer.setEnabled(false);
+        btnRefreshServer.setEnabled(false);
         btnRefreshAgents.setEnabled(false);
     }
 
@@ -669,7 +669,6 @@ public class FrameMain extends JFrame {
                         btnRefreshServer.setText("Refresh Server Status");
                         btnRefreshServer.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnRefreshServer.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
-                        btnRefreshServer.setEnabled(false);
                         btnRefreshServer.addActionListener(e -> btnRefreshServer(e));
                         panel4.add(btnRefreshServer);
                     }
@@ -695,7 +694,6 @@ public class FrameMain extends JFrame {
                         btnRefreshAgents.setText("Refresh Agents");
                         btnRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
-                        btnRefreshAgents.setEnabled(false);
                         btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
                         panel3.add(btnRefreshAgents);
                     }

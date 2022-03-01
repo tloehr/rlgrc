@@ -6,7 +6,7 @@ new FormModel {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-				"$columnSpecs": "pref:grow, relgap, default, unrelgap, pref:grow, relgap, default"
+				"$columnSpecs": "pref, relgap, default:grow, unrelgap, pref, relgap, default:grow"
 				"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, fill:default:grow"
 			} ) {
 				name: "pnlConquest"

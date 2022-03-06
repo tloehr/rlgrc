@@ -51,8 +51,7 @@ public class FrameMain extends JFrame {
     private static final int TAB_AGENTS = 2;
     private final Scheduler scheduler;
     private final Configs configs;
-//    private SimpleTrigger agentTrigger;
-//    private final JobKey agentJob;
+
     private Client client = ClientBuilder.newClient();
     private final int MAX_LOG_LINES = 400;
     private final FSM guiFSM;
@@ -73,6 +72,7 @@ public class FrameMain extends JFrame {
         this.configs = configs;
         this.connected = false;
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
+        setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
 //        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
 //        this.scheduler.getContext().put("rlgrc", this);
 //        this.scheduler.start();
@@ -346,7 +346,7 @@ public class FrameMain extends JFrame {
 
     private void btnLoadFile(ActionEvent e) {
         try {
-            File file =((GameParams) pnlGames.getSelectedComponent()).load_file();
+            File file = ((GameParams) pnlGames.getSelectedComponent()).load_file();
             if (file == null) lblFile.setText("no file");
             else lblFile.setText(file.getPath());
         } catch (IOException ex) {
@@ -497,14 +497,14 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                    "default:grow",
+                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -549,9 +549,9 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
                 btnLoadGame.addActionListener(e -> {
-			btnLoadGame(e);
-			btnLoadGame(e);
-		});
+                    btnLoadGame(e);
+                    btnLoadGame(e);
+                });
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----
@@ -598,8 +598,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "default:grow, $lgap, default"));
+                            "default:grow",
+                            "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {

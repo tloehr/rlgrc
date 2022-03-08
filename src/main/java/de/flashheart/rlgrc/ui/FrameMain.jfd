@@ -93,6 +93,7 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "pnlMain"
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+					"enabled": false
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 						"$columnSpecs": "default:grow"
 						"$rowSpecs": "default:grow, linegap, default"
@@ -173,7 +174,10 @@ new FormModel {
 					}, new FormLayoutConstraints( null ) {
 						"title": "Server"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+						"$columnSpecs": "default:grow, unrelgap, 32dlu:grow"
+						"$rowSpecs": "fill:default:grow, fill:default"
+					} ) {
 						name: "pnlAgents"
 						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 							name: "scrollPane3"
@@ -185,8 +189,20 @@ new FormModel {
 									"JavaCodeGenerator.customCreate": true
 								}
 							} )
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "Center"
+						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+							"gridX": 1
+							"gridY": 1
+						} )
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "scrollPane1"
+							add( new FormComponent( "javax.swing.JTextArea" ) {
+								name: "txtAgent"
+								"wrapStyleWord": true
+								"lineWrap": true
+							} )
+						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+							"gridX": 3
+							"gridHeight": 2
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 							name: "panel3"
@@ -197,8 +213,10 @@ new FormModel {
 								"icon": #SwingIcon0
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshAgents", true ) )
 							} )
-						}, new FormLayoutConstraints( class java.lang.String ) {
-							"value": "South"
+						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+							"gridX": 1
+							"gridY": 2
+							"gridWidth": 3
 						} )
 					}, new FormLayoutConstraints( null ) {
 						"title": "Agents"
@@ -218,4 +236,3 @@ new FormModel {
 		} )
 	}
 }
-

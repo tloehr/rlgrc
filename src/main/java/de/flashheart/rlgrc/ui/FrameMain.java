@@ -9,6 +9,7 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.ServerRefreshJob;
 import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -25,6 +26,10 @@ import org.xml.sax.SAXException;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.xml.parsers.ParserConfigurationException;
@@ -88,7 +93,14 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
+        tblAgents.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()){
+                String state = ((TM_Agents) tblAgents.getModel()).getValueAt(e.getFirstIndex());
+                txtAgent.setText(state);
+            }
+        });
         pnlGames.add("Conquest", new ConquestParams());
+
         config_fsm();
     }
 
@@ -166,11 +178,9 @@ public class FrameMain extends JFrame {
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
             for (int i = 0; i < max_number_of_games; i++) add_game_select_button(i + 1);
-            pnlMain.setEnabledAt(TAB_GAMES, true);
-            pnlMain.setEnabledAt(TAB_SERVER, true);
-            pnlMain.setEnabledAt(TAB_AGENTS, true);
-            btnRefreshServer.setEnabled(true);
-            btnRefreshAgents.setEnabled(true);
+            pnlMain.setEnabled(true);
+//            btnRefreshServer.setEnabled(true);
+//            btnRefreshAgents.setEnabled(true);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
         } catch (JSONException e) {
             log.error(e);
@@ -193,11 +203,9 @@ public class FrameMain extends JFrame {
         btnConnect.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
         btnConnect.setText(null);
         btnConnect.setToolTipText(null);
-        pnlMain.setEnabledAt(TAB_GAMES, false);
-        pnlMain.setEnabledAt(TAB_SERVER, false);
-        pnlMain.setEnabledAt(TAB_AGENTS, false);
-        btnRefreshServer.setEnabled(false);
-        btnRefreshAgents.setEnabled(false);
+        pnlMain.setEnabled(false);
+//        btnRefreshServer.setEnabled(false);
+//        btnRefreshAgents.setEnabled(false);
     }
 
 //    private void initRefresh() throws SchedulerException {
@@ -219,6 +227,7 @@ public class FrameMain extends JFrame {
         JSONObject request = get("system/list_agents");
         SwingUtilities.invokeLater(() -> {
             ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+            txtAgent.setText(null);
         });
     }
 
@@ -232,14 +241,14 @@ public class FrameMain extends JFrame {
     }
 
     private void createUIComponents() {
-        tblAgents = new JTable(new TM_Agents(new JSONObject())) {
+        tblAgents = new JTable(new TM_Agents(new JSONObject(), configs)) {
             @Override
             public String getToolTipText(MouseEvent e) {
                 //Implement table cell tool tips.
                 java.awt.Point p = e.getPoint();
                 int rowIndex = rowAtPoint(p);
                 TM_Agents model = (TM_Agents) getModel();
-                log.debug(model.getValueAt(rowIndex));
+                log.debug(model.getTooltipAt(rowIndex));
                 return "<html><p>" + model.getValueAt(rowIndex) + "</p></html>";
             }
         };
@@ -303,7 +312,7 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
+            //addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             set_response_status(response);
             response.close();
             //connect();
@@ -451,6 +460,33 @@ public class FrameMain extends JFrame {
         guiFSM.ProcessFSM("unload");
     }
 
+// source: https://stackoverflow.com/a/26046778
+//    public MyJFrame() {
+//        initComponents();
+//        resizeColumns();
+//        addComponentListener(new ComponentAdapter() {
+//            @Override
+//            public void componentResized(ComponentEvent e) {
+//                resizeColumns();
+//            }
+//        });
+//    }
+//    //SUMS 1
+//    float[] columnWidthPercentage = {0.2f, 0.55f, 0.1f, 0.05f, 0.05f, 0.05f};
+//
+//    private void resizeColumns() {
+//        // Use TableColumnModel.getTotalColumnWidth() if your table is included in a JScrollPane
+//        int tW = jTable1.getWidth();
+//        TableColumn column;
+//        TableColumnModel jTableColumnModel = jTable1.getColumnModel();
+//        int cantCols = jTableColumnModel.getColumnCount();
+//        for (int i = 0; i < cantCols; i++) {
+//            column = jTableColumnModel.getColumn(i);
+//            int pWidth = Math.round(columnWidthPercentage[i] * tW);
+//            column.setPreferredWidth(pWidth);
+//        }
+//    }
+
     private void btnRefreshAgents(ActionEvent e) {
         refreshAgents();
     }
@@ -490,6 +526,8 @@ public class FrameMain extends JFrame {
         btnRefreshServer = new JButton();
         pnlAgents = new JPanel();
         scrollPane3 = new JScrollPane();
+        scrollPane1 = new JScrollPane();
+        txtAgent = new JTextArea();
         panel3 = new JPanel();
         btnRefreshAgents = new JButton();
 
@@ -497,14 +535,14 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -549,9 +587,9 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
                 btnLoadGame.addActionListener(e -> {
-                    btnLoadGame(e);
-                    btnLoadGame(e);
-                });
+			btnLoadGame(e);
+			btnLoadGame(e);
+		});
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----
@@ -594,12 +632,13 @@ public class FrameMain extends JFrame {
             //======== pnlMain ========
             {
                 pnlMain.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                pnlMain.setEnabled(false);
 
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "default:grow, $lgap, default"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -678,13 +717,25 @@ public class FrameMain extends JFrame {
 
                 //======== pnlAgents ========
                 {
-                    pnlAgents.setLayout(new BorderLayout());
+                    pnlAgents.setLayout(new FormLayout(
+                        "default:grow, $ugap, 32dlu:grow",
+                        "fill:default:grow, fill:default"));
 
                     //======== scrollPane3 ========
                     {
                         scrollPane3.setViewportView(tblAgents);
                     }
-                    pnlAgents.add(scrollPane3, BorderLayout.CENTER);
+                    pnlAgents.add(scrollPane3, CC.xy(1, 1));
+
+                    //======== scrollPane1 ========
+                    {
+
+                        //---- txtAgent ----
+                        txtAgent.setWrapStyleWord(true);
+                        txtAgent.setLineWrap(true);
+                        scrollPane1.setViewportView(txtAgent);
+                    }
+                    pnlAgents.add(scrollPane1, CC.xywh(3, 1, 1, 2));
 
                     //======== panel3 ========
                     {
@@ -697,7 +748,7 @@ public class FrameMain extends JFrame {
                         btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
                         panel3.add(btnRefreshAgents);
                     }
-                    pnlAgents.add(panel3, BorderLayout.SOUTH);
+                    pnlAgents.add(panel3, CC.xywh(1, 2, 3, 1));
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
@@ -738,6 +789,8 @@ public class FrameMain extends JFrame {
     private JPanel pnlAgents;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
+    private JScrollPane scrollPane1;
+    private JTextArea txtAgent;
     private JPanel panel3;
     private JButton btnRefreshAgents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

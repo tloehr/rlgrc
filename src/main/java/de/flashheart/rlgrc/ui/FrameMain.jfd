@@ -94,6 +94,7 @@ new FormModel {
 					name: "pnlMain"
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 					"enabled": false
+					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "pnlMainStateChanged", true ) )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 						"$columnSpecs": "default:grow"
 						"$rowSpecs": "default:grow, linegap, default"

@@ -7,9 +7,7 @@ package de.flashheart.rlgrc.ui;
 import com.github.ankzz.dynamicfsm.fsm.FSM;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
-import de.flashheart.rlgrc.jobs.ServerRefreshJob;
 import de.flashheart.rlgrc.misc.Configs;
-import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -19,22 +17,23 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.quartz.*;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +41,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
-
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author Torsten Löhr
@@ -93,11 +89,15 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         txtURI.setText(configs.get(Configs.REST_URI));
+
+        tblAgents.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tblAgents.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                String state = ((TM_Agents) tblAgents.getModel()).getValueAt(e.getFirstIndex());
-                txtAgent.setText(state);
-            }
+            if (e.getValueIsAdjusting()) return;
+            final DefaultListSelectionModel target = (DefaultListSelectionModel) e.getSource();
+            int selection = target.getAnchorSelectionIndex();
+            if (selection < 0) return;
+            String state = ((TM_Agents) tblAgents.getModel()).getValueAt(selection);
+            txtAgent.setText(tblAgents.getModel().getValueAt(selection, 0) + "\n\n" + state);
         });
         pnlGames.add("Conquest", new ConquestParams());
 
@@ -156,7 +156,7 @@ public class FrameMain extends JFrame {
             btnReset.setEnabled(false);
             btnUnload.setEnabled(false);
         });
-        // todo: how does we know that its over ?
+        // todo: how do we know that its over ?
         guiFSM.setStatesAfterTransition("EPILOG", (state, obj) -> {
             log.debug("FSM State: {}", state);
             pnlMain.setEnabledAt(TAB_GAMES, true);
@@ -212,17 +212,21 @@ public class FrameMain extends JFrame {
 
 
     private void createUIComponents() {
-        tblAgents = new JTable(new TM_Agents(new JSONObject(), configs)) {
-            @Override
-            public String getToolTipText(MouseEvent e) {
-                //Implement table cell tool tips.
-                java.awt.Point p = e.getPoint();
-                int rowIndex = rowAtPoint(p);
-                TM_Agents model = (TM_Agents) getModel();
-                log.debug(model.getTooltipAt(rowIndex));
-                return "<html><p>" + model.getValueAt(rowIndex) + "</p></html>";
-            }
-        };
+        tblAgents = new JTable(new TM_Agents(new JSONObject(), configs));
+
+        /**
+         *  {
+         *             @Override
+         *             public String getToolTipText(MouseEvent e) {
+         *                 //Implement table cell tool tips.
+         *                 java.awt.Point p = e.getPoint();
+         *                 int rowIndex = rowAtPoint(p);
+         *                 TM_Agents model = (TM_Agents) getModel();
+         *                 log.debug(model.getTooltipAt(rowIndex));
+         *                 return "<html><p>" + model.getValueAt(rowIndex) + "</p></html>";
+         *             }
+         */
+
     }
 
     private JSONObject post(String uri, String id) {
@@ -283,10 +287,8 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            //addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             set_response_status(response);
             response.close();
-            //connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
             set_response_status(connectException);
@@ -461,13 +463,20 @@ public class FrameMain extends JFrame {
     private void btnRefreshAgents(ActionEvent e) {
         JSONObject request = get("system/list_agents");
         SwingUtilities.invokeLater(() -> {
-            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+            tblAgents.getSelectionModel().clearSelection();
             txtAgent.setText(null);
+            ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
         });
     }
 
     private void btnRefreshServer(ActionEvent e) {
         get("game/status", GAMEID);
+    }
+
+    private void pnlMainStateChanged(ChangeEvent e) {
+        if (pnlMain.getSelectedIndex() == TAB_AGENTS) {
+            btnRefreshAgents(null);
+        }
     }
 
     private void initComponents() {
@@ -608,6 +617,7 @@ public class FrameMain extends JFrame {
             {
                 pnlMain.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 pnlMain.setEnabled(false);
+                pnlMain.addChangeListener(e -> pnlMainStateChanged(e));
 
                 //======== pnlParams ========
                 {

@@ -71,7 +71,7 @@ public class TM_Agents extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        log.debug("rowindex {}, colindex{}, agents {}", rowIndex, columnIndex, agents.size());
+        log.trace("rowindex {}, colindex{}, agents {}", rowIndex, columnIndex, agents.size());
         String agent = agents.get(rowIndex);
         Object value;
 
@@ -95,8 +95,7 @@ public class TM_Agents extends AbstractTableModel {
             case 3: {
                 String ap = agents_states.get(agent, "ap");
                 // check if there is a better name for this ap in config.txt. If not we simply show the MAC address.
-                ap = configs.get("AP_" + ap.toUpperCase().replaceAll(":","-"), ap);
-                value = ap;
+                value = configs.get("ap_" + ap.toLowerCase(), ap);
                 break;
             }
             case 4: {

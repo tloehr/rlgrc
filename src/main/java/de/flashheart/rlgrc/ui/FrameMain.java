@@ -519,14 +519,14 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default:grow",
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
 
             //======== panel1 ========
             {
@@ -571,9 +571,9 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
                 btnLoadGame.addActionListener(e -> {
-                    btnLoadGame(e);
-                    btnLoadGame(e);
-                });
+			btnLoadGame(e);
+			btnLoadGame(e);
+		});
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----
@@ -622,8 +622,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "default:grow, $lgap, default"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -703,8 +703,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, 32dlu:grow",
-                            "fill:default:grow, fill:default"));
+                        "default:grow, $ugap, 32dlu:grow",
+                        "fill:default:grow, fill:default"));
 
                     //======== scrollPane3 ========
                     {

@@ -11,7 +11,7 @@ new FormModel {
 			"defaultCloseOperation": 3
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 				"$columnSpecs": "default:grow"
-				"$rowSpecs": "default, relgap, default, linegap, default, linegap, default, relgap, default, linegap, fill:default:grow, linegap, default"
+				"$rowSpecs": "default, relgap, default, linegap, default, linegap, default, relgap, default, linegap, fill:default:grow"
 			} ) {
 				name: "mainPanel"
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
@@ -223,7 +223,7 @@ new FormModel {
 						"title": "Agents"
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridHeight": 7
+					"gridHeight": 5
 					"gridY": 7
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {

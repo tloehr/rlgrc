@@ -41,6 +41,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * @author Torsten Löhr
@@ -317,9 +318,8 @@ public class FrameMain extends JFrame {
 
     private void btnSaveFile(ActionEvent e) {
         try {
-            File file = ((GameParams) pnlGames.getSelectedComponent()).save_file();
-            if (file == null) lblFile.setText("no file");
-            else lblFile.setText(file.getPath());
+            ((GameParams) pnlGames.getSelectedComponent()).save_file();
+            lblFile.setText(((GameParams) pnlGames.getSelectedComponent()).getFilename());
         } catch (IOException ex) {
             log.error(ex);
             addLog(ex.getMessage());
@@ -328,9 +328,8 @@ public class FrameMain extends JFrame {
 
     private void btnLoadFile(ActionEvent e) {
         try {
-            File file = ((GameParams) pnlGames.getSelectedComponent()).load_file();
-            if (file == null) lblFile.setText("no file");
-            else lblFile.setText(file.getPath());
+            ((GameParams) pnlGames.getSelectedComponent()).load_file();
+            lblFile.setText(((GameParams) pnlGames.getSelectedComponent()).getFilename());
         } catch (IOException ex) {
             log.error(ex);
             addLog(ex.getMessage());
@@ -339,7 +338,7 @@ public class FrameMain extends JFrame {
 
     private void btnFileNew(ActionEvent e) {
         ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
-        lblFile.setText("no file");
+        lblFile.setText( ((GameParams) pnlGames.getSelectedComponent()).getFilename());
     }
 
     private void initLogger() {
@@ -526,7 +525,7 @@ public class FrameMain extends JFrame {
         {
             mainPanel.setLayout(new FormLayout(
                 "default:grow",
-                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow, $lgap, default"));
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -737,7 +736,7 @@ public class FrameMain extends JFrame {
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
-            mainPanel.add(pnlMain, CC.xywh(1, 7, 1, 7));
+            mainPanel.add(pnlMain, CC.xywh(1, 7, 1, 5));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         pack();

@@ -8,26 +8,29 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.io.*;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 @Log4j2
 public abstract class GameParams extends JPanel {
-    JSONObject params;
-    Optional<File> file;
+    protected JSONObject params;
+    protected Optional<File> file;
 
     public GameParams() {
         super();
         file = Optional.empty();
     }
 
+    public String getFilename() {
+        return file.isEmpty() ? "no file" : file.get().getPath();
+    }
+
     abstract String getMode();
 
     abstract void set_parameters();
 
-    void set_parameters(JSONObject params){
+    void set_parameters(JSONObject params) {
         this.params = params;
         set_parameters();
     }
@@ -35,6 +38,7 @@ public abstract class GameParams extends JPanel {
     abstract JSONObject read_parameters();
 
     void load_defaults() {
+        file = Optional.empty();
         StringBuffer stringBuffer = new StringBuffer();
         InputStream in = getClass().getResourceAsStream("/defaults/" + getMode() + ".json");
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -43,20 +47,19 @@ public abstract class GameParams extends JPanel {
         set_parameters();
     }
 
-    File load_file() throws IOException {
-        file = choose_file(false);
-        if (file.isEmpty()) return null;
-        params = new JSONObject(FileUtils.readFileToString(file.get()));
+    Optional<File> load_file() throws IOException {
+        Optional<File> myFile = choose_file(false);
+        if (myFile.isEmpty()) return file;
+        params = new JSONObject(FileUtils.readFileToString(myFile.get()));
         set_parameters();
-        return file.get();
+        return myFile;
     }
 
-    File save_file() throws IOException {
-        if (params.isEmpty()) return null;
+    void save_file() throws IOException {
+        if (params.isEmpty()) return;
         if (file.isEmpty()) file = choose_file(true);
-        if (file.isEmpty()) return null;
-        FileUtils.writeStringToFile(file.get(), params.toString(4));
-        return file.get();
+        if (file.isEmpty()) return;
+        FileUtils.writeStringToFile(file.get(), read_parameters().toString(4));
     }
 
     Optional<File> choose_file(boolean save) {
@@ -64,16 +67,16 @@ public abstract class GameParams extends JPanel {
         int result;// = JFileChooser.CANCEL_OPTION;
         if (save) result = fileChooser.showSaveDialog(this);
         else result = fileChooser.showOpenDialog(this);
-        Optional<File> file = Optional.empty();
+        Optional<File> myFile = Optional.empty();
         if (result == JFileChooser.APPROVE_OPTION) {
             File chosen = fileChooser.getSelectedFile();
             String filePath = chosen.getAbsolutePath();
-            if(!filePath.endsWith(".json")) {
+            if (!filePath.endsWith(".json")) {
                 chosen = new File(filePath + ".json");
             }
-            file = Optional.of(chosen);
+            myFile = Optional.of(chosen);
         }
-        return file;
+        return myFile;
     }
 
     String to_string_list(JSONArray jsonArray) {

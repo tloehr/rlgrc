@@ -11,6 +11,7 @@ import de.flashheart.rlgrc.misc.Configs;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
@@ -41,7 +42,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * @author Torsten Löhr
@@ -59,6 +62,7 @@ public class FrameMain extends JFrame {
     private final FSM guiFSM;
     private ArrayList<JToggleButton> GAME_SELECT_BUTTONS;
     private boolean connected;
+    private Optional<String> selected_agent;
     private final ButtonGroup buttonGroup1 = new ButtonGroup();
     private final ActionListener actionListener = new ActionListener() {
         @Override
@@ -67,12 +71,24 @@ public class FrameMain extends JFrame {
             guiFSM.ProcessFSM("game_slot_changed");
         }
     };
+    private final ActionListener testAction = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (selected_agent.isEmpty()) return;
+            Properties properties = new Properties();
+            properties.put("agentid", selected_agent.get());
+            properties.put("deviceid", e.getActionCommand());
+            post("system/test_agent", "{}", properties);
+        }
+    };
+
     private String GAMEID = "";
 
     public FrameMain(Configs configs) throws SchedulerException, IOException, ParserConfigurationException, SAXException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
         this.configs = configs;
         this.connected = false;
+        this.selected_agent = Optional.empty();
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
 //        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
@@ -94,13 +110,26 @@ public class FrameMain extends JFrame {
         tblAgents.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tblAgents.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
+            selected_agent = Optional.empty();
             final DefaultListSelectionModel target = (DefaultListSelectionModel) e.getSource();
+            if (target.isSelectionEmpty()) return;
             int selection = target.getAnchorSelectionIndex();
             if (selection < 0) return;
             String state = ((TM_Agents) tblAgents.getModel()).getValueAt(selection);
             txtAgent.setText(tblAgents.getModel().getValueAt(selection, 0) + "\n\n" + state);
+            selected_agent = Optional.of(tblAgents.getModel().getValueAt(selection, 0).toString());
         });
         pnlGames.add("Conquest", new ConquestParams());
+
+        button1.addActionListener(testAction);
+        button2.addActionListener(testAction);
+        button3.addActionListener(testAction);
+        button4.addActionListener(testAction);
+        button5.addActionListener(testAction);
+        button6.addActionListener(testAction);
+        button7.addActionListener(testAction);
+        button8.addActionListener(testAction);
+        button9.addActionListener(testAction);
 
         config_fsm();
     }
@@ -230,19 +259,54 @@ public class FrameMain extends JFrame {
 
     }
 
-    private JSONObject post(String uri, String id) {
-        return post(uri, id, "{}");
+    /**
+     * conveniance method
+     *
+     * @param uri
+     * @param body
+     * @param id
+     * @return
+     */
+    private JSONObject post(String uri, String body, String id) {
+        Properties properties = new Properties();
+        properties.put("id", id);
+        return post(uri, "{}", properties);
     }
 
-    private JSONObject post(String uri, String id, String body) {
+    /**
+     * conveniance method
+     *
+     * @param uri
+     * @param id
+     * @return
+     */
+    private JSONObject post(String uri, String id) {
+        return post(uri, "{}", id);
+    }
+
+    /**
+     * posts a REST request.
+     *
+     * @param uri
+     * @param body
+     * @param params
+     * @return
+     */
+    private JSONObject post(String uri, String body, Properties params) {
         JSONObject json = new JSONObject();
 
         try {
-            Response response = client
-                    .target(txtURI.getText().trim() + "/api/" + uri)
-                    .queryParam("id", id)
+            WebTarget target = client
+                    .target(txtURI.getText().trim() + "/api/" + uri);
+
+            for (Map.Entry entry : params.entrySet()) {
+                target = target.queryParam(entry.getKey().toString(), entry.getValue());
+            }
+
+            Response response = target
                     .request(MediaType.APPLICATION_JSON)
                     .post(Entity.json(body));
+
             String entity = response.readEntity(String.class);
             if (entity.isEmpty()) json = new JSONObject();
             else json = new JSONObject(entity);
@@ -338,7 +402,7 @@ public class FrameMain extends JFrame {
 
     private void btnFileNew(ActionEvent e) {
         ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
-        lblFile.setText( ((GameParams) pnlGames.getSelectedComponent()).getFilename());
+        lblFile.setText(((GameParams) pnlGames.getSelectedComponent()).getFilename());
     }
 
     private void initLogger() {
@@ -404,7 +468,7 @@ public class FrameMain extends JFrame {
     }
 
     private void btnLoadGame(ActionEvent e) {
-        post("game/load", GAMEID, ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString());
+        post("game/load", ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString(), GAMEID);
         guiFSM.ProcessFSM("load_game");
     }
 
@@ -465,6 +529,7 @@ public class FrameMain extends JFrame {
             tblAgents.getSelectionModel().clearSelection();
             txtAgent.setText(null);
             ((TM_Agents) tblAgents.getModel()).refresh_agents(request);
+            selected_agent = Optional.empty();
         });
     }
 
@@ -477,6 +542,7 @@ public class FrameMain extends JFrame {
             btnRefreshAgents(null);
         }
     }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -508,10 +574,21 @@ public class FrameMain extends JFrame {
         panel4 = new JPanel();
         btnRefreshServer = new JButton();
         pnlAgents = new JPanel();
+        panel7 = new JSplitPane();
         scrollPane3 = new JScrollPane();
         scrollPane1 = new JScrollPane();
         txtAgent = new JTextArea();
-        panel3 = new JPanel();
+        pnlTesting = new JPanel();
+        label1 = new JLabel();
+        button1 = new JButton();
+        button2 = new JButton();
+        button3 = new JButton();
+        button4 = new JButton();
+        button5 = new JButton();
+        button6 = new JButton();
+        button7 = new JButton();
+        button8 = new JButton();
+        button9 = new JButton();
         btnRefreshAgents = new JButton();
 
         //======== this ========
@@ -564,7 +641,7 @@ public class FrameMain extends JFrame {
                 //---- btnLoadGame ----
                 btnLoadGame.setText("Load Game");
                 btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                btnLoadGame.setToolTipText("Loag game on the server");
+                btnLoadGame.setToolTipText("Load game on the server");
                 btnLoadGame.setMinimumSize(new Dimension(38, 38));
                 btnLoadGame.setPreferredSize(null);
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
@@ -590,13 +667,14 @@ public class FrameMain extends JFrame {
                 btnPause.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
                 btnPause.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                 btnPause.setEnabled(false);
+                btnPause.setToolTipText("Pause the running game");
                 btnPause.addActionListener(e -> btnPause(e));
                 panel2.add(btnPause);
 
                 //---- btnReset ----
                 btnReset.setText("Reset");
                 btnReset.setIcon(new ImageIcon(getClass().getResource("/artwork/player-reset.png")));
-                btnReset.setToolTipText("Resume Game");
+                btnReset.setToolTipText("Reset the game to the state as if it was just loaded.");
                 btnReset.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                 btnReset.setEnabled(false);
                 btnReset.addActionListener(e -> btnReset(e));
@@ -607,6 +685,7 @@ public class FrameMain extends JFrame {
                 btnUnload.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
                 btnUnload.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                 btnUnload.setEnabled(false);
+                btnUnload.setToolTipText("Remove the loaded game from the commander's memory.");
                 btnUnload.addActionListener(e -> btnUnload(e));
                 panel2.add(btnUnload);
             }
@@ -680,6 +759,7 @@ public class FrameMain extends JFrame {
                         txtLogger.setForeground(new Color(51, 255, 51));
                         txtLogger.setLineWrap(true);
                         txtLogger.setWrapStyleWord(true);
+                        txtLogger.setEditable(false);
                         scrollLog.setViewportView(txtLogger);
                     }
                     pnlServer.add(scrollLog, BorderLayout.CENTER);
@@ -702,37 +782,125 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, 32dlu:grow",
-                        "fill:default:grow, fill:default"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
-                    //======== scrollPane3 ========
+                    //======== panel7 ========
                     {
-                        scrollPane3.setViewportView(tblAgents);
+
+                        //======== scrollPane3 ========
+                        {
+                            scrollPane3.setViewportView(tblAgents);
+                        }
+                        panel7.setLeftComponent(scrollPane3);
+
+                        //======== scrollPane1 ========
+                        {
+
+                            //---- txtAgent ----
+                            txtAgent.setWrapStyleWord(true);
+                            txtAgent.setLineWrap(true);
+                            txtAgent.setEditable(false);
+                            scrollPane1.setViewportView(txtAgent);
+                        }
+                        panel7.setRightComponent(scrollPane1);
                     }
-                    pnlAgents.add(scrollPane3, CC.xy(1, 1));
+                    pnlAgents.add(panel7, CC.xy(1, 1));
 
-                    //======== scrollPane1 ========
+                    //======== pnlTesting ========
                     {
+                        pnlTesting.setLayout(new FormLayout(
+                            "left:default:grow",
+                            "10*(fill:default), fill:9dlu:grow, default"));
 
-                        //---- txtAgent ----
-                        txtAgent.setWrapStyleWord(true);
-                        txtAgent.setLineWrap(true);
-                        scrollPane1.setViewportView(txtAgent);
-                    }
-                    pnlAgents.add(scrollPane1, CC.xywh(3, 1, 1, 2));
+                        //---- label1 ----
+                        label1.setText("Agent Testing");
+                        label1.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        label1.setIcon(new ImageIcon(getClass().getResource("/artwork/infoblue.png")));
+                        label1.setHorizontalTextPosition(SwingConstants.LEADING);
+                        label1.setToolTipText("Sends a test signal to the selected agent. Signal length is 1 second.");
+                        pnlTesting.add(label1, CC.xy(1, 1, CC.FILL, CC.DEFAULT));
 
-                    //======== panel3 ========
-                    {
-                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
+                        //---- button1 ----
+                        button1.setText("White");
+                        button1.setActionCommand("led_wht");
+                        button1.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
+                        button1.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button1.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button1, CC.xy(1, 2, CC.FILL, CC.DEFAULT));
+
+                        //---- button2 ----
+                        button2.setText("Red");
+                        button2.setActionCommand("led_red");
+                        button2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                        button2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button2.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button2, CC.xy(1, 3, CC.FILL, CC.DEFAULT));
+
+                        //---- button3 ----
+                        button3.setText("Yellow");
+                        button3.setActionCommand("led_ylw");
+                        button3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
+                        button3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button3.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button3, CC.xy(1, 4, CC.FILL, CC.DEFAULT));
+
+                        //---- button4 ----
+                        button4.setText("Green");
+                        button4.setActionCommand("led_grn");
+                        button4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
+                        button4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button4.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button4, CC.xy(1, 5, CC.FILL, CC.DEFAULT));
+
+                        //---- button5 ----
+                        button5.setText("Blue");
+                        button5.setActionCommand("led_blu");
+                        button5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
+                        button5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button5.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button5, CC.xy(1, 6, CC.FILL, CC.DEFAULT));
+
+                        //---- button6 ----
+                        button6.setText("Buzzer");
+                        button6.setActionCommand("buzzer");
+                        button6.setIcon(new ImageIcon(getClass().getResource("/artwork/buzzer.png")));
+                        button6.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button6.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button6, CC.xy(1, 7, CC.FILL, CC.DEFAULT));
+
+                        //---- button7 ----
+                        button7.setText("Siren 1");
+                        button7.setActionCommand("sir1");
+                        button7.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
+                        button7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button7.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button7, CC.xy(1, 8, CC.FILL, CC.DEFAULT));
+
+                        //---- button8 ----
+                        button8.setText("Siren 2");
+                        button8.setActionCommand("sir2");
+                        button8.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
+                        button8.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button8.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button8, CC.xy(1, 9, CC.FILL, CC.DEFAULT));
+
+                        //---- button9 ----
+                        button9.setText("Siren 3");
+                        button9.setActionCommand("sir3");
+                        button9.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
+                        button9.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button9.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button9, CC.xy(1, 10, CC.FILL, CC.DEFAULT));
 
                         //---- btnRefreshAgents ----
-                        btnRefreshAgents.setText("Refresh Agents");
+                        btnRefreshAgents.setText("Update");
                         btnRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
                         btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
-                        panel3.add(btnRefreshAgents);
+                        pnlTesting.add(btnRefreshAgents, CC.xy(1, 12));
                     }
-                    pnlAgents.add(panel3, CC.xywh(1, 2, 3, 1));
+                    pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
                 pnlMain.addTab("Agents", pnlAgents);
             }
@@ -771,11 +939,22 @@ public class FrameMain extends JFrame {
     private JPanel panel4;
     private JButton btnRefreshServer;
     private JPanel pnlAgents;
+    private JSplitPane panel7;
     private JScrollPane scrollPane3;
     private JTable tblAgents;
     private JScrollPane scrollPane1;
     private JTextArea txtAgent;
-    private JPanel panel3;
+    private JPanel pnlTesting;
+    private JLabel label1;
+    private JButton button1;
+    private JButton button2;
+    private JButton button3;
+    private JButton button4;
+    private JButton button5;
+    private JButton button6;
+    private JButton button7;
+    private JButton button8;
+    private JButton button9;
     private JButton btnRefreshAgents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

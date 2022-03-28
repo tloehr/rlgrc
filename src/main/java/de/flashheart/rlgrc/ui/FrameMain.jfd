@@ -212,7 +212,7 @@ new FormModel {
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 							"$columnSpecs": "left:default:grow"
-							"$rowSpecs": "fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:9dlu:grow, default"
+							"$rowSpecs": "fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, fill:default, default, fill:9dlu:grow, default"
 						} ) {
 							name: "pnlTesting"
 							add( new FormComponent( "javax.swing.JLabel" ) {
@@ -327,12 +327,23 @@ new FormModel {
 								name: "button9"
 								"text": "Siren 3"
 								"actionCommand": "sir3"
-								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
+								"icon": &SwingIcon1 new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
 								"font": #Font4
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
 								"gridY": 10
+								"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "button10"
+								"text": "Siren 4"
+								"actionCommand": "sir4"
+								"icon": #SwingIcon1
+								"font": #Font4
+								"horizontalAlignment": 2
+							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+								"gridY": 11
 								"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
@@ -342,7 +353,8 @@ new FormModel {
 								"icon": #SwingIcon0
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshAgents", true ) )
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-								"gridY": 12
+								"gridY": 13
+								"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 3

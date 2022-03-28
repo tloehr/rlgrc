@@ -130,6 +130,7 @@ public class FrameMain extends JFrame {
         button7.addActionListener(testAction);
         button8.addActionListener(testAction);
         button9.addActionListener(testAction);
+        button10.addActionListener(testAction);
 
         config_fsm();
     }
@@ -589,6 +590,7 @@ public class FrameMain extends JFrame {
         button7 = new JButton();
         button8 = new JButton();
         button9 = new JButton();
+        button10 = new JButton();
         btnRefreshAgents = new JButton();
 
         //======== this ========
@@ -811,7 +813,7 @@ public class FrameMain extends JFrame {
                     {
                         pnlTesting.setLayout(new FormLayout(
                             "left:default:grow",
-                            "10*(fill:default), fill:9dlu:grow, default"));
+                            "10*(fill:default), default, fill:9dlu:grow, default"));
 
                         //---- label1 ----
                         label1.setText("Agent Testing");
@@ -893,12 +895,20 @@ public class FrameMain extends JFrame {
                         button9.setHorizontalAlignment(SwingConstants.LEFT);
                         pnlTesting.add(button9, CC.xy(1, 10, CC.FILL, CC.DEFAULT));
 
+                        //---- button10 ----
+                        button10.setText("Siren 4");
+                        button10.setActionCommand("sir4");
+                        button10.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
+                        button10.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button10.setHorizontalAlignment(SwingConstants.LEFT);
+                        pnlTesting.add(button10, CC.xy(1, 11, CC.FILL, CC.DEFAULT));
+
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
                         btnRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
                         btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
-                        pnlTesting.add(btnRefreshAgents, CC.xy(1, 12));
+                        pnlTesting.add(btnRefreshAgents, CC.xy(1, 13, CC.FILL, CC.DEFAULT));
                     }
                     pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
@@ -955,6 +965,7 @@ public class FrameMain extends JFrame {
     private JButton button7;
     private JButton button8;
     private JButton button9;
+    private JButton button10;
     private JButton btnRefreshAgents;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

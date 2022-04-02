@@ -37,6 +37,7 @@
         <darcula.version>2018.2</darcula.version>
         <lang3.version>3.12.0</lang3.version>
         <dynamicfsm.version>0.01</dynamicfsm.version>
+        <cxf.version>3.5.1</cxf.version>
     </properties>
 
     <dependencies>
@@ -82,21 +83,6 @@
             <groupId>com.jgoodies</groupId>
             <artifactId>jgoodies-validation</artifactId>
             <version>${jgoodies.validation.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-            <version>2.0.1</version>
         </dependency>
         <!--        <dependency>-->
         <!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
@@ -167,159 +153,201 @@
             <artifactId>dynamicfsm</artifactId>
             <version>${dynamicfsm.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.bundles</groupId>
+            <artifactId>jaxrs-ri</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-client</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.cxf/cxf-rt-rs-sse -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-sse</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>2.1.2</version>
+        </dependency>
     </dependencies>
 
     <scm>
-         <connection>scm:svn:http://127.0.0.1/dummy</connection>
-         <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
-         <tag>HEAD</tag>
-         <url>http://127.0.0.1/dummy</url>
-     </scm>
+        <connection>scm:svn:http://127.0.0.1/dummy</connection>
+        <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
+        <tag>HEAD</tag>
+        <url>http://127.0.0.1/dummy</url>
+    </scm>
 
-     <build>
-         <resources>
-             <resource>
-                 <directory>${project.basedir}/src/main/java</directory>
-                 <excludes>
-                     <exclude>**/*.java</exclude>
-                 </excludes>
-                 <includes>
-                     <include>**/*.properties</include>
-                 </includes>
-             </resource>
-             <resource>
-                 <directory>${project.basedir}/src/main/resources</directory>
-                 <includes>
-                     <include>**/*.*</include>
-                 </includes>
-             </resource>
-         </resources>
-         <plugins>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-compiler-plugin</artifactId>
-                 <version>3.8.1</version>
-                 <configuration>
-                     <source>${maven.compiler.source}</source>
-                     <target>${maven.compiler.target}</target>
-                 </configuration>
-                 <!--                <configuration>-->
-                 <!--                    <release>11</release>-->
-                 <!--                </configuration>-->
-             </plugin>
+    <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+                <!--                <configuration>-->
+                <!--                    <release>11</release>-->
+                <!--                </configuration>-->
+            </plugin>
 
-             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>versions-maven-plugin</artifactId>
-                 <version>2.7</version>
-                 <configuration>
-                     <excludes>
-                         <exclude>org.apache.commons:commons-collections4</exclude>
-                     </excludes>
-                 </configuration>
-             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <excludes>
+                        <exclude>org.apache.commons:commons-collections4</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
 
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-dependency-plugin</artifactId>
-                 <version>3.2.0</version>
-                 <executions>
-                     <execution>
-                         <id>copy-dependencies</id>
-                         <phase>prepare-package</phase>
-                         <goals>
-                             <goal>copy-dependencies</goal>
-                         </goals>
-                         <configuration>
-                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                             <overWriteReleases>false</overWriteReleases>
-                             <overWriteSnapshots>false</overWriteSnapshots>
-                             <overWriteIfNewer>true</overWriteIfNewer>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-jar-plugin</artifactId>
-                 <version>3.0.2</version>
-                 <configuration>
-                     <archive>
-                         <manifest>
-                             <addClasspath>true</addClasspath>
-                             <classpathPrefix>lib/</classpathPrefix>
-                             <mainClass>${exec.mainClass}</mainClass>
-                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                         </manifest>
-                         <manifestEntries>
-                             <Implementation-Build>${buildNumber}</Implementation-Build>
-                             <Implementation-Date>${maven.build.timestamp}</Implementation-Date>
-                         </manifestEntries>
-                     </archive>
-                     <finalName>${project.artifactId}</finalName>
-                 </configuration>
-             </plugin>
-             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>buildnumber-maven-plugin</artifactId>
-                 <version>1.4</version>
-                 <executions>
-                     <execution>
-                         <id>buildnumber</id>
-                         <phase>validate</phase>
-                         <goals>
-                             <goal>create</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-                 <configuration>
-                     <format>{0,number,#}</format>
-                     <items>
-                         <item>buildNumber</item>
-                     </items>
-                     <doCheck>false</doCheck>
-                     <doUpdate>false</doUpdate>
-                     <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
-                 </configuration>
-             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>${exec.mainClass}</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Build>${buildNumber}</Implementation-Build>
+                            <Implementation-Date>${maven.build.timestamp}</Implementation-Date>
+                        </manifestEntries>
+                    </archive>
+                    <finalName>${project.artifactId}</finalName>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>buildnumber</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <format>{0,number,#}</format>
+                    <items>
+                        <item>buildNumber</item>
+                    </items>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
+                </configuration>
+            </plugin>
 
-             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>exec-maven-plugin</artifactId>
-                 <version>1.6.0</version>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>exec</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-                 <configuration>
-                     <executable>maven</executable>
-                 </configuration>
-             </plugin>
-
-
-             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>properties-maven-plugin</artifactId>
-                 <version>1.0.0</version>
-                 <executions>
-                     <execution>
-                         <phase>generate-resources</phase>
-                         <goals>
-                             <goal>write-project-properties</goal>
-                         </goals>
-                         <configuration>
-                             <outputFile>
-                                 ${project.build.outputDirectory}/build.properties
-                             </outputFile>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>maven</executable>
+                </configuration>
+            </plugin>
 
 
-         </plugins>
-     </build>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>write-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>
+                                ${project.build.outputDirectory}/build.properties
+                            </outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+        </plugins>
+    </build>
 </project>

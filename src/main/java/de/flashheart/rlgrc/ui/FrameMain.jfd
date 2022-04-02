@@ -50,7 +50,6 @@ new FormModel {
 						"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
 						"enabled": false
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "btnRun"

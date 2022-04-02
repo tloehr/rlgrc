@@ -14,8 +14,10 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.sse.SseEventSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quartz.Scheduler;
@@ -39,6 +41,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -142,7 +145,7 @@ public class FrameMain extends JFrame {
             if (game_status.isEmpty()) {
                 guiFSM.ProcessFSM("create_game");
             } else {
-                guiFSM.ProcessFSM(game_status.getString("state"));
+                guiFSM.ProcessFSM(game_status.getString("game_state"));
             }
         });
         guiFSM.setStatesAfterTransition("CREATE_GAME", (state, obj) -> {
@@ -213,6 +216,7 @@ public class FrameMain extends JFrame {
 //            btnRefreshServer.setEnabled(true);
 //            btnRefreshAgents.setEnabled(true);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
+            init_inbound_sse();
         } catch (JSONException e) {
             log.error(e);
             disconnect();
@@ -260,6 +264,13 @@ public class FrameMain extends JFrame {
 
     }
 
+    private JSONObject process(String id, String message) {
+        Properties properties = new Properties();
+        properties.put("id", id);
+        properties.put("message", message);
+        return post("game/process", "{}", properties);
+    }
+
     /**
      * conveniance method
      *
@@ -271,7 +282,7 @@ public class FrameMain extends JFrame {
     private JSONObject post(String uri, String body, String id) {
         Properties properties = new Properties();
         properties.put("id", id);
-        return post(uri, "{}", properties);
+        return post(uri, body, properties);
     }
 
     /**
@@ -322,6 +333,17 @@ public class FrameMain extends JFrame {
         }
         return json;
     }
+
+    void init_inbound_sse(){
+        WebTarget target = client.target(txtURI.getText().trim() + "/api/stream-sse-mvc");
+        try (SseEventSource source = SseEventSource.target(target).build()) {
+            source.register((inboundSseEvent) -> log.debug(inboundSseEvent));
+            source.open();
+        }
+    }
+
+
+    
 
     private JSONObject get(String uri, String id) {
         JSONObject json;
@@ -469,26 +491,28 @@ public class FrameMain extends JFrame {
     }
 
     private void btnLoadGame(ActionEvent e) {
-        post("game/load", ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString(), GAMEID);
+        String params = ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString(4);
+        log.debug(params);
+        post("game/load",params, GAMEID);
         guiFSM.ProcessFSM("load_game");
     }
 
     private void btnRun(ActionEvent e) {
         if (guiFSM.getCurrentState().equalsIgnoreCase("PAUSING")) {
-            post("game/resume", GAMEID);
+            process(GAMEID, "resume");
         } else {
-            post("game/start", GAMEID);
+            process(GAMEID, "prepare");
         }
         guiFSM.ProcessFSM("run");
     }
 
     private void btnPause(ActionEvent e) {
-        post("game/pause", GAMEID);
+        process(GAMEID, "pause");
         guiFSM.ProcessFSM("pause");
     }
 
     private void btnReset(ActionEvent e) {
-        post("game/reset", GAMEID);
+        process(GAMEID, "reset");
         guiFSM.ProcessFSM("reset");
     }
 
@@ -648,10 +672,7 @@ public class FrameMain extends JFrame {
                 btnLoadGame.setPreferredSize(null);
                 btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 btnLoadGame.setEnabled(false);
-                btnLoadGame.addActionListener(e -> {
-			btnLoadGame(e);
-			btnLoadGame(e);
-		});
+                btnLoadGame.addActionListener(e -> btnLoadGame(e));
                 panel2.add(btnLoadGame);
 
                 //---- btnRun ----

@@ -1,8 +1,6 @@
 package de.flashheart.rlgrc.misc;
 
 import lombok.AllArgsConstructor;
-import org.checkerframework.checker.units.qual.min;
-
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.math.BigDecimal;

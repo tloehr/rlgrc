@@ -27,17 +27,20 @@
         <jgoodies.validation.version>2.5.1</jgoodies.validation.version>
         <my.version>${project.version}</my.version>
         <lombok.version>1.18.22</lombok.version>
-        <log4j2.version>2.17.1</log4j2.version>
-        <json.version>20211205</json.version>
-        <jersey.version>3.0.3</jersey.version>
-        <guava.version>31.0.1-jre</guava.version>
+        <log4j2.version>2.17.2</log4j2.version>
+        <json.version>20220320</json.version>
+        <jersey.version>3.0.4</jersey.version>
+        <guava.version>31.1-jre</guava.version>
         <collections4.version>4.4</collections4.version>
-        <commons.io.version>2.4</commons.io.version>
+        <commons.io.version>2.11.0</commons.io.version>
         <quartz.version>2.3.2</quartz.version>
-        <darcula.version>2018.2</darcula.version>
+        <darcula.version>2021.7</darcula.version>
         <lang3.version>3.12.0</lang3.version>
         <dynamicfsm.version>0.01</dynamicfsm.version>
         <cxf.version>3.5.1</cxf.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <httpcore.version>4.4.13</httpcore.version>
+        <slf4j.version>1.7.7</slf4j.version>
     </properties>
 
     <dependencies>
@@ -48,29 +51,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-binding -->
-        <dependency>
-            <groupId>com.jgoodies</groupId>
-            <artifactId>jgoodies-binding</artifactId>
-            <version>${jgoodies.binding.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-common -->
-        <dependency>
-            <groupId>com.jgoodies</groupId>
-            <artifactId>jgoodies-common</artifactId>
-            <version>${jgoodies.common.version}</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-forms -->
         <dependency>
             <groupId>com.jgoodies</groupId>
             <artifactId>jgoodies-forms</artifactId>
             <version>${jgoodies.forms.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-looks -->
-        <dependency>
-            <groupId>com.jgoodies</groupId>
-            <artifactId>jgoodies-looks</artifactId>
-            <version>${jgoodies.looks.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.quartz-scheduler/quartz -->
         <dependency>
@@ -78,28 +63,7 @@
             <artifactId>quartz</artifactId>
             <version>${quartz.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-validation -->
-        <dependency>
-            <groupId>com.jgoodies</groupId>
-            <artifactId>jgoodies-validation</artifactId>
-            <version>${jgoodies.validation.version}</version>
-        </dependency>
-        <!--        <dependency>-->
-        <!--          <groupId>com.fasterxml.jackson.datatype</groupId>-->
-        <!--          <artifactId>jackson-datatype-guava</artifactId>-->
-        <!--          <version>2.12.3</version>-->
-        <!--        </dependency>-->
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -154,46 +118,24 @@
             <version>${dynamicfsm.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.bundles</groupId>
             <artifactId>jaxrs-ri</artifactId>
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.1.0</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-rs-client</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.cxf/cxf-rt-rs-sse -->
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-rs-sse</artifactId>
-            <version>${cxf.version}</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>2.1.2</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
 

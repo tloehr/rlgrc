@@ -8,16 +8,15 @@ import com.github.ankzz.dynamicfsm.fsm.FSM;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.networking.SSEClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.sse.SseEventSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quartz.Scheduler;
@@ -41,7 +40,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -54,6 +52,16 @@ import java.util.Properties;
  */
 @Log4j2
 public class FrameMain extends JFrame {
+
+    // taken from Game.java of rlgcommander
+    public static final String _state_PROLOG = "PROLOG";
+    public static final String _state_TEAMS_NOT_READY = "TEAMS_NOT_READY";
+    public static final String _state_TEAMS_READY = "TEAMS_READY";
+    public static final String _state_RUNNING = "RUNNING";
+    public static final String _state_PAUSING = "PAUSING";
+    public static final String _state_RESUMING = "RESUMING";
+    public static final String _state_EPILOG = "EPILOG";
+
     private static final int TAB_GAMES = 0;
     private static final int TAB_SERVER = 1;
     private static final int TAB_AGENTS = 2;
@@ -67,11 +75,20 @@ public class FrameMain extends JFrame {
     private boolean connected;
     private Optional<String> selected_agent;
     private final ButtonGroup buttonGroup1 = new ButtonGroup();
+    private SSEClient sseClient;
     private final ActionListener actionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             GAMEID = e.getActionCommand();
-            guiFSM.ProcessFSM("game_slot_changed");
+            if (sseClient != null) sseClient.shutdown();
+            sseClient = SSEClient.builder()
+                    .url(txtURI.getText().trim() + "/api/game-sse?id=" + GAMEID)
+                    .useKeepAliveMechanismIfReceived(false)
+                    .eventHandler(log::debug)
+                    .build();
+            sseClient.start();
+            set_gui(get("game/status", GAMEID));
+            //guiFSM.ProcessFSM("game_slot_changed");
         }
     };
     private final ActionListener testAction = new ActionListener() {
@@ -94,13 +111,9 @@ public class FrameMain extends JFrame {
         this.selected_agent = Optional.empty();
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
-//        this.agentJob = new JobKey(ServerRefreshJob.name, "group1");
-//        this.scheduler.getContext().put("rlgrc", this);
-//        this.scheduler.start();
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
         initComponents();
         initFrame();
-//        initRefresh();
         pack();
     }
 
@@ -136,6 +149,35 @@ public class FrameMain extends JFrame {
         button10.addActionListener(testAction);
 
         config_fsm();
+    }
+
+    private void set_gui(JSONObject game_state) {
+        String current_state = game_state.isEmpty() ? "CREATE_GAME" : game_state.getString("game_state");
+        log.debug("Game State: {}", current_state);
+        switch (current_state) {
+            case _state_PROLOG: {
+                pnlMain.setEnabledAt(TAB_GAMES, true);
+                pnlMain.setSelectedIndex(TAB_GAMES);
+                btnLoadGame.setEnabled(true);
+                btnRun.setEnabled(false);
+                btnPause.setEnabled(false);
+                btnReset.setEnabled(false);
+                btnUnload.setEnabled(false);
+                break;
+            }
+            case _state_PAUSING: {
+                pnlMain.setEnabledAt(TAB_GAMES, false);
+                pnlMain.setSelectedIndex(TAB_SERVER);
+                btnLoadGame.setEnabled(false);
+                btnRun.setEnabled(true);
+                btnPause.setEnabled(false);
+                btnReset.setEnabled(true);
+                btnUnload.setEnabled(true);
+                break;
+            }
+            default: {
+            }
+        }
     }
 
     private void config_fsm() {
@@ -216,7 +258,6 @@ public class FrameMain extends JFrame {
 //            btnRefreshServer.setEnabled(true);
 //            btnRefreshAgents.setEnabled(true);
             GAME_SELECT_BUTTONS.get(0).doClick(); // always select the first one
-            init_inbound_sse();
         } catch (JSONException e) {
             log.error(e);
             disconnect();
@@ -228,6 +269,7 @@ public class FrameMain extends JFrame {
         if (!connected) return;
         GAME_SELECT_BUTTONS.forEach(tb -> del_game_select_button(tb));
         GAME_SELECT_BUTTONS.clear();
+        sseClient.shutdown();
         connected = false;
         pnlMain.setEnabled(false);
         btnLoadGame.setEnabled(false);
@@ -334,16 +376,6 @@ public class FrameMain extends JFrame {
         return json;
     }
 
-    void init_inbound_sse(){
-        WebTarget target = client.target(txtURI.getText().trim() + "/api/stream-sse-mvc");
-        try (SseEventSource source = SseEventSource.target(target).build()) {
-            source.register((inboundSseEvent) -> log.debug(inboundSseEvent));
-            source.open();
-        }
-    }
-
-
-    
 
     private JSONObject get(String uri, String id) {
         JSONObject json;
@@ -493,7 +525,7 @@ public class FrameMain extends JFrame {
     private void btnLoadGame(ActionEvent e) {
         String params = ((GameParams) pnlGames.getSelectedComponent()).read_parameters().toString(4);
         log.debug(params);
-        post("game/load",params, GAMEID);
+        post("game/load", params, GAMEID);
         guiFSM.ProcessFSM("load_game");
     }
 
@@ -621,14 +653,14 @@ public class FrameMain extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -723,8 +755,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "default:grow, $lgap, default"));
+                            "default:grow",
+                            "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -805,8 +837,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -833,8 +865,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                            "left:default:grow",
-                            "10*(fill:default), default, fill:9dlu:grow, default"));
+                                "left:default:grow",
+                                "10*(fill:default), default, fill:9dlu:grow, default"));
 
                         //---- label1 ----
                         label1.setText("Agent Testing");

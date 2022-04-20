@@ -41,6 +41,7 @@
         <httpclient.version>4.5.13</httpclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <slf4j.version>1.7.7</slf4j.version>
+        <swingx.version>1.6.5-1</swingx.version>
     </properties>
 
     <dependencies>
@@ -136,6 +137,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bidib.jbidib.swinglabs.swingx</groupId>
+            <artifactId>swingx-core</artifactId>
+            <version>${swingx.version}</version>
         </dependency>
     </dependencies>
 

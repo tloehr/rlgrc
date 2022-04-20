@@ -10,7 +10,7 @@ new FormModel {
 			name: "this"
 			"defaultCloseOperation": 3
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-				"$columnSpecs": "default:grow"
+				"$columnSpecs": "default:grow, relgap, default"
 				"$rowSpecs": "default, relgap, default, linegap, default, linegap, default, relgap, default, linegap, fill:default:grow"
 			} ) {
 				name: "mainPanel"
@@ -29,67 +29,67 @@ new FormModel {
 						"font": new java.awt.Font( ".SF NS Text", 0, 18 )
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnConnect", true ) )
 					} )
-				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridWidth": 3
+				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
 					"axis": 0
 				} ) {
 					name: "pnlLoadedGames"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridX": 1
 					"gridY": 3
+					"gridWidth": 3
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
-					name: "panel2"
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnLoadGame"
-						"text": "Load Game"
-						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
-						"toolTipText": "Load game on the server"
-						"minimumSize": new java.awt.Dimension( 38, 38 )
-						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.HorizontalLayout ) {
+					"gap": 10
+				} ) {
+					name: "pnlGameStates"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog"
+						"text": "Prolog"
 						"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
-						"enabled": false
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
+						"icon": &SwingIcon0 new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledgrey.png" )
 					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnRun"
-						"text": "Run"
-						"toolTipText": "Start loaded game"
-						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
-						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog2"
+						"text": "Teams not Ready"
 						"font": #Font0
-						"enabled": false
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRun", true ) )
+						"icon": #SwingIcon0
 					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnPause"
-						"text": "Pause"
-						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_pause.png" )
-						"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
-						"enabled": false
-						"toolTipText": "Pause the running game"
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPause", true ) )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog3"
+						"text": "Teams Ready"
+						"font": #Font0
+						"icon": #SwingIcon0
 					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnReset"
-						"text": "Reset"
-						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player-reset.png" )
-						"toolTipText": "Reset the game to the state as if it was just loaded."
-						"font": #Font1
-						"enabled": false
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnReset", true ) )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog4"
+						"text": "Running"
+						"font": #Font0
+						"icon": #SwingIcon0
 					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnUnload"
-						"text": "Unload"
-						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
-						"font": #Font1
-						"enabled": false
-						"toolTipText": "Remove the loaded game from the commander's memory."
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnload", true ) )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog5"
+						"text": "Pausing"
+						"font": #Font0
+						"icon": #SwingIcon0
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog6"
+						"text": "Resuming"
+						"font": #Font0
+						"icon": #SwingIcon0
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog7"
+						"text": "Epilog"
+						"font": #Font0
+						"icon": #SwingIcon0
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridY": 5
+					"gridWidth": 3
+					"hAlign": sfield com.jgoodies.forms.layout.CellConstraints LEFT
 				} )
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "pnlMain"
@@ -110,13 +110,27 @@ new FormModel {
 						} )
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 							name: "pnlFiles"
-							add( new FormComponent( "javax.swing.JLabel" ) {
-								name: "lblFile"
-								"text": "no file"
-								"font": new java.awt.Font( ".SF NS Text", 0, 16 )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnLoadGame"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
+								"toolTipText": "Load game on the server"
+								"minimumSize": new java.awt.Dimension( 38, 38 )
+								"preferredSize": new java.awt.Dimension( 38, 38 )
+								"font": &Font1 new java.awt.Font( ".SF NS Text", 0, 18 )
+								"enabled": false
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadGame", true ) )
 							} )
-							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
-								name: "hSpacer1"
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnUnload"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_eject.png" )
+								"font": &Font2 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+								"enabled": false
+								"toolTipText": "Remove the loaded game from the commander's memory."
+								"horizontalAlignment": 2
+								"preferredSize": new java.awt.Dimension( 38, 38 )
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnload", true ) )
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnFileNew"
@@ -141,6 +155,17 @@ new FormModel {
 								"minimumSize": #Dimension0
 								"preferredSize": #Dimension1
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveFile", true ) )
+							} )
+							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+								name: "hSpacer1"
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "lblFile"
+								"text": "no file"
+								"font": new java.awt.Font( ".SF NS Text", 0, 16 )
+							} )
+							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+								name: "hSpacer2"
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridY": 3
@@ -167,8 +192,8 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnRefreshServer"
 								"text": "Refresh Server Status"
-								"font": &Font2 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
-								"icon": &SwingIcon0 new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
+								"font": &Font3 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+								"icon": &SwingIcon1 new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshServer", true ) )
 							} )
 						}, new FormLayoutConstraints( class java.lang.String ) {
@@ -231,7 +256,7 @@ new FormModel {
 								"text": "White"
 								"actionCommand": "led_wht"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/led-white-on.png" )
-								"font": &Font3 new java.awt.Font( ".SF NS Text", 0, 18 )
+								"font": &Font4 new java.awt.Font( ".SF NS Text", 0, 18 )
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -243,7 +268,7 @@ new FormModel {
 								"text": "Red"
 								"actionCommand": "led_red"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
-								"font": #Font3
+								"font": #Font4
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -255,7 +280,7 @@ new FormModel {
 								"text": "Yellow"
 								"actionCommand": "led_ylw"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledyellow.png" )
-								"font": #Font3
+								"font": #Font4
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -267,7 +292,7 @@ new FormModel {
 								"text": "Green"
 								"actionCommand": "led_grn"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledgreen.png" )
-								"font": #Font3
+								"font": #Font4
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -279,7 +304,7 @@ new FormModel {
 								"text": "Blue"
 								"actionCommand": "led_blu"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledblue.png" )
-								"font": #Font3
+								"font": #Font4
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -291,7 +316,7 @@ new FormModel {
 								"text": "Buzzer"
 								"actionCommand": "buzzer"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/buzzer.png" )
-								"font": &Font4 new java.awt.Font( ".SF NS Text", 0, 18 )
+								"font": &Font5 new java.awt.Font( ".SF NS Text", 0, 18 )
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -303,7 +328,7 @@ new FormModel {
 								"text": "Siren 1"
 								"actionCommand": "sir1"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
-								"font": #Font4
+								"font": #Font5
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -315,7 +340,7 @@ new FormModel {
 								"text": "Siren 2"
 								"actionCommand": "sir2"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
-								"font": #Font4
+								"font": #Font5
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -326,8 +351,8 @@ new FormModel {
 								name: "button9"
 								"text": "Siren 3"
 								"actionCommand": "sir3"
-								"icon": &SwingIcon1 new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
-								"font": #Font4
+								"icon": &SwingIcon2 new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
+								"font": #Font5
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridX": 1
@@ -338,8 +363,8 @@ new FormModel {
 								name: "button10"
 								"text": "Siren 4"
 								"actionCommand": "sir4"
-								"icon": #SwingIcon1
-								"font": #Font4
+								"icon": #SwingIcon2
+								"font": #Font5
 								"horizontalAlignment": 2
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridY": 11
@@ -348,8 +373,8 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnRefreshAgents"
 								"text": "Update"
-								"font": #Font2
-								"icon": #SwingIcon0
+								"font": #Font3
+								"icon": #SwingIcon1
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshAgents", true ) )
 							}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 								"gridY": 13
@@ -364,6 +389,88 @@ new FormModel {
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridHeight": 5
 					"gridY": 7
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) ) {
+					name: "panel3"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnPrepare"
+						"text": "Prepare"
+						"toolTipText": "Start loaded game"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"enabled": false
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnRun2"
+						"text": "Reset"
+						"toolTipText": "Start loaded game"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRun", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnRun"
+						"text": "Ready"
+						"toolTipText": "Start loaded game"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRun", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnPause"
+						"text": "Run"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font2
+						"enabled": false
+						"toolTipText": "Pause the running game"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPause", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReset2"
+						"text": "Pause"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": "Reset the game to the state as if it was just loaded."
+						"font": #Font2
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnReset", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReset3"
+						"text": "Resume"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": "Reset the game to the state as if it was just loaded."
+						"font": #Font2
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnReset", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReset4"
+						"text": "Continue"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": "Reset the game to the state as if it was just loaded."
+						"font": #Font2
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnReset", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReset"
+						"text": "Game Over"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": "Reset the game to the state as if it was just loaded."
+						"font": #Font2
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnReset", true ) )
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridY": 7
+					"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
+					"gridX": 3
+					"gridHeight": 5
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 2

@@ -17,6 +17,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.jdesktop.swingx.HorizontalLayout;
+import org.jdesktop.swingx.VerticalLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quartz.Scheduler;
@@ -148,31 +150,20 @@ public class FrameMain extends JFrame {
         button9.addActionListener(testAction);
         button10.addActionListener(testAction);
 
-        config_fsm();
+
     }
 
     private void set_gui(JSONObject game_state) {
         String current_state = game_state.isEmpty() ? "CREATE_GAME" : game_state.getString("game_state");
         log.debug("Game State: {}", current_state);
         switch (current_state) {
+            case "CREATE_GAME":
             case _state_PROLOG: {
-                pnlMain.setEnabledAt(TAB_GAMES, true);
-                pnlMain.setSelectedIndex(TAB_GAMES);
-                btnLoadGame.setEnabled(true);
-                btnRun.setEnabled(false);
-                btnPause.setEnabled(false);
-                btnReset.setEnabled(false);
-                btnUnload.setEnabled(false);
+                gui_state_create_game();
                 break;
             }
             case _state_PAUSING: {
-                pnlMain.setEnabledAt(TAB_GAMES, false);
-                pnlMain.setSelectedIndex(TAB_SERVER);
-                btnLoadGame.setEnabled(false);
-                btnRun.setEnabled(true);
-                btnPause.setEnabled(false);
-                btnReset.setEnabled(true);
-                btnUnload.setEnabled(true);
+
                 break;
             }
             default: {
@@ -180,69 +171,53 @@ public class FrameMain extends JFrame {
         }
     }
 
-    private void config_fsm() {
-        guiFSM.setStatesAfterTransition("GAME_SLOT_CHANGED", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            JSONObject game_status = get("game/status", GAMEID);
-            if (game_status.isEmpty()) {
-                guiFSM.ProcessFSM("create_game");
-            } else {
-                guiFSM.ProcessFSM(game_status.getString("game_state"));
-            }
-        });
-        guiFSM.setStatesAfterTransition("CREATE_GAME", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, true);
-            pnlMain.setSelectedIndex(TAB_GAMES);
-            btnLoadGame.setEnabled(true);
-            btnRun.setEnabled(false);
-            btnPause.setEnabled(false);
-            btnReset.setEnabled(false);
-            btnUnload.setEnabled(false);
-        });
-        guiFSM.setStatesAfterTransition("PROLOG", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, true);
-            JSONObject params = get("game/parameters", GAMEID);
-            if (params.isEmpty()) ((GameParams) pnlGames.getSelectedComponent()).load_defaults();
-            else ((GameParams) pnlGames.getSelectedComponent()).set_parameters(params);
-            btnLoadGame.setEnabled(true);
-            btnRun.setEnabled(true);
-            btnPause.setEnabled(false);
-            btnReset.setEnabled(false);
-            btnUnload.setEnabled(true);
-        });
-        guiFSM.setStatesAfterTransition("PAUSING", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, false);
-            pnlMain.setSelectedIndex(TAB_SERVER);
-            btnLoadGame.setEnabled(false);
-            btnRun.setEnabled(true);
-            btnPause.setEnabled(false);
-            btnReset.setEnabled(true);
-            btnUnload.setEnabled(true);
-        });
-        guiFSM.setStatesAfterTransition("RUNNING", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, false);
-            pnlMain.setSelectedIndex(TAB_SERVER);
-            btnLoadGame.setEnabled(false);
-            btnRun.setEnabled(false);
-            btnPause.setEnabled(true);
-            btnReset.setEnabled(false);
-            btnUnload.setEnabled(false);
-        });
-        // todo: how do we know that its over ?
-        guiFSM.setStatesAfterTransition("EPILOG", (state, obj) -> {
-            log.debug("FSM State: {}", state);
-            pnlMain.setEnabledAt(TAB_GAMES, true);
-            btnLoadGame.setEnabled(false);
-            btnRun.setEnabled(false);
-            btnPause.setEnabled(false);
-            btnReset.setEnabled(true);
-            btnUnload.setEnabled(true);
-        });
+    private void gui_state_create_game() {
+        pnlMain.setEnabledAt(TAB_GAMES, true);
+        pnlMain.setSelectedIndex(TAB_GAMES);
+        btnLoadGame.setEnabled(true);
+        btnRun.setEnabled(false);
+        btnPause.setEnabled(false);
+        btnReset.setEnabled(false);
+        btnUnload.setEnabled(false);
     }
+
+    private void gui_state_teams_ready() {
+
+    }
+
+    private void gui_state_teams_not_ready() {
+
+    }
+
+    private void gui_state_pausing() {
+        pnlMain.setEnabledAt(TAB_GAMES, false);
+        pnlMain.setSelectedIndex(TAB_SERVER);
+        btnLoadGame.setEnabled(false);
+        btnRun.setEnabled(true);
+        btnPause.setEnabled(false);
+        btnReset.setEnabled(true);
+        btnUnload.setEnabled(true);
+    }
+
+    private void gui_state_running() {
+        pnlMain.setEnabledAt(TAB_GAMES, false);
+        pnlMain.setSelectedIndex(TAB_SERVER);
+        btnLoadGame.setEnabled(false);
+        btnRun.setEnabled(false);
+        btnPause.setEnabled(true);
+        btnReset.setEnabled(false);
+        btnUnload.setEnabled(false);
+    }
+
+    private void gui_state_epilog() {
+        pnlMain.setEnabledAt(TAB_GAMES, true);
+        btnLoadGame.setEnabled(false);
+        btnRun.setEnabled(false);
+        btnPause.setEnabled(false);
+        btnReset.setEnabled(true);
+        btnUnload.setEnabled(true);
+    }
+
 
     private void btnConnect(ActionEvent e) {
         connect();
@@ -610,21 +585,26 @@ public class FrameMain extends JFrame {
         txtURI = new JTextField();
         btnConnect = new JButton();
         pnlLoadedGames = new JPanel();
-        panel2 = new JPanel();
-        btnLoadGame = new JButton();
-        btnRun = new JButton();
-        btnPause = new JButton();
-        btnReset = new JButton();
-        btnUnload = new JButton();
+        pnlGameStates = new JPanel();
+        lblProlog = new JLabel();
+        lblProlog2 = new JLabel();
+        lblProlog3 = new JLabel();
+        lblProlog4 = new JLabel();
+        lblProlog5 = new JLabel();
+        lblProlog6 = new JLabel();
+        lblProlog7 = new JLabel();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
         pnlFiles = new JPanel();
-        lblFile = new JLabel();
-        hSpacer1 = new JPanel(null);
+        btnLoadGame = new JButton();
+        btnUnload = new JButton();
         btnFileNew = new JButton();
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
+        hSpacer1 = new JPanel(null);
+        lblFile = new JLabel();
+        hSpacer2 = new JPanel(null);
         pnlServer = new JPanel();
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
@@ -648,19 +628,28 @@ public class FrameMain extends JFrame {
         button9 = new JButton();
         button10 = new JButton();
         btnRefreshAgents = new JButton();
+        panel3 = new JPanel();
+        btnPrepare = new JButton();
+        btnRun2 = new JButton();
+        btnRun = new JButton();
+        btnPause = new JButton();
+        btnReset2 = new JButton();
+        btnReset3 = new JButton();
+        btnReset4 = new JButton();
+        btnReset = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow, $rgap, default",
+                "default, $rgap, 2*(default, $lgap), default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -684,67 +673,61 @@ public class FrameMain extends JFrame {
                 btnConnect.addActionListener(e -> btnConnect(e));
                 panel1.add(btnConnect);
             }
-            mainPanel.add(panel1, CC.xy(1, 1));
+            mainPanel.add(panel1, CC.xywh(1, 1, 3, 1));
 
             //======== pnlLoadedGames ========
             {
                 pnlLoadedGames.setLayout(new BoxLayout(pnlLoadedGames, BoxLayout.X_AXIS));
             }
-            mainPanel.add(pnlLoadedGames, CC.xy(1, 3));
+            mainPanel.add(pnlLoadedGames, CC.xywh(1, 3, 3, 1));
 
-            //======== panel2 ========
+            //======== pnlGameStates ========
             {
-                panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+                pnlGameStates.setLayout(new HorizontalLayout(10));
 
-                //---- btnLoadGame ----
-                btnLoadGame.setText("Load Game");
-                btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                btnLoadGame.setToolTipText("Load game on the server");
-                btnLoadGame.setMinimumSize(new Dimension(38, 38));
-                btnLoadGame.setPreferredSize(null);
-                btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnLoadGame.setEnabled(false);
-                btnLoadGame.addActionListener(e -> btnLoadGame(e));
-                panel2.add(btnLoadGame);
+                //---- lblProlog ----
+                lblProlog.setText("Prolog");
+                lblProlog.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog);
 
-                //---- btnRun ----
-                btnRun.setText("Run");
-                btnRun.setToolTipText("Start loaded game");
-                btnRun.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
-                btnRun.setPreferredSize(null);
-                btnRun.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnRun.setEnabled(false);
-                btnRun.addActionListener(e -> btnRun(e));
-                panel2.add(btnRun);
+                //---- lblProlog2 ----
+                lblProlog2.setText("Teams not Ready");
+                lblProlog2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog2);
 
-                //---- btnPause ----
-                btnPause.setText("Pause");
-                btnPause.setIcon(new ImageIcon(getClass().getResource("/artwork/player_pause.png")));
-                btnPause.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnPause.setEnabled(false);
-                btnPause.setToolTipText("Pause the running game");
-                btnPause.addActionListener(e -> btnPause(e));
-                panel2.add(btnPause);
+                //---- lblProlog3 ----
+                lblProlog3.setText("Teams Ready");
+                lblProlog3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog3);
 
-                //---- btnReset ----
-                btnReset.setText("Reset");
-                btnReset.setIcon(new ImageIcon(getClass().getResource("/artwork/player-reset.png")));
-                btnReset.setToolTipText("Reset the game to the state as if it was just loaded.");
-                btnReset.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnReset.setEnabled(false);
-                btnReset.addActionListener(e -> btnReset(e));
-                panel2.add(btnReset);
+                //---- lblProlog4 ----
+                lblProlog4.setText("Running");
+                lblProlog4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog4);
 
-                //---- btnUnload ----
-                btnUnload.setText("Unload");
-                btnUnload.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-                btnUnload.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnUnload.setEnabled(false);
-                btnUnload.setToolTipText("Remove the loaded game from the commander's memory.");
-                btnUnload.addActionListener(e -> btnUnload(e));
-                panel2.add(btnUnload);
+                //---- lblProlog5 ----
+                lblProlog5.setText("Pausing");
+                lblProlog5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog5);
+
+                //---- lblProlog6 ----
+                lblProlog6.setText("Resuming");
+                lblProlog6.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog6.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog6);
+
+                //---- lblProlog7 ----
+                lblProlog7.setText("Epilog");
+                lblProlog7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblProlog7.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                pnlGameStates.add(lblProlog7);
             }
-            mainPanel.add(panel2, CC.xy(1, 5));
+            mainPanel.add(pnlGameStates, CC.xywh(1, 5, 3, 1, CC.LEFT, CC.DEFAULT));
 
             //======== pnlMain ========
             {
@@ -755,8 +738,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "default:grow, $lgap, default"));
+                        "default:grow",
+                        "default:grow, $lgap, default"));
 
                     //======== pnlGames ========
                     {
@@ -769,11 +752,27 @@ public class FrameMain extends JFrame {
                     {
                         pnlFiles.setLayout(new BoxLayout(pnlFiles, BoxLayout.X_AXIS));
 
-                        //---- lblFile ----
-                        lblFile.setText("no file");
-                        lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
-                        pnlFiles.add(lblFile);
-                        pnlFiles.add(hSpacer1);
+                        //---- btnLoadGame ----
+                        btnLoadGame.setText(null);
+                        btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        btnLoadGame.setToolTipText("Load game on the server");
+                        btnLoadGame.setMinimumSize(new Dimension(38, 38));
+                        btnLoadGame.setPreferredSize(new Dimension(38, 38));
+                        btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        btnLoadGame.setEnabled(false);
+                        btnLoadGame.addActionListener(e -> btnLoadGame(e));
+                        pnlFiles.add(btnLoadGame);
+
+                        //---- btnUnload ----
+                        btnUnload.setText(null);
+                        btnUnload.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
+                        btnUnload.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnUnload.setEnabled(false);
+                        btnUnload.setToolTipText("Remove the loaded game from the commander's memory.");
+                        btnUnload.setHorizontalAlignment(SwingConstants.LEFT);
+                        btnUnload.setPreferredSize(new Dimension(38, 38));
+                        btnUnload.addActionListener(e -> btnUnload(e));
+                        pnlFiles.add(btnUnload);
 
                         //---- btnFileNew ----
                         btnFileNew.setText(null);
@@ -798,6 +797,13 @@ public class FrameMain extends JFrame {
                         btnSaveFile.setPreferredSize(new Dimension(38, 38));
                         btnSaveFile.addActionListener(e -> btnSaveFile(e));
                         pnlFiles.add(btnSaveFile);
+                        pnlFiles.add(hSpacer1);
+
+                        //---- lblFile ----
+                        lblFile.setText("no file");
+                        lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
+                        pnlFiles.add(lblFile);
+                        pnlFiles.add(hSpacer2);
                     }
                     pnlParams.add(pnlFiles, CC.xy(1, 3));
                 }
@@ -837,8 +843,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -865,8 +871,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                                "left:default:grow",
-                                "10*(fill:default), default, fill:9dlu:grow, default"));
+                            "left:default:grow",
+                            "10*(fill:default), default, fill:9dlu:grow, default"));
 
                         //---- label1 ----
                         label1.setText("Agent Testing");
@@ -968,6 +974,86 @@ public class FrameMain extends JFrame {
                 pnlMain.addTab("Agents", pnlAgents);
             }
             mainPanel.add(pnlMain, CC.xywh(1, 7, 1, 5));
+
+            //======== panel3 ========
+            {
+                panel3.setLayout(new VerticalLayout());
+
+                //---- btnPrepare ----
+                btnPrepare.setText("Prepare");
+                btnPrepare.setToolTipText("Start loaded game");
+                btnPrepare.setIcon(null);
+                btnPrepare.setPreferredSize(null);
+                btnPrepare.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnPrepare.setEnabled(false);
+                panel3.add(btnPrepare);
+
+                //---- btnRun2 ----
+                btnRun2.setText("Reset");
+                btnRun2.setToolTipText("Start loaded game");
+                btnRun2.setIcon(null);
+                btnRun2.setPreferredSize(null);
+                btnRun2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnRun2.setEnabled(false);
+                btnRun2.addActionListener(e -> btnRun(e));
+                panel3.add(btnRun2);
+
+                //---- btnRun ----
+                btnRun.setText("Ready");
+                btnRun.setToolTipText("Start loaded game");
+                btnRun.setIcon(null);
+                btnRun.setPreferredSize(null);
+                btnRun.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnRun.setEnabled(false);
+                btnRun.addActionListener(e -> btnRun(e));
+                panel3.add(btnRun);
+
+                //---- btnPause ----
+                btnPause.setText("Run");
+                btnPause.setIcon(null);
+                btnPause.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnPause.setEnabled(false);
+                btnPause.setToolTipText("Pause the running game");
+                btnPause.addActionListener(e -> btnPause(e));
+                panel3.add(btnPause);
+
+                //---- btnReset2 ----
+                btnReset2.setText("Pause");
+                btnReset2.setIcon(null);
+                btnReset2.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnReset2.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnReset2.setEnabled(false);
+                btnReset2.addActionListener(e -> btnReset(e));
+                panel3.add(btnReset2);
+
+                //---- btnReset3 ----
+                btnReset3.setText("Resume");
+                btnReset3.setIcon(null);
+                btnReset3.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnReset3.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnReset3.setEnabled(false);
+                btnReset3.addActionListener(e -> btnReset(e));
+                panel3.add(btnReset3);
+
+                //---- btnReset4 ----
+                btnReset4.setText("Continue");
+                btnReset4.setIcon(null);
+                btnReset4.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnReset4.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnReset4.setEnabled(false);
+                btnReset4.addActionListener(e -> btnReset(e));
+                panel3.add(btnReset4);
+
+                //---- btnReset ----
+                btnReset.setText("Game Over");
+                btnReset.setIcon(null);
+                btnReset.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnReset.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnReset.setEnabled(false);
+                btnReset.addActionListener(e -> btnReset(e));
+                panel3.add(btnReset);
+            }
+            mainPanel.add(panel3, CC.xywh(3, 7, 1, 5, CC.FILL, CC.DEFAULT));
         }
         contentPane.add(mainPanel, CC.xy(2, 2, CC.DEFAULT, CC.FILL));
         pack();
@@ -981,21 +1067,26 @@ public class FrameMain extends JFrame {
     private JTextField txtURI;
     private JButton btnConnect;
     private JPanel pnlLoadedGames;
-    private JPanel panel2;
-    private JButton btnLoadGame;
-    private JButton btnRun;
-    private JButton btnPause;
-    private JButton btnReset;
-    private JButton btnUnload;
+    private JPanel pnlGameStates;
+    private JLabel lblProlog;
+    private JLabel lblProlog2;
+    private JLabel lblProlog3;
+    private JLabel lblProlog4;
+    private JLabel lblProlog5;
+    private JLabel lblProlog6;
+    private JLabel lblProlog7;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
     private JTabbedPane pnlGames;
     private JPanel pnlFiles;
-    private JLabel lblFile;
-    private JPanel hSpacer1;
+    private JButton btnLoadGame;
+    private JButton btnUnload;
     private JButton btnFileNew;
     private JButton btnLoadFile;
     private JButton btnSaveFile;
+    private JPanel hSpacer1;
+    private JLabel lblFile;
+    private JPanel hSpacer2;
     private JPanel pnlServer;
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
@@ -1020,5 +1111,14 @@ public class FrameMain extends JFrame {
     private JButton button9;
     private JButton button10;
     private JButton btnRefreshAgents;
+    private JPanel panel3;
+    private JButton btnPrepare;
+    private JButton btnRun2;
+    private JButton btnRun;
+    private JButton btnPause;
+    private JButton btnReset2;
+    private JButton btnReset3;
+    private JButton btnReset4;
+    private JButton btnReset;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

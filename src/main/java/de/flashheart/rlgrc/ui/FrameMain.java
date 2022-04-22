@@ -597,11 +597,11 @@ public class FrameMain extends JFrame {
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
         pnlFiles = new JPanel();
-        btnLoadGame = new JButton();
-        btnUnload = new JButton();
         btnFileNew = new JButton();
         btnLoadFile = new JButton();
         btnSaveFile = new JButton();
+        btnLoadGame = new JButton();
+        btnUnload = new JButton();
         hSpacer1 = new JPanel(null);
         lblFile = new JLabel();
         hSpacer2 = new JPanel(null);
@@ -688,43 +688,43 @@ public class FrameMain extends JFrame {
                 //---- lblProlog ----
                 lblProlog.setText("Prolog");
                 lblProlog.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
                 pnlGameStates.add(lblProlog);
 
                 //---- lblProlog2 ----
                 lblProlog2.setText("Teams not Ready");
                 lblProlog2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledorange.png")));
                 pnlGameStates.add(lblProlog2);
 
                 //---- lblProlog3 ----
                 lblProlog3.setText("Teams Ready");
                 lblProlog3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
                 pnlGameStates.add(lblProlog3);
 
                 //---- lblProlog4 ----
                 lblProlog4.setText("Running");
                 lblProlog4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
                 pnlGameStates.add(lblProlog4);
 
                 //---- lblProlog5 ----
                 lblProlog5.setText("Pausing");
                 lblProlog5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledlightblue.png")));
                 pnlGameStates.add(lblProlog5);
 
                 //---- lblProlog6 ----
                 lblProlog6.setText("Resuming");
                 lblProlog6.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog6.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog6.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
                 pnlGameStates.add(lblProlog6);
 
                 //---- lblProlog7 ----
                 lblProlog7.setText("Epilog");
                 lblProlog7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog7.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgrey.png")));
+                lblProlog7.setIcon(new ImageIcon(getClass().getResource("/artwork/ledpurple.png")));
                 pnlGameStates.add(lblProlog7);
             }
             mainPanel.add(pnlGameStates, CC.xywh(1, 5, 3, 1, CC.LEFT, CC.DEFAULT));
@@ -752,28 +752,6 @@ public class FrameMain extends JFrame {
                     {
                         pnlFiles.setLayout(new BoxLayout(pnlFiles, BoxLayout.X_AXIS));
 
-                        //---- btnLoadGame ----
-                        btnLoadGame.setText(null);
-                        btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                        btnLoadGame.setToolTipText("Load game on the server");
-                        btnLoadGame.setMinimumSize(new Dimension(38, 38));
-                        btnLoadGame.setPreferredSize(new Dimension(38, 38));
-                        btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                        btnLoadGame.setEnabled(false);
-                        btnLoadGame.addActionListener(e -> btnLoadGame(e));
-                        pnlFiles.add(btnLoadGame);
-
-                        //---- btnUnload ----
-                        btnUnload.setText(null);
-                        btnUnload.setIcon(new ImageIcon(getClass().getResource("/artwork/player_eject.png")));
-                        btnUnload.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        btnUnload.setEnabled(false);
-                        btnUnload.setToolTipText("Remove the loaded game from the commander's memory.");
-                        btnUnload.setHorizontalAlignment(SwingConstants.LEFT);
-                        btnUnload.setPreferredSize(new Dimension(38, 38));
-                        btnUnload.addActionListener(e -> btnUnload(e));
-                        pnlFiles.add(btnUnload);
-
                         //---- btnFileNew ----
                         btnFileNew.setText(null);
                         btnFileNew.setIcon(new ImageIcon(getClass().getResource("/artwork/filenew.png")));
@@ -797,6 +775,26 @@ public class FrameMain extends JFrame {
                         btnSaveFile.setPreferredSize(new Dimension(38, 38));
                         btnSaveFile.addActionListener(e -> btnSaveFile(e));
                         pnlFiles.add(btnSaveFile);
+
+                        //---- btnLoadGame ----
+                        btnLoadGame.setText(null);
+                        btnLoadGame.setIcon(new ImageIcon(getClass().getResource("/artwork/upload.png")));
+                        btnLoadGame.setToolTipText("Load game on the server");
+                        btnLoadGame.setMinimumSize(new Dimension(38, 38));
+                        btnLoadGame.setPreferredSize(new Dimension(38, 38));
+                        btnLoadGame.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        btnLoadGame.addActionListener(e -> btnLoadGame(e));
+                        pnlFiles.add(btnLoadGame);
+
+                        //---- btnUnload ----
+                        btnUnload.setText(null);
+                        btnUnload.setIcon(new ImageIcon(getClass().getResource("/artwork/unload.png")));
+                        btnUnload.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnUnload.setToolTipText("Remove the loaded game from the commander's memory.");
+                        btnUnload.setHorizontalAlignment(SwingConstants.LEFT);
+                        btnUnload.setPreferredSize(new Dimension(38, 38));
+                        btnUnload.addActionListener(e -> btnUnload(e));
+                        pnlFiles.add(btnUnload);
                         pnlFiles.add(hSpacer1);
 
                         //---- lblFile ----
@@ -1079,11 +1077,11 @@ public class FrameMain extends JFrame {
     private JPanel pnlParams;
     private JTabbedPane pnlGames;
     private JPanel pnlFiles;
-    private JButton btnLoadGame;
-    private JButton btnUnload;
     private JButton btnFileNew;
     private JButton btnLoadFile;
     private JButton btnSaveFile;
+    private JButton btnLoadGame;
+    private JButton btnUnload;
     private JPanel hSpacer1;
     private JLabel lblFile;
     private JPanel hSpacer2;

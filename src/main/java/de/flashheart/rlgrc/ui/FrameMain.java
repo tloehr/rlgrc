@@ -4,6 +4,8 @@
 
 package de.flashheart.rlgrc.ui;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.github.ankzz.dynamicfsm.fsm.FSM;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -35,7 +37,6 @@ import javax.swing.text.Element;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
@@ -44,10 +45,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Torsten Löhr
@@ -63,6 +61,22 @@ public class FrameMain extends JFrame {
     public static final String _state_PAUSING = "PAUSING";
     public static final String _state_RESUMING = "RESUMING";
     public static final String _state_EPILOG = "EPILOG";
+    public static final String[] _states_ = new String[]{_state_PROLOG, _state_TEAMS_NOT_READY, _state_TEAMS_READY, _state_RUNNING, _state_PAUSING, _state_RESUMING, _state_EPILOG};
+    public JButton[] _message_buttons;
+    public JLabel[] _state_labels;
+
+    // button enabled for every game state
+    // 1 is enabled, 0 otherwise
+    public static final int[][] state_buttons_enable = new int[][]{
+            // prepare, reset, ready, run, pause, resume, continue, game_over
+            {1, 1, 1, 1, 0, 0, 0, 0}, /* PROLOG */
+            {0, 1, 1, 1, 0, 0, 0, 0}, /* TEAMS_NOT_READY */
+            {0, 1, 0, 1, 0, 0, 0, 0}, /* TEAMS_READY */
+            {0, 1, 0, 0, 1, 0, 0, 1}, /* RUNNING */
+            {0, 1, 0, 0, 0, 1, 0, 0}, /* PAUSING */
+            {0, 1, 0, 0, 0, 0, 1, 0}, /* RESUMING */
+            {0, 1, 0, 0, 0, 0, 0, 0}  /* EPILOG */
+    };
 
     private static final int TAB_GAMES = 0;
     private static final int TAB_SERVER = 1;
@@ -78,31 +92,7 @@ public class FrameMain extends JFrame {
     private Optional<String> selected_agent;
     private final ButtonGroup buttonGroup1 = new ButtonGroup();
     private SSEClient sseClient;
-    private final ActionListener actionListener = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            GAMEID = e.getActionCommand();
-            if (sseClient != null) sseClient.shutdown();
-            sseClient = SSEClient.builder()
-                    .url(txtURI.getText().trim() + "/api/game-sse?id=" + GAMEID)
-                    .useKeepAliveMechanismIfReceived(false)
-                    .eventHandler(log::debug)
-                    .build();
-            sseClient.start();
-            set_gui(get("game/status", GAMEID));
-            //guiFSM.ProcessFSM("game_slot_changed");
-        }
-    };
-    private final ActionListener testAction = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (selected_agent.isEmpty()) return;
-            Properties properties = new Properties();
-            properties.put("agentid", selected_agent.get());
-            properties.put("deviceid", e.getActionCommand());
-            post("system/test_agent", "{}", properties);
-        }
-    };
+
 
     private String GAMEID = "";
 
@@ -112,11 +102,24 @@ public class FrameMain extends JFrame {
         this.connected = false;
         this.selected_agent = Optional.empty();
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
+
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+            FlatDarkLaf.setup();
+        } catch (Exception ex) {
+            log.fatal("Failed to initialize LaF");
+            System.exit(0);
+        }
+
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
         guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
         initComponents();
+
+        _message_buttons = new JButton[]{btnPrepare, btnReset, btnReady, btnRun, btnPause, btnResume, btnContinue, btnGameOver};
+        _state_labels = new JLabel[]{lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblResuming, lblEpilog};
+
         initFrame();
-        pack();
+
     }
 
     private void initFrame() throws IOException {
@@ -139,18 +142,34 @@ public class FrameMain extends JFrame {
         });
         pnlGames.add("Conquest", new ConquestParams());
 
-        button1.addActionListener(testAction);
-        button2.addActionListener(testAction);
-        button3.addActionListener(testAction);
-        button4.addActionListener(testAction);
-        button5.addActionListener(testAction);
-        button6.addActionListener(testAction);
-        button7.addActionListener(testAction);
-        button8.addActionListener(testAction);
-        button9.addActionListener(testAction);
-        button10.addActionListener(testAction);
+        button1.addActionListener(e -> testAction(e));
+        button2.addActionListener(e -> testAction(e));
+        button3.addActionListener(e -> testAction(e));
+        button4.addActionListener(e -> testAction(e));
+        button5.addActionListener(e -> testAction(e));
+        button6.addActionListener(e -> testAction(e));
+        button7.addActionListener(e -> testAction(e));
+        button8.addActionListener(e -> testAction(e));
+        button9.addActionListener(e -> testAction(e));
+        button10.addActionListener(e -> testAction(e));
 
+        btnPrepare.addActionListener(e -> send_message(e));
+        btnReady.addActionListener(e -> send_message(e));
+        btnReset.addActionListener(e -> send_message(e));
+        btnRun.addActionListener(e -> send_message(e));
+        btnPause.addActionListener(e -> send_message(e));
+        btnResume.addActionListener(e -> send_message(e));
+        btnContinue.addActionListener(e -> send_message(e));
+        btnGameOver.addActionListener(e -> send_message(e));
 
+    }
+
+    private void testAction(ActionEvent e) {
+        if (selected_agent.isEmpty()) return;
+        Properties properties = new Properties();
+        properties.put("agentid", selected_agent.get());
+        properties.put("deviceid", e.getActionCommand());
+        post("system/test_agent", "{}", properties);
     }
 
     private void set_gui(JSONObject game_state) {
@@ -218,7 +237,19 @@ public class FrameMain extends JFrame {
         btnUnload.setEnabled(true);
     }
 
-
+    private void set_gui_state_to(String state) {
+        int index = Arrays.asList(_states_).indexOf(state.toUpperCase());
+        // States
+        for (int i = 0; i < 7; i++) {
+            _state_labels[i].setEnabled(state.equalsIgnoreCase(_state_labels[i].getName()));
+        }
+        // Messages
+        for (int i = 0; i < 8; i++) {
+            boolean enabled = Boolean.valueOf(state_buttons_enable[index][i] == 1 ? true : false);
+            _message_buttons[i].setEnabled(enabled);
+        }
+    }
+    
     private void btnConnect(ActionEvent e) {
         connect();
     }
@@ -487,14 +518,25 @@ public class FrameMain extends JFrame {
         tb.setActionCommand(Integer.toString(gameid));
         pnlLoadedGames.add(tb);
         buttonGroup1.add(tb);
-        tb.addActionListener(actionListener);
+        tb.addActionListener(e -> game_selected(e));
         GAME_SELECT_BUTTONS.add(tb);
+    }
+
+    private void game_selected(ActionEvent e) {
+        GAMEID = e.getActionCommand();
+        if (sseClient != null) sseClient.shutdown();
+        sseClient = SSEClient.builder()
+                .url(txtURI.getText().trim() + "/api/game-sse?id=" + GAMEID)
+                .useKeepAliveMechanismIfReceived(false)
+                .eventHandler(log::debug)
+                .build();
+        sseClient.start();
+        set_gui(get("game/status", GAMEID));
     }
 
     private void del_game_select_button(JToggleButton tb) {
         pnlLoadedGames.remove(tb);
         buttonGroup1.remove(tb);
-        tb.removeActionListener(actionListener);
     }
 
     private void btnLoadGame(ActionEvent e) {
@@ -575,6 +617,13 @@ public class FrameMain extends JFrame {
         }
     }
 
+    private void send_message(ActionEvent e) {
+        Properties props = new Properties();
+        props.put("id", GAMEID);
+        props.put("message", e.getActionCommand());
+        post("game/process", "{}", props);
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -587,12 +636,12 @@ public class FrameMain extends JFrame {
         pnlLoadedGames = new JPanel();
         pnlGameStates = new JPanel();
         lblProlog = new JLabel();
-        lblProlog2 = new JLabel();
-        lblProlog3 = new JLabel();
-        lblProlog4 = new JLabel();
-        lblProlog5 = new JLabel();
-        lblProlog6 = new JLabel();
-        lblProlog7 = new JLabel();
+        lblTeamsNotReady = new JLabel();
+        lblTeamsReady = new JLabel();
+        lblRunning = new JLabel();
+        lblPausing = new JLabel();
+        lblResuming = new JLabel();
+        lblEpilog = new JLabel();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
         pnlGames = new JTabbedPane();
@@ -630,13 +679,13 @@ public class FrameMain extends JFrame {
         btnRefreshAgents = new JButton();
         panel3 = new JPanel();
         btnPrepare = new JButton();
-        btnRun2 = new JButton();
+        btnReset = new JButton();
+        btnReady = new JButton();
         btnRun = new JButton();
         btnPause = new JButton();
-        btnReset2 = new JButton();
-        btnReset3 = new JButton();
-        btnReset4 = new JButton();
-        btnReset = new JButton();
+        btnResume = new JButton();
+        btnContinue = new JButton();
+        btnGameOver = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -689,43 +738,56 @@ public class FrameMain extends JFrame {
                 lblProlog.setText("Prolog");
                 lblProlog.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                 lblProlog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
+                lblProlog.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkred.png")));
+                lblProlog.setName("PROLOG");
                 pnlGameStates.add(lblProlog);
 
-                //---- lblProlog2 ----
-                lblProlog2.setText("Teams not Ready");
-                lblProlog2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledorange.png")));
-                pnlGameStates.add(lblProlog2);
+                //---- lblTeamsNotReady ----
+                lblTeamsNotReady.setText("Teams not Ready");
+                lblTeamsNotReady.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblTeamsNotReady.setIcon(new ImageIcon(getClass().getResource("/artwork/ledorange.png")));
+                lblTeamsNotReady.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkorange.png")));
+                lblTeamsNotReady.setName("TEAMS_NOT_READY");
+                pnlGameStates.add(lblTeamsNotReady);
 
-                //---- lblProlog3 ----
-                lblProlog3.setText("Teams Ready");
-                lblProlog3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
-                pnlGameStates.add(lblProlog3);
+                //---- lblTeamsReady ----
+                lblTeamsReady.setText("Teams Ready");
+                lblTeamsReady.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblTeamsReady.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
+                lblTeamsReady.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkyellow.png")));
+                lblTeamsReady.setName("TEAMS_READY");
+                pnlGameStates.add(lblTeamsReady);
 
-                //---- lblProlog4 ----
-                lblProlog4.setText("Running");
-                lblProlog4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
-                pnlGameStates.add(lblProlog4);
+                //---- lblRunning ----
+                lblRunning.setText("Running");
+                lblRunning.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblRunning.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
+                lblRunning.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkgreen.png")));
+                lblRunning.setName("RUNNING");
+                pnlGameStates.add(lblRunning);
 
-                //---- lblProlog5 ----
-                lblProlog5.setText("Pausing");
-                lblProlog5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledlightblue.png")));
-                pnlGameStates.add(lblProlog5);
+                //---- lblPausing ----
+                lblPausing.setText("Pausing");
+                lblPausing.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblPausing.setIcon(new ImageIcon(getClass().getResource("/artwork/ledlightblue.png")));
+                lblPausing.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkcyan.png")));
+                lblPausing.setName("PAUSING");
+                pnlGameStates.add(lblPausing);
 
-                //---- lblProlog6 ----
-                lblProlog6.setText("Resuming");
-                lblProlog6.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog6.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
-                pnlGameStates.add(lblProlog6);
+                //---- lblResuming ----
+                lblResuming.setText("Resuming");
+                lblResuming.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblResuming.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
+                lblResuming.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkblue.png")));
+                lblResuming.setName("RESUMING");
+                pnlGameStates.add(lblResuming);
 
-                //---- lblProlog7 ----
-                lblProlog7.setText("Epilog");
-                lblProlog7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                lblProlog7.setIcon(new ImageIcon(getClass().getResource("/artwork/ledpurple.png")));
-                pnlGameStates.add(lblProlog7);
+                //---- lblEpilog ----
+                lblEpilog.setText("Epilog");
+                lblEpilog.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                lblEpilog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledpurple.png")));
+                lblEpilog.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkpurple.png")));
+                pnlGameStates.add(lblEpilog);
             }
             mainPanel.add(pnlGameStates, CC.xywh(1, 5, 3, 1, CC.LEFT, CC.DEFAULT));
 
@@ -983,73 +1045,66 @@ public class FrameMain extends JFrame {
                 btnPrepare.setIcon(null);
                 btnPrepare.setPreferredSize(null);
                 btnPrepare.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnPrepare.setEnabled(false);
+                btnPrepare.setActionCommand("prepare");
                 panel3.add(btnPrepare);
 
-                //---- btnRun2 ----
-                btnRun2.setText("Reset");
-                btnRun2.setToolTipText("Start loaded game");
-                btnRun2.setIcon(null);
-                btnRun2.setPreferredSize(null);
-                btnRun2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnRun2.setEnabled(false);
-                btnRun2.addActionListener(e -> btnRun(e));
-                panel3.add(btnRun2);
+                //---- btnReset ----
+                btnReset.setText("Reset");
+                btnReset.setToolTipText("Start loaded game");
+                btnReset.setIcon(null);
+                btnReset.setPreferredSize(null);
+                btnReset.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnReset.setActionCommand("reset");
+                panel3.add(btnReset);
+
+                //---- btnReady ----
+                btnReady.setText("Ready");
+                btnReady.setToolTipText("Start loaded game");
+                btnReady.setIcon(null);
+                btnReady.setPreferredSize(null);
+                btnReady.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnReady.setActionCommand("ready");
+                panel3.add(btnReady);
 
                 //---- btnRun ----
-                btnRun.setText("Ready");
-                btnRun.setToolTipText("Start loaded game");
+                btnRun.setText("Run");
                 btnRun.setIcon(null);
-                btnRun.setPreferredSize(null);
-                btnRun.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                btnRun.setEnabled(false);
-                btnRun.addActionListener(e -> btnRun(e));
+                btnRun.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnRun.setToolTipText("Pause the running game");
+                btnRun.setActionCommand("run");
                 panel3.add(btnRun);
 
                 //---- btnPause ----
-                btnPause.setText("Run");
+                btnPause.setText("Pause");
                 btnPause.setIcon(null);
+                btnPause.setToolTipText("Reset the game to the state as if it was just loaded.");
                 btnPause.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnPause.setEnabled(false);
-                btnPause.setToolTipText("Pause the running game");
-                btnPause.addActionListener(e -> btnPause(e));
+                btnPause.setActionCommand("pause");
                 panel3.add(btnPause);
 
-                //---- btnReset2 ----
-                btnReset2.setText("Pause");
-                btnReset2.setIcon(null);
-                btnReset2.setToolTipText("Reset the game to the state as if it was just loaded.");
-                btnReset2.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnReset2.setEnabled(false);
-                btnReset2.addActionListener(e -> btnReset(e));
-                panel3.add(btnReset2);
+                //---- btnResume ----
+                btnResume.setText("Resume");
+                btnResume.setIcon(null);
+                btnResume.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnResume.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnResume.setActionCommand("resume");
+                panel3.add(btnResume);
 
-                //---- btnReset3 ----
-                btnReset3.setText("Resume");
-                btnReset3.setIcon(null);
-                btnReset3.setToolTipText("Reset the game to the state as if it was just loaded.");
-                btnReset3.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnReset3.setEnabled(false);
-                btnReset3.addActionListener(e -> btnReset(e));
-                panel3.add(btnReset3);
+                //---- btnContinue ----
+                btnContinue.setText("Continue");
+                btnContinue.setIcon(null);
+                btnContinue.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnContinue.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnContinue.setActionCommand("continue");
+                panel3.add(btnContinue);
 
-                //---- btnReset4 ----
-                btnReset4.setText("Continue");
-                btnReset4.setIcon(null);
-                btnReset4.setToolTipText("Reset the game to the state as if it was just loaded.");
-                btnReset4.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnReset4.setEnabled(false);
-                btnReset4.addActionListener(e -> btnReset(e));
-                panel3.add(btnReset4);
-
-                //---- btnReset ----
-                btnReset.setText("Game Over");
-                btnReset.setIcon(null);
-                btnReset.setToolTipText("Reset the game to the state as if it was just loaded.");
-                btnReset.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                btnReset.setEnabled(false);
-                btnReset.addActionListener(e -> btnReset(e));
-                panel3.add(btnReset);
+                //---- btnGameOver ----
+                btnGameOver.setText("Game Over");
+                btnGameOver.setIcon(null);
+                btnGameOver.setToolTipText("Reset the game to the state as if it was just loaded.");
+                btnGameOver.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                btnGameOver.setActionCommand("game_over");
+                panel3.add(btnGameOver);
             }
             mainPanel.add(panel3, CC.xywh(3, 7, 1, 5, CC.FILL, CC.DEFAULT));
         }
@@ -1067,12 +1122,12 @@ public class FrameMain extends JFrame {
     private JPanel pnlLoadedGames;
     private JPanel pnlGameStates;
     private JLabel lblProlog;
-    private JLabel lblProlog2;
-    private JLabel lblProlog3;
-    private JLabel lblProlog4;
-    private JLabel lblProlog5;
-    private JLabel lblProlog6;
-    private JLabel lblProlog7;
+    private JLabel lblTeamsNotReady;
+    private JLabel lblTeamsReady;
+    private JLabel lblRunning;
+    private JLabel lblPausing;
+    private JLabel lblResuming;
+    private JLabel lblEpilog;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
     private JTabbedPane pnlGames;
@@ -1111,12 +1166,12 @@ public class FrameMain extends JFrame {
     private JButton btnRefreshAgents;
     private JPanel panel3;
     private JButton btnPrepare;
-    private JButton btnRun2;
+    private JButton btnReset;
+    private JButton btnReady;
     private JButton btnRun;
     private JButton btnPause;
-    private JButton btnReset2;
-    private JButton btnReset3;
-    private JButton btnReset4;
-    private JButton btnReset;
+    private JButton btnResume;
+    private JButton btnContinue;
+    private JButton btnGameOver;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

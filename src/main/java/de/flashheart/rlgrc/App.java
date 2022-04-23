@@ -1,12 +1,8 @@
 package de.flashheart.rlgrc;
 
-import com.bulenkov.darcula.DarculaLaf;
 import de.flashheart.rlgrc.misc.Configs;
 import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
-
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicLookAndFeel;
 
 @Log4j2
 public class App {
@@ -18,8 +14,8 @@ public class App {
             Runtime.getRuntime().halt(0);
         }
 
-        BasicLookAndFeel darcula = new DarculaLaf();
-        UIManager.setLookAndFeel(darcula);
+//        BasicLookAndFeel darcula = new DarculaLaf();
+//        UIManager.setLookAndFeel(darcula);
 
         new FrameMain(new Configs()).setVisible(true);
     }

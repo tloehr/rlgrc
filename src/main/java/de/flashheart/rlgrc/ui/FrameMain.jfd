@@ -50,7 +50,6 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "pnlMain"
 					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
-					"selectedIndex": 2
 					addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "tab_selection_changed", true ) )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 						"$columnSpecs": "default:grow"
@@ -484,4 +483,3 @@ new FormModel {
 		} )
 	}
 }
-

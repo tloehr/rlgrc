@@ -734,14 +734,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -792,8 +792,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "fill:default:grow, $lgap, default"));
+                        "default:grow",
+                        "fill:default:grow, $lgap, default"));
 
                     //======== pnlFiles ========
                     {
@@ -861,8 +861,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                            "default:grow",
-                            "default, $lgap, default, $rgap, default:grow"));
+                        "default:grow",
+                        "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1034,8 +1034,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1062,8 +1062,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                                "left:default:grow",
-                                "fill:default, default, 9*(fill:default), 2*(default)"));
+                            "left:default:grow",
+                            "fill:default, default, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
@@ -1155,8 +1155,6 @@ public class FrameMain extends JFrame {
                     pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
                 pnlMain.addTab("Agents", pnlAgents);
-
-                pnlMain.setSelectedIndex(2);
             }
             mainPanel.add(pnlMain, CC.xywh(1, 5, 1, 5));
         }

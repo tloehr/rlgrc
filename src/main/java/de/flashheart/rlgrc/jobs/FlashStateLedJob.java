@@ -6,8 +6,8 @@ import org.quartz.*;
 
 @Log4j2
 @DisallowConcurrentExecution
-public class ServerRefreshJob implements InterruptableJob {
-    public static final String name = "refreshserverjob";
+public class FlashStateLedJob implements InterruptableJob {
+    public static final String name = "flashstateledjob";
 
 
     @Override
@@ -15,7 +15,7 @@ public class ServerRefreshJob implements InterruptableJob {
         try {
             log.trace(jobExecutionContext.getJobDetail().getKey() + " executed");
             FrameMain frameMain = (FrameMain) jobExecutionContext.getScheduler().getContext().get("rlgrc");
-            frameMain.refreshServer();
+            frameMain.flash_state_led();
         } catch (SchedulerException e) {
             log.fatal(e);
             System.exit(0);

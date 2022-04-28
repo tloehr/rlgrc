@@ -3,80 +3,71 @@ JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.13" encoding: "UTF-8"
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
-		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+			"axis": 3
+		} ) {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 				"$columnSpecs": "pref, relgap, default:grow, unrelgap, pref, relgap, default:grow"
-				"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, fill:default:grow"
+				"$rowSpecs": "default, linegap, default, linegap, default, linegap, fill:default:grow"
 			} ) {
 				name: "pnlConquest"
-				add( new FormComponent( "javax.swing.JTextField" ) {
-					name: "txtComment"
-					"font": new java.awt.Font( ".SF NS Text", 0, 16 )
-				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridWidth": 7
-				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "label3"
 					"text": "Respawn Tickets"
-				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridY": 3
-				} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtCnqTickets"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
-					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "label4"
 					"text": "Bleeding starts @"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
-					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtCnqBleedStarts"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 7
-					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "label5"
 					"text": "Start Bleed interval"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridY": 5
+					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtCnqSBleedInt"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
-					"gridY": 5
+					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lbl12345"
 					"text": "Final Bleed interval"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridY": 5
+					"gridY": 3
 					"gridX": 5
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtCnqEBleedInt"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 7
-					"gridY": 5
+					"gridY": 3
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "label9"
 					"text": "Ticket Price"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridY": 7
+					"gridY": 5
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "txtCnqTPrice"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
-					"gridY": 7
+					"gridY": 5
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 					"$columnSpecs": "70dlu:grow, labelcompgap, 20dlu, unrelgap, 70dlu:grow, labelcompgap, 20dlu"
@@ -136,7 +127,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "txtRedSpawn"
 						"text": "test"
-						"font": &Font0 new java.awt.Font( ".AppleSystemUIFont", 0, 22 )
+						"font": &Font0 new java.awt.Font( ".SF NS", 0, 22 )
 						"alignmentX": 0.5f
 						"background": new java.awt.Color( 255, 0, 51, 255 )
 						"opaque": true
@@ -164,7 +155,7 @@ new FormModel {
 						"gridWidth": 3
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridY": 9
+					"gridY": 7
 					"gridWidth": 7
 					"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 				} )

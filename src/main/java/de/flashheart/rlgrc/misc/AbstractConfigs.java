@@ -26,11 +26,6 @@ public abstract class AbstractConfigs {
 
     public abstract void loadDefaults();
 
-
-    public String getWORKSPACE() {
-        return WORKSPACE;
-    }
-
     protected AbstractConfigs(String workspace) throws IOException {
         WORKSPACE = workspace;
         CONFIGFILE = WORKSPACE + File.separator + "config.txt";

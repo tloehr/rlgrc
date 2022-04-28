@@ -1,12 +1,18 @@
 package de.flashheart.rlgrc.ui;
 
+import de.flashheart.rlgrc.misc.NotEmptyVerifier;
+import de.flashheart.rlgrc.misc.NumberVerifier;
+import de.flashheart.rlgrc.misc.RiverLayout;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.StringTokenizer;
@@ -16,10 +22,36 @@ import java.util.stream.Collectors;
 public abstract class GameParams extends JPanel {
     protected JSONObject params;
     protected Optional<File> file;
+    protected JPanel default_components;
+    protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
+    protected JCheckBox cbWait4Teams2BReady;
 
     public GameParams() {
         super();
         file = Optional.empty();
+        init_default_components();
+    }
+
+    private void init_default_components() {
+        default_components = new JPanel(new RiverLayout(5, 5));
+        txtComment = new JTextField();
+        txtStarterCountdown = new JTextField();
+        txtResumeCountdown = new JTextField();
+        cbWait4Teams2BReady = new JCheckBox("Wait for Teams to REPORT-IN as ready");
+        txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+        txtStarterCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
+        txtResumeCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
+        cbWait4Teams2BReady.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
+        txtComment.setInputVerifier(new NotEmptyVerifier());
+        txtStarterCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
+        txtResumeCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
+        default_components.add(txtComment, "hfill");
+        default_components.add(new JLabel("Countdown to Start"), "br left");
+        default_components.add(txtStarterCountdown);
+        default_components.add(new JLabel("Countdown to Resume"));
+        default_components.add(txtResumeCountdown);
+        default_components.add(cbWait4Teams2BReady);
+        default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
     }
 
     public String getFilename() {
@@ -28,14 +60,26 @@ public abstract class GameParams extends JPanel {
 
     abstract String getMode();
 
-    abstract void set_parameters();
+    protected void set_parameters() {
+        txtComment.setText(params.getString("comment"));
+        txtStarterCountdown.setText(params.get("starter_countdown").toString());
+        txtResumeCountdown.setText(params.get("resume_countdown").toString());
+        cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
+    }
 
     void set_parameters(JSONObject params) {
         this.params = params;
         set_parameters();
     }
 
-    abstract JSONObject read_parameters();
+    protected JSONObject read_parameters() {
+        params.clear();
+        params.put("comment", txtComment.getText());
+        params.put("starter_countdown", txtStarterCountdown.getText());
+        params.put("resume_countdown", txtResumeCountdown.getText());
+        params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
+        return params;
+    }
 
     void load_defaults() {
         file = Optional.empty();
@@ -50,7 +94,7 @@ public abstract class GameParams extends JPanel {
     Optional<File> load_file() throws IOException {
         Optional<File> myFile = choose_file(false);
         if (myFile.isEmpty()) return file;
-        params = new JSONObject(FileUtils.readFileToString(myFile.get()));
+        params = new JSONObject(FileUtils.readFileToString(myFile.get(), StandardCharsets.UTF_8));
         set_parameters();
         return myFile;
     }
@@ -59,7 +103,7 @@ public abstract class GameParams extends JPanel {
         if (params.isEmpty()) return;
         if (file.isEmpty()) file = choose_file(true);
         if (file.isEmpty()) return;
-        FileUtils.writeStringToFile(file.get(), read_parameters().toString(4));
+        FileUtils.writeStringToFile(file.get(), read_parameters().toString(4), StandardCharsets.UTF_8);
     }
 
     Optional<File> choose_file(boolean save) {
@@ -86,5 +130,6 @@ public abstract class GameParams extends JPanel {
     JSONArray to_jsonarray(String list) {
         return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
     }
+
 
 }

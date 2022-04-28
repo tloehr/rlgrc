@@ -8,6 +8,7 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
+import org.jdesktop.swingx.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,13 +22,13 @@ import java.math.BigDecimal;
 public class ConquestParams extends GameParams {
     public ConquestParams() {
         super();
+        add(default_components);
         initComponents();
         initPanel();
     }
 
     void initPanel() {
         load_defaults();
-        txtComment.setInputVerifier(new NotEmptyVerifier());
         txtCnqTickets.setInputVerifier(new NumberVerifier());
         txtCnqTPrice.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
         txtCnqBleedStarts.setInputVerifier(new NumberVerifier());
@@ -42,7 +43,6 @@ public class ConquestParams extends GameParams {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         pnlConquest = new JPanel();
-        txtComment = new JTextField();
         label3 = new JLabel();
         txtCnqTickets = new JTextField();
         label4 = new JLabel();
@@ -64,42 +64,38 @@ public class ConquestParams extends GameParams {
         txtBlueSpawn = new JTextField();
 
         //======== this ========
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
                 "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                "4*(default, $lgap), fill:default:grow"));
-
-            //---- txtComment ----
-            txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
-            pnlConquest.add(txtComment, CC.xywh(1, 1, 7, 1));
+                "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
-            pnlConquest.add(label3, CC.xy(1, 3));
-            pnlConquest.add(txtCnqTickets, CC.xy(3, 3));
+            pnlConquest.add(label3, CC.xy(1, 1));
+            pnlConquest.add(txtCnqTickets, CC.xy(3, 1));
 
             //---- label4 ----
             label4.setText("Bleeding starts @");
-            pnlConquest.add(label4, CC.xy(5, 3));
-            pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 3));
+            pnlConquest.add(label4, CC.xy(5, 1));
+            pnlConquest.add(txtCnqBleedStarts, CC.xy(7, 1));
 
             //---- label5 ----
             label5.setText("Start Bleed interval");
-            pnlConquest.add(label5, CC.xy(1, 5));
-            pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 5));
+            pnlConquest.add(label5, CC.xy(1, 3));
+            pnlConquest.add(txtCnqSBleedInt, CC.xy(3, 3));
 
             //---- lbl12345 ----
             lbl12345.setText("Final Bleed interval");
-            pnlConquest.add(lbl12345, CC.xy(5, 5));
-            pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 5));
+            pnlConquest.add(lbl12345, CC.xy(5, 3));
+            pnlConquest.add(txtCnqEBleedInt, CC.xy(7, 3));
 
             //---- label9 ----
             label9.setText("Ticket Price");
-            pnlConquest.add(label9, CC.xy(1, 7));
-            pnlConquest.add(txtCnqTPrice, CC.xy(3, 7));
+            pnlConquest.add(label9, CC.xy(1, 5));
+            pnlConquest.add(txtCnqTPrice, CC.xy(3, 5));
 
             //======== pnl1234 ========
             {
@@ -146,7 +142,7 @@ public class ConquestParams extends GameParams {
 
                 //---- txtRedSpawn ----
                 txtRedSpawn.setText("test");
-                txtRedSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                txtRedSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
                 txtRedSpawn.setAlignmentX(0.5F);
                 txtRedSpawn.setBackground(new Color(255, 0, 51));
                 txtRedSpawn.setOpaque(true);
@@ -156,7 +152,7 @@ public class ConquestParams extends GameParams {
 
                 //---- txtBlueSpawn ----
                 txtBlueSpawn.setText("test");
-                txtBlueSpawn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 22));
+                txtBlueSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
                 txtBlueSpawn.setAlignmentX(0.5F);
                 txtBlueSpawn.setBackground(new Color(51, 51, 255));
                 txtBlueSpawn.setOpaque(true);
@@ -164,7 +160,7 @@ public class ConquestParams extends GameParams {
                 txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
                 pnl1234.add(txtBlueSpawn, CC.xywh(5, 7, 3, 1, CC.FILL, CC.FILL));
             }
-            pnlConquest.add(pnl1234, CC.xywh(1, 9, 7, 1, CC.FILL, CC.DEFAULT));
+            pnlConquest.add(pnl1234, CC.xywh(1, 7, 7, 1, CC.FILL, CC.DEFAULT));
         }
         add(pnlConquest);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
@@ -176,8 +172,8 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    void set_parameters() {
-        txtComment.setText(params.getString("comment"));
+    protected void set_parameters() {
+        super.set_parameters();
         txtCnqTickets.setText(params.get("respawn_tickets").toString());
         txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
         txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
@@ -190,14 +186,13 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    JSONObject read_parameters() {
-        params.clear();
+    protected JSONObject read_parameters() {
+        super.read_parameters();
         params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
         params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
         params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
         params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
         params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
-        params.put("comment", txtComment.getText());
 
         JSONObject agents = new JSONObject();
         agents.put("capture_points", to_jsonarray(txtCPs.getText()));
@@ -214,7 +209,6 @@ public class ConquestParams extends GameParams {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel pnlConquest;
-    private JTextField txtComment;
     private JLabel label3;
     private JTextField txtCnqTickets;
     private JLabel label4;

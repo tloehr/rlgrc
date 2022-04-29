@@ -1,5 +1,6 @@
 package de.flashheart.rlgrc.ui;
 
+import com.google.common.io.Resources;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import de.flashheart.rlgrc.misc.RiverLayout;
@@ -10,8 +11,10 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Optional;
@@ -82,20 +85,29 @@ public abstract class GameParams extends JPanel {
     }
 
     void load_defaults() {
+        File myFile = FileUtils.getFile(System.getProperty("workspace"), getMode(), "default.json");
         file = Optional.empty();
-        StringBuffer stringBuffer = new StringBuffer();
-        InputStream in = getClass().getResourceAsStream("/defaults/" + getMode() + ".json");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        reader.lines().forEach(s -> stringBuffer.append(s));
-        params = new JSONObject(stringBuffer.toString());
-        set_parameters();
+        try {
+            if (myFile.exists()) {
+                params = new JSONObject(FileUtils.readFileToString(myFile, StandardCharsets.UTF_8));
+            } else {
+                params = new JSONObject(Resources.toString(Resources.getResource("defaults/" + getMode() + ".json"), Charset.defaultCharset()));
+            }
+            set_parameters();
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 
-    Optional<File> load_file() throws IOException {
+    Optional<File> load_file() {
         Optional<File> myFile = choose_file(false);
         if (myFile.isEmpty()) return file;
-        params = new JSONObject(FileUtils.readFileToString(myFile.get(), StandardCharsets.UTF_8));
-        set_parameters();
+        try {
+            params = new JSONObject(FileUtils.readFileToString(myFile.get(), StandardCharsets.UTF_8));
+            set_parameters();
+        } catch (IOException e) {
+            myFile = Optional.empty();
+        }
         return myFile;
     }
 
@@ -131,5 +143,11 @@ public abstract class GameParams extends JPanel {
         return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
     }
 
+    /**
+     * this method is implemented by the children classes to provide a screen friendly representation of the current score / situation.
+     * @param game_state the game status as provided by the server
+     * @return the current score in HTML
+     */
+    abstract String get_score_as_html(JSONObject game_state);
 
 }

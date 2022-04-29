@@ -4,6 +4,7 @@
 
 package de.flashheart.rlgrc.ui;
 
+import com.google.common.io.Resources;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.FlashStateLedJob;
@@ -34,6 +35,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -78,6 +80,7 @@ public class FrameMain extends JFrame {
     private static final int TAB_RUNNING_GAME = 1;
     private static final int TAB_SERVER = 2;
     private static final int TAB_AGENTS = 3;
+    private static final int TAB_ABOUT = 4;
     private final Scheduler scheduler;
     private final JobKey state_flashing_job;
 
@@ -91,8 +94,6 @@ public class FrameMain extends JFrame {
     private boolean connected;
     private Optional<String> selected_agent;
     private SSEClient sseClient;
-    //private GameParams current_game_mode;
-
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -105,9 +106,11 @@ public class FrameMain extends JFrame {
         this.state_flashing_job = new JobKey(FlashStateLedJob.name, "group1");
 
         initComponents();
-
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
         //guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
+
+        pnlMain.setSelectedIndex(TAB_ABOUT);
+        txtAbout.setText(Resources.toString(Resources.getResource("about.html"), Charset.defaultCharset()));
 
         this._states_ = Arrays.asList(_state_PROLOG, _state_TEAMS_NOT_READY, _state_TEAMS_READY, _state_RUNNING, _state_PAUSING, _state_RESUMING, _state_EPILOG);
         this._message_buttons = Arrays.asList(btnPrepare, btnReset, btnReady, btnRun, btnPause, btnResume, btnContinue, btnGameOver);
@@ -195,7 +198,10 @@ public class FrameMain extends JFrame {
         pnlMain.setEnabled(connected);
         cmbGameSlots.setEnabled(connected);
         btnConnect.setIcon(new ImageIcon(getClass().getResource(connected ? "/artwork/connected.png" : "/artwork/disconnected.png")));
-        if (!connected) return;
+        if (!connected) {
+            pnlMain.setSelectedIndex(TAB_ABOUT);
+            return;
+        }
 
         pnlMain.setEnabledAt(TAB_SETUP, current_state.isEmpty() || current_state.getString("game_state").equals(_state_PROLOG));
         pnlMain.setEnabledAt(TAB_RUNNING_GAME, !current_state.isEmpty());
@@ -206,8 +212,8 @@ public class FrameMain extends JFrame {
         try {
             if (pnlMain.getSelectedIndex() == TAB_RUNNING_GAME)
                 this.scheduler.start();
-            else
-                this.scheduler.standby();
+            else if (!this.scheduler.isInStandbyMode()) this.scheduler.standby();
+
         } catch (SchedulerException ex) {
             ex.printStackTrace();
         }
@@ -247,7 +253,7 @@ public class FrameMain extends JFrame {
 
     private void disconnect() {
         if (!connected) return;
-        pnlMain.setSelectedIndex(TAB_SERVER);
+        pnlMain.setSelectedIndex(TAB_ABOUT);
         txtLogger.setText(null);
         addLog("Server not connected...");
         shutdown_sse_client();
@@ -270,27 +276,12 @@ public class FrameMain extends JFrame {
             int index = _states_.indexOf(state.toUpperCase());
             // toggle led
             _state_labels.get(index).setEnabled(!_state_labels.get(index).isEnabled());
-            //_state_labels.get(index).invalidate();
         });
     }
 
 
     private void createUIComponents() {
         tblAgents = new JTable(new TM_Agents(new JSONObject(), configs));
-
-        /**
-         *  {
-         *             @Override
-         *             public String getToolTipText(MouseEvent e) {
-         *                 //Implement table cell tool tips.
-         *                 java.awt.Point p = e.getPoint();
-         *                 int rowIndex = rowAtPoint(p);
-         *                 TM_Agents model = (TM_Agents) getModel();
-         *                 log.debug(model.getTooltipAt(rowIndex));
-         *                 return "<html><p>" + model.getValueAt(rowIndex) + "</p></html>";
-         *             }
-         */
-
     }
 
 
@@ -306,14 +297,9 @@ public class FrameMain extends JFrame {
     }
 
     private void btnLoadFile(ActionEvent e) {
-        try {
-            GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-            current_game_mode.load_file();
-            lblFile.setText(current_game_mode.getFilename());
-        } catch (IOException ex) {
-            log.error(ex);
-            addLog(ex.getMessage());
-        }
+        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
+        current_game_mode.load_file();
+        lblFile.setText(current_game_mode.getFilename());
     }
 
     private void btnFileNew(ActionEvent e) {
@@ -362,93 +348,6 @@ public class FrameMain extends JFrame {
         configs.put(Configs.REST_URI, txtURI.getText().trim());
     }
 
-//    private void add_game_select_button(int gameid) {
-//        JToggleButton tb = new JToggleButton(Integer.toString(gameid));
-//        tb.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-off.png")));
-//        tb.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-//        tb.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
-//        tb.setActionCommand(Integer.toString(gameid));
-//        pnlLoadedGames.add(tb);
-//        buttonGroup1.add(tb);
-//        tb.addActionListener(e -> game_selected(e));
-//        GAME_SELECT_BUTTONS.add(tb);
-//    }
-
-//    private void game_selected(ActionEvent e) {
-//        GAMEID = e.getActionCommand();
-//        if (sseClient != null) sseClient.shutdown();
-//        sseClient = SSEClient.builder()
-//                .url(txtURI.getText().trim() + "/api/game-sse?id=" + GAMEID)
-//                .useKeepAliveMechanismIfReceived(false)
-//                .eventHandler(log::debug)
-//                .build();
-//        sseClient.start();
-//        set_gui(get("game/status", GAMEID));
-//    }
-//
-//    private void del_game_select_button(JToggleButton tb) {
-//        pnlLoadedGames.remove(tb);
-//        buttonGroup1.remove(tb);
-//    }
-
-//    private void btnLoadGame(ActionEvent e) {
-//        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-//        String params = current_game_mode.read_parameters().toString(4);
-//        log.debug(params);
-//        post("game/load", params, cmbGameSlots.getSelectedItem().toString());
-//        //guiFSM.ProcessFSM("load_game");
-//    }
-
-//    private void btnRun(ActionEvent e) {
-//        if (guiFSM.getCurrentState().equalsIgnoreCase("PAUSING")) {
-//            process(GAMEID, "resume");
-//        } else {
-//            process(GAMEID, "prepare");
-//        }
-//        guiFSM.ProcessFSM("run");
-//    }
-//
-//    private void btnPause(ActionEvent e) {
-//        process(GAMEID, "pause");
-//        guiFSM.ProcessFSM("pause");
-//    }
-//
-//    private void btnReset(ActionEvent e) {
-//        process(GAMEID, "reset");
-//        guiFSM.ProcessFSM("reset");
-//    }
-//
-//    private void btnUnload(ActionEvent e) {
-//        post("game/unload", GAMEID);
-//        guiFSM.ProcessFSM("unload");
-//    }
-
-// source: https://stackoverflow.com/a/26046778
-//    public MyJFrame() {
-//        initComponents();
-//        resizeColumns();
-//        addComponentListener(new ComponentAdapter() {
-//            @Override
-//            public void componentResized(ComponentEvent e) {
-//                resizeColumns();
-//            }
-//        });
-//    }
-//    //SUMS 1
-//    float[] columnWidthPercentage = {0.2f, 0.55f, 0.1f, 0.05f, 0.05f, 0.05f};
-//
-//    private void resizeColumns() {
-//        // Use TableColumnModel.getTotalColumnWidth() if your table is included in a JScrollPane
-//        int tW = jTable1.getWidth();
-//        TableColumn column;
-//        TableColumnModel jTableColumnModel = jTable1.getColumnModel();
-//        int cantCols = jTableColumnModel.getColumnCount();
-//        for (int i = 0; i < cantCols; i++) {
-//            column = jTableColumnModel.getColumn(i);
-//            int pWidth = Math.round(columnWidthPercentage[i] * tW);
-//            column.setPreferredWidth(pWidth);
-//        }
-//    }
 
     private void btnRefreshAgents(ActionEvent e) {
         JSONObject request = get("system/list_agents");
@@ -467,13 +366,22 @@ public class FrameMain extends JFrame {
 
 
     private void update_setup_game_tab() {
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        if (current_game_mode == null) return; // for init phase
-        pnlParams.add(current_game_mode, CC.xy(1, 1));
+        GameParams current_game_setup = (GameParams) cmbGameModes.getSelectedItem();
+        if (current_game_setup == null) return; // for init phase
+        if (current_state.isEmpty()) current_game_setup.load_defaults();
+        else current_game_setup.set_parameters(current_state);
+        SwingUtilities.invokeLater(() -> {
+            pnlGameMode.removeAll();
+            pnlGameMode.add(current_game_setup);
+            pnlParams.invalidate();
+            pnlParams.repaint();
+        });
     }
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
+        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
+
         int index = _states_.indexOf(state.toUpperCase());
         // States
         for (int i = 0; i < 7; i++) {
@@ -484,6 +392,8 @@ public class FrameMain extends JFrame {
             boolean enabled = Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
             _message_buttons.get(i).setEnabled(enabled);
         }
+        
+        txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         connect_sse_client(cmbGameSlots.getSelectedItem().toString());
     }
 
@@ -645,6 +555,7 @@ public class FrameMain extends JFrame {
                 .eventHandler(eventText -> {
                     try {
                         // does not work, when there are newlines in the received messages
+                        log.trace("sse_event_received {}", eventText);
                         current_state = new JSONObject(eventText);
                         set_gui_to_situation();
                     } catch (JSONException jsonException) {
@@ -673,6 +584,7 @@ public class FrameMain extends JFrame {
         lblResponse = new JLabel();
         pnlMain = new JTabbedPane();
         pnlParams = new JPanel();
+        pnlGameMode = new JPanel();
         pnlFiles = new JPanel();
         cmbGameModes = new JComboBox();
         btnFileNew = new JButton();
@@ -701,6 +613,8 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
+        scrollPane4 = new JScrollPane();
+        txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
         scrollLog = new JScrollPane();
         txtLogger = new JTextArea();
@@ -723,6 +637,9 @@ public class FrameMain extends JFrame {
         button8 = new JButton();
         button9 = new JButton();
         button10 = new JButton();
+        pnlAbout = new JPanel();
+        scrollPane2 = new JScrollPane();
+        txtAbout = new JTextPane();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -735,7 +652,7 @@ public class FrameMain extends JFrame {
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
             "$ugap, default:grow, $ugap",
-            "$rgap, default:grow"));
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
@@ -794,6 +711,12 @@ public class FrameMain extends JFrame {
                     pnlParams.setLayout(new FormLayout(
                         "default:grow",
                         "fill:default:grow, $lgap, default"));
+
+                    //======== pnlGameMode ========
+                    {
+                        pnlGameMode.setLayout(new BoxLayout(pnlGameMode, BoxLayout.PAGE_AXIS));
+                    }
+                    pnlParams.add(pnlGameMode, CC.xy(1, 1));
 
                     //======== pnlFiles ========
                     {
@@ -997,6 +920,15 @@ public class FrameMain extends JFrame {
                         pnlGameStates.add(lblEpilog);
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
+
+                    //======== scrollPane4 ========
+                    {
+
+                        //---- txtGameStatus ----
+                        txtGameStatus.setContentType("text/html");
+                        scrollPane4.setViewportView(txtGameStatus);
+                    }
+                    pnlRunningGame.add(scrollPane4, CC.xy(1, 5, CC.FILL, CC.FILL));
                 }
                 pnlMain.addTab("Running Game", pnlRunningGame);
 
@@ -1063,7 +995,7 @@ public class FrameMain extends JFrame {
                     {
                         pnlTesting.setLayout(new FormLayout(
                             "left:default:grow",
-                            "fill:default, default, 9*(fill:default), 2*(default)"));
+                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
@@ -1155,6 +1087,21 @@ public class FrameMain extends JFrame {
                     pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
                 pnlMain.addTab("Agents", pnlAgents);
+
+                //======== pnlAbout ========
+                {
+                    pnlAbout.setLayout(new BoxLayout(pnlAbout, BoxLayout.PAGE_AXIS));
+
+                    //======== scrollPane2 ========
+                    {
+
+                        //---- txtAbout ----
+                        txtAbout.setContentType("text/html");
+                        scrollPane2.setViewportView(txtAbout);
+                    }
+                    pnlAbout.add(scrollPane2);
+                }
+                pnlMain.addTab("About", pnlAbout);
             }
             mainPanel.add(pnlMain, CC.xywh(1, 5, 1, 5));
         }
@@ -1174,6 +1121,7 @@ public class FrameMain extends JFrame {
     private JLabel lblResponse;
     private JTabbedPane pnlMain;
     private JPanel pnlParams;
+    private JPanel pnlGameMode;
     private JPanel pnlFiles;
     private JComboBox cmbGameModes;
     private JButton btnFileNew;
@@ -1202,6 +1150,8 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
+    private JScrollPane scrollPane4;
+    private JTextPane txtGameStatus;
     private JPanel pnlServer;
     private JScrollPane scrollLog;
     private JTextArea txtLogger;
@@ -1225,5 +1175,8 @@ public class FrameMain extends JFrame {
     private JButton button8;
     private JButton button9;
     private JButton button10;
+    private JPanel pnlAbout;
+    private JScrollPane scrollPane2;
+    private JTextPane txtAbout;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

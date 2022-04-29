@@ -2,6 +2,7 @@ package de.flashheart.rlgrc.networking;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
@@ -60,7 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * https://github.com/CiscoSE/commons-networking/blob/main/commons-networking/src/main/java/com/cisco/commons/networking/SSEClient.java
  * @author Liran Mendelovich
  */
-@Slf4j
+@Log4j2
 public class SSEClient {
 
     private static final long DEFAULT_RECONNECT_SAMPLING_TIME_MILLIS = 60L * 1000L;

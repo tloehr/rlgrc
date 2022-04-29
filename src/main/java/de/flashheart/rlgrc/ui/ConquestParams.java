@@ -8,7 +8,6 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
-import org.jdesktop.swingx.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -69,8 +68,8 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                "3*(default, $lgap), fill:default:grow"));
+                    "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                    "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
@@ -100,9 +99,9 @@ public class ConquestParams extends GameParams {
             //======== pnl1234 ========
             {
                 pnl1234.setLayout(new FormLayout(
-                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                    "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
-                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
+                        "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                        "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
+                ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
 
                 //---- label10 ----
                 label10.setText("Capture Points");
@@ -205,6 +204,37 @@ public class ConquestParams extends GameParams {
         params.put("class", "de.flashheart.rlg.commander.games.Conquest");
         params.put("mode", getMode());
         return params;
+    }
+
+    @Override
+    String get_score_as_html(JSONObject game_state) {
+
+        String blue_flags = "";
+        String red_flags = "";
+
+        for (Object cp : game_state.getJSONArray("cps_held_by_red").toList()) {
+            red_flags += "<li>" + cp + "</li>\n";
+        }
+
+        for (Object cp : game_state.getJSONArray("cps_held_by_blue").toList()) {
+            blue_flags += "<li>" + cp + "</li>\n";
+        }
+
+        if (blue_flags.isEmpty()) blue_flags = "<li>none</li>\n";
+        if (red_flags.isEmpty()) red_flags = "<li>none</li>\n";
+
+        String html = "<html><body><h1>Conquest</h1>\n" +
+                "<h2>Team Red &#8594; %s  &#8660; %s &#8592; Team Blue </h2>" +
+                "<h3>Capture points</h3>" +
+                "<h4>Team Red</h4>" +
+                "<ul>" + red_flags + "</ul>" +
+                "<h4>Team Blue</h4>" +
+                "<ul>" + blue_flags + "</ul>" +
+                "<h3>Number of Respawns</h3>" +
+                "Team Red: %s<br/>" +
+                "Team Blue: %s<br/>" +
+                "</body></html>";
+        return String.format(html, game_state.getFloat("remaining_red_tickets"), game_state.getFloat("remaining_blue_tickets"), game_state.getInt("red_respawns"), game_state.getInt("blue_respawns"));
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables

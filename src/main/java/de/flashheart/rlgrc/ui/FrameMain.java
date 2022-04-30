@@ -373,8 +373,8 @@ public class FrameMain extends JFrame {
         SwingUtilities.invokeLater(() -> {
             pnlGameMode.removeAll();
             pnlGameMode.add(current_game_setup);
-            pnlParams.invalidate();
-            pnlParams.repaint();
+//            pnlParams.invalidate();
+//            pnlParams.repaint();
         });
     }
 
@@ -394,6 +394,7 @@ public class FrameMain extends JFrame {
         }
         
         txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
+        scrlGameStatus.getVerticalScrollBar().setValue(0);
         connect_sse_client(cmbGameSlots.getSelectedItem().toString());
     }
 
@@ -613,7 +614,7 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
-        scrollPane4 = new JScrollPane();
+        scrlGameStatus = new JScrollPane();
         txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
         scrollLog = new JScrollPane();
@@ -921,14 +922,14 @@ public class FrameMain extends JFrame {
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
 
-                    //======== scrollPane4 ========
+                    //======== scrlGameStatus ========
                     {
 
                         //---- txtGameStatus ----
                         txtGameStatus.setContentType("text/html");
-                        scrollPane4.setViewportView(txtGameStatus);
+                        scrlGameStatus.setViewportView(txtGameStatus);
                     }
-                    pnlRunningGame.add(scrollPane4, CC.xy(1, 5, CC.FILL, CC.FILL));
+                    pnlRunningGame.add(scrlGameStatus, CC.xy(1, 5, CC.FILL, CC.FILL));
                 }
                 pnlMain.addTab("Running Game", pnlRunningGame);
 
@@ -1150,7 +1151,7 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
-    private JScrollPane scrollPane4;
+    private JScrollPane scrlGameStatus;
     private JTextPane txtGameStatus;
     private JPanel pnlServer;
     private JScrollPane scrollLog;

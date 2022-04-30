@@ -8,6 +8,7 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
+import lombok.extern.log4j.Log4j2;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 /**
  * @author Torsten Löhr
  */
+@Log4j2
 public class ConquestParams extends GameParams {
     public ConquestParams() {
         super();
@@ -26,7 +28,7 @@ public class ConquestParams extends GameParams {
         initPanel();
     }
 
-    void initPanel() {
+    private void initPanel() {
         load_defaults();
         txtCnqTickets.setInputVerifier(new NumberVerifier());
         txtCnqTPrice.setInputVerifier(new NumberVerifier(BigDecimal.ONE, NumberVerifier.MAX, false));
@@ -207,7 +209,7 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    String get_score_as_html(JSONObject game_state) {
+    protected String get_score_as_html(JSONObject game_state) {
 
         String blue_flags = "";
         String red_flags = "";
@@ -233,8 +235,10 @@ public class ConquestParams extends GameParams {
                 "<h3>Number of Respawns</h3>" +
                 "Team Red: %s<br/>" +
                 "Team Blue: %s<br/>" +
+                "<h3>Events</h3>" +
+                generate_table_for_events(game_state.getJSONArray("in_game_events")) +
                 "</body></html>";
-        return String.format(html, game_state.getFloat("remaining_red_tickets"), game_state.getFloat("remaining_blue_tickets"), game_state.getInt("red_respawns"), game_state.getInt("blue_respawns"));
+        return String.format(html, game_state.getInt("remaining_red_tickets"), game_state.getInt("remaining_blue_tickets"), game_state.getInt("red_respawns"), game_state.getInt("blue_respawns"));
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables

@@ -274,7 +274,7 @@ new FormModel {
 							"gridY": 3
 						} )
 						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-							name: "scrollPane4"
+							name: "scrlGameStatus"
 							add( new FormComponent( "javax.swing.JTextPane" ) {
 								name: "txtGameStatus"
 								"contentType": "text/html"

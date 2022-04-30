@@ -1,6 +1,7 @@
 package de.flashheart.rlgrc.ui;
 
 import com.google.common.io.Resources;
+import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import de.flashheart.rlgrc.misc.RiverLayout;
@@ -16,6 +17,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.StringTokenizer;
@@ -28,9 +31,11 @@ public abstract class GameParams extends JPanel {
     protected JPanel default_components;
     protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
     protected JCheckBox cbWait4Teams2BReady;
+    private DateTimeFormatter dtf;
 
     public GameParams() {
         super();
+        dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
         file = Optional.empty();
         init_default_components();
     }
@@ -57,7 +62,7 @@ public abstract class GameParams extends JPanel {
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
     }
 
-    public String getFilename() {
+    protected String getFilename() {
         return file.isEmpty() ? "no file" : file.get().getPath();
     }
 
@@ -70,7 +75,7 @@ public abstract class GameParams extends JPanel {
         cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
     }
 
-    void set_parameters(JSONObject params) {
+    protected void set_parameters(JSONObject params) {
         this.params = params;
         set_parameters();
     }
@@ -84,7 +89,7 @@ public abstract class GameParams extends JPanel {
         return params;
     }
 
-    void load_defaults() {
+    protected void load_defaults() {
         File myFile = FileUtils.getFile(System.getProperty("workspace"), getMode(), "default.json");
         file = Optional.empty();
         try {
@@ -99,7 +104,7 @@ public abstract class GameParams extends JPanel {
         }
     }
 
-    Optional<File> load_file() {
+    protected Optional<File> load_file() {
         Optional<File> myFile = choose_file(false);
         if (myFile.isEmpty()) return file;
         try {
@@ -118,7 +123,7 @@ public abstract class GameParams extends JPanel {
         FileUtils.writeStringToFile(file.get(), read_parameters().toString(4), StandardCharsets.UTF_8);
     }
 
-    Optional<File> choose_file(boolean save) {
+    protected Optional<File> choose_file(boolean save) {
         JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("workspace") + File.separator + getMode()));
         int result;// = JFileChooser.CANCEL_OPTION;
         if (save) result = fileChooser.showSaveDialog(this);
@@ -135,19 +140,36 @@ public abstract class GameParams extends JPanel {
         return myFile;
     }
 
-    String to_string_list(JSONArray jsonArray) {
+    protected String to_string_list(JSONArray jsonArray) {
         return jsonArray.toList().toString().replaceAll("\\[|\\]| ", "").replaceAll(",", "\n");
     }
 
-    JSONArray to_jsonarray(String list) {
+    protected JSONArray to_jsonarray(String list) {
         return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
     }
 
     /**
-     * this method is implemented by the children classes to provide a screen friendly representation of the current score / situation.
+     * this method is implemented by the children classes to provide a screen friendly representation of the current
+     * score / situation.
+     *
      * @param game_state the game status as provided by the server
      * @return the current score in HTML
      */
     abstract String get_score_as_html(JSONObject game_state);
+
+    protected String generate_table_for_events(JSONArray events) {
+        String head = "<table><thead><tr><th>Timestamp</th><th>Event</th><th>State</th></tr></thead><tbody>";
+        String tail = "</tbody></table>";
+        StringBuffer buffer = new StringBuffer(head);
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject event = events.getJSONObject(i);
+            buffer.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+                    JavaTimeConverter.from_iso8601(event.getString("pit")),
+                    event.getString("event"),
+                    event.getString("new_state")
+            ));
+        }
+        return buffer.append(tail).toString();
+    }
 
 }

@@ -52,10 +52,21 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class FrameMain extends JFrame {
 
     // taken from Game.java of rlgcommander
+    public static final String _msg_RESET = "reset";
+    public static final String _msg_PREPARE = "prepare";
+    public static final String _msg_READY = "ready";
+    public static final String _msg_RUN = "run";
+    public static final String _msg_IN_GAME_EVENT_OCCURRED = "in_game_event_occurred";
+    public static final String _msg_EVENT_PROCESSED = "event_processed";
+    public static final String _msg_PAUSE = "pause";
+    public static final String _msg_RESUME = "resume";
+    public static final String _msg_CONTINUE = "continue";
+    public static final String _msg_GAME_OVER = "game_over";
     public static final String _state_PROLOG = "PROLOG";
     public static final String _state_TEAMS_NOT_READY = "TEAMS_NOT_READY";
     public static final String _state_TEAMS_READY = "TEAMS_READY";
     public static final String _state_RUNNING = "RUNNING";
+    public static final String _state_PROCESSING_IN_GAME_EVENT = "PROCESSING_IN_GAME_EVENT";
     public static final String _state_PAUSING = "PAUSING";
     public static final String _state_RESUMING = "RESUMING";
     public static final String _state_EPILOG = "EPILOG";
@@ -117,8 +128,6 @@ public class FrameMain extends JFrame {
         this._state_labels = Arrays.asList(lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblPausing, lblResuming, lblEpilog);
 
         initFrame();
-        addLog("Server not connected...");
-
     }
 
     private void initFrame() throws IOException, SchedulerException {
@@ -380,6 +389,7 @@ public class FrameMain extends JFrame {
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
+        if (state.equals(_state_PROCESSING_IN_GAME_EVENT)) return; // won't show these
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
 
         int index = _states_.indexOf(state.toUpperCase());
@@ -552,16 +562,16 @@ public class FrameMain extends JFrame {
         if (sseClient != null) return;
         sseClient = SSEClient.builder()
                 .url(txtURI.getText().trim() + "/api/game-sse?id=" + id)
-                .useKeepAliveMechanismIfReceived(false)
+                .useKeepAliveMechanismIfReceived(true)
                 .eventHandler(eventText -> {
                     try {
                         // does not work, when there are newlines in the received messages
-                        log.trace("sse_event_received {}", eventText);
+                        log.debug("sse_event_received {}", eventText);
                         current_state = new JSONObject(eventText);
                         set_gui_to_situation();
                     } catch (JSONException jsonException) {
                         log.error(jsonException);
-                        disconnect();
+                        //disconnect();
                     }
                 })
                 .build();

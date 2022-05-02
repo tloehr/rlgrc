@@ -30,6 +30,9 @@
 
     </Appenders>
     <Loggers>
+        <Logger name="org.quartz.*" level="INFO">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
         <Root level="${sys:loglevel:-DEBUG}">
 <!--            <AppenderRef ref="RollingFile"/>-->
             <AppenderRef ref="STDOUT"/>

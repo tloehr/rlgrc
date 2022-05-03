@@ -9,6 +9,7 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.FlashStateLedJob;
 import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import de.flashheart.rlgrc.networking.SSEClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -30,12 +31,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DateFormatter;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -50,23 +53,11 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 @Log4j2
 public class FrameMain extends JFrame {
-
     // taken from Game.java of rlgcommander
-    public static final String _msg_RESET = "reset";
-    public static final String _msg_PREPARE = "prepare";
-    public static final String _msg_READY = "ready";
-    public static final String _msg_RUN = "run";
-    public static final String _msg_IN_GAME_EVENT_OCCURRED = "in_game_event_occurred";
-    public static final String _msg_EVENT_PROCESSED = "event_processed";
-    public static final String _msg_PAUSE = "pause";
-    public static final String _msg_RESUME = "resume";
-    public static final String _msg_CONTINUE = "continue";
-    public static final String _msg_GAME_OVER = "game_over";
     public static final String _state_PROLOG = "PROLOG";
     public static final String _state_TEAMS_NOT_READY = "TEAMS_NOT_READY";
     public static final String _state_TEAMS_READY = "TEAMS_READY";
     public static final String _state_RUNNING = "RUNNING";
-    public static final String _state_PROCESSING_IN_GAME_EVENT = "PROCESSING_IN_GAME_EVENT";
     public static final String _state_PAUSING = "PAUSING";
     public static final String _state_RESUMING = "RESUMING";
     public static final String _state_EPILOG = "EPILOG";
@@ -105,6 +96,7 @@ public class FrameMain extends JFrame {
     private boolean connected;
     private Optional<String> selected_agent;
     private SSEClient sseClient;
+    private LocalDateTime last_sse_received;
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -166,7 +158,7 @@ public class FrameMain extends JFrame {
         for (JButton msg_button : _message_buttons) {
             msg_button.addActionListener(e -> {
                 Properties props = new Properties();
-                props.put("id", cmbGameSlots.getSelectedItem().toString());
+                props.put("id", current_game_id());
                 props.put("message", e.getActionCommand());
                 post("game/process", "{}", props);
             });
@@ -252,8 +244,8 @@ public class FrameMain extends JFrame {
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
             for (int i = 0; i < max_number_of_games; i++) cmbGameSlots.addItem(i + 1);
+            current_state = get("game/status", current_game_id()); // just in case a game is already running
             set_gui_to_situation();
-            pnlMain.setSelectedIndex(TAB_SERVER);
         } catch (JSONException e) {
             log.error(e);
             disconnect();
@@ -285,6 +277,10 @@ public class FrameMain extends JFrame {
             int index = _states_.indexOf(state.toUpperCase());
             // toggle led
             _state_labels.get(index).setEnabled(!_state_labels.get(index).isEnabled());
+            if (last_sse_received != null) {
+                Duration.between(last_sse_received, LocalDateTime.now()).toSeconds();
+                lblLastSSE.setText(Duration.between(last_sse_received, LocalDateTime.now()).toSeconds() + "s ago");
+            }
         });
     }
 
@@ -369,7 +365,7 @@ public class FrameMain extends JFrame {
     }
 
     private void btnRefreshServer(ActionEvent e) {
-        current_state = get("game/status", cmbGameSlots.getSelectedItem().toString());
+        current_state = get("game/status", current_game_id());
         set_gui_to_situation();
     }
 
@@ -389,7 +385,6 @@ public class FrameMain extends JFrame {
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
-        if (state.equals(_state_PROCESSING_IN_GAME_EVENT)) return; // won't show these
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
 
         int index = _states_.indexOf(state.toUpperCase());
@@ -402,10 +397,10 @@ public class FrameMain extends JFrame {
             boolean enabled = Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
             _message_buttons.get(i).setEnabled(enabled);
         }
-        
+
         txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         scrlGameStatus.getVerticalScrollBar().setValue(0);
-        connect_sse_client(cmbGameSlots.getSelectedItem().toString());
+        connect_sse_client(current_game_id());
     }
 
 
@@ -538,7 +533,7 @@ public class FrameMain extends JFrame {
 
     private void btnUnloadOnServer(ActionEvent e) {
         shutdown_sse_client();
-        post("game/unload", cmbGameSlots.getSelectedItem().toString());
+        post("game/unload", current_game_id());
         current_state = new JSONObject();
         set_gui_to_situation();
     }
@@ -546,10 +541,11 @@ public class FrameMain extends JFrame {
     private void btnSendGameToServer(ActionEvent e) {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         String params = current_game_mode.read_parameters().toString(4);
-        current_state = post("game/load", params, cmbGameSlots.getSelectedItem().toString());
+        current_state = post("game/load", params, current_game_id());
         shutdown_sse_client();
-        connect_sse_client(cmbGameSlots.getSelectedItem().toString());
+        connect_sse_client(current_game_id());
         set_gui_to_situation();
+        pnlMain.setSelectedIndex(TAB_RUNNING_GAME);
     }
 
     private void shutdown_sse_client() {
@@ -566,8 +562,9 @@ public class FrameMain extends JFrame {
                 .eventHandler(eventText -> {
                     try {
                         // does not work, when there are newlines in the received messages
-                        log.debug("sse_event_received {}", eventText);
-                        current_state = new JSONObject(eventText);
+                        log.debug("sse_event_received - new state: {}", eventText);
+                        last_sse_received = LocalDateTime.now();
+                        current_state = get("game/status", current_game_id());
                         set_gui_to_situation();
                     } catch (JSONException jsonException) {
                         log.error(jsonException);
@@ -576,6 +573,10 @@ public class FrameMain extends JFrame {
                 })
                 .build();
         sseClient.start();
+    }
+
+    private String current_game_id(){
+        return cmbGameSlots.getSelectedItem().toString();
     }
 
     private void thisWindowClosing(WindowEvent e) {
@@ -624,6 +625,7 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
+        lblLastSSE = new JLabel();
         scrlGameStatus = new JScrollPane();
         txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
@@ -929,6 +931,12 @@ public class FrameMain extends JFrame {
                         lblEpilog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledpurple.png")));
                         lblEpilog.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkpurple.png")));
                         pnlGameStates.add(lblEpilog);
+
+                        //---- lblLastSSE ----
+                        lblLastSSE.setText(null);
+                        lblLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        lblLastSSE.setToolTipText("Last Message received");
+                        pnlGameStates.add(lblLastSSE);
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
 
@@ -1161,6 +1169,7 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
+    private JLabel lblLastSSE;
     private JScrollPane scrlGameStatus;
     private JTextPane txtGameStatus;
     private JPanel pnlServer;

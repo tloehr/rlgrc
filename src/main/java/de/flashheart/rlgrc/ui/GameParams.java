@@ -17,6 +17,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collections;
@@ -161,14 +165,14 @@ public abstract class GameParams extends JPanel {
         String head = "<table><thead><tr><th>Timestamp</th><th>Event</th><th>State</th></tr></thead><tbody>";
         String tail = "</tbody></table>";
         StringBuffer buffer = new StringBuffer(head);
-        for (int i = 0; i < events.length(); i++) {
-            JSONObject event = events.getJSONObject(i);
+        events.forEach(obj -> {
+            JSONObject event = (JSONObject) obj;
             buffer.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-                    JavaTimeConverter.from_iso8601(event.getString("pit")),
+                    dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit"))),
                     event.getString("event"),
                     event.getString("new_state")
             ));
-        }
+        });
         return buffer.append(tail).toString();
     }
 

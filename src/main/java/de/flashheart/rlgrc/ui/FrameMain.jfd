@@ -269,11 +269,12 @@ new FormModel {
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledpurple.png" )
 								"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkpurple.png" )
 							} )
-							add( new FormComponent( "javax.swing.JLabel" ) {
-								name: "lblLastSSE"
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnLastSSE"
 								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
 								"toolTipText": "Last Message received"
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLastSSE", true ) )
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"hAlign": sfield com.jgoodies.forms.layout.CellConstraints LEFT

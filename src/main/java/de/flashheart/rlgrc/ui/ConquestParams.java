@@ -21,28 +21,6 @@ import java.math.BigDecimal;
  */
 @Log4j2
 public class ConquestParams extends GameParams {
-    final String fallbackCSS = "<style type=\"text/css\" media=\"all\">\n" +
-            "body { margin:0;\n" +
-            "padding:0;\n" +
-            "}\n" +
-            "#fontsmall { font-size:10px; font-weight:bold; font-family:Arial,sans-serif;}\n" +
-            "#fonth1 { font-size:24px; font-family:Arial,sans-serif;}\n" +
-            "#fonth2 { font-size:18px; font-weight:bold; font-family:Arial,sans-serif;}\n" +
-            "#fonth3 { font-size:14px; font-weight:bold; font-family:Arial,sans-serif;}\n" +
-            "#fonth4 { font-size:12px; font-weight:bold; font-family:Arial,sans-serif;}\n" +
-            "#fonttext { font-size:12px; font-family:Arial,sans-serif;}\n" +
-            "#font14 { font-size:14px; font-family:Arial,sans-serif;}\n" +
-            "#font16 { font-size:16px; font-family:Arial,sans-serif;}\n" +
-            "#font18 { font-size:18px; font-family:Arial,sans-serif;}\n" +
-            "#font20 { font-size:20px; font-family:Arial,sans-serif;}\n" +
-            "#fonttextgray { font-size:12px; background-color:#CCCCCC; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact;}\n" +
-            "#fonttextgray14 { font-size:14px; background-color:#CCCCCC; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact;}\n" +
-            "#fonttextgray16 { font-size:16px; background-color:#CCCCCC; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact;}\n" +
-            "#fonttextgray18 { font-size:18px; background-color:#CCCCCC; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact;}\n" +
-            "#fonttextgray20 { font-size:20px; background-color:#CCCCCC; font-family:Arial,sans-serif; -webkit-print-color-adjust:exact;}\n" +
-            ".boxed {border: 1px solid black; background-color:#CCCCCC;}" +
-            "</style>";
-
 
     public ConquestParams() {
         super();
@@ -248,13 +226,11 @@ public class ConquestParams extends GameParams {
         if (blue_flags.isEmpty()) blue_flags = "<li>none</li>\n";
         if (red_flags.isEmpty()) red_flags = "<li>none</li>\n";
 
-        String html = "<html><head>"+fallbackCSS+"</head><body><h1 id=\"fonth1\" >Conquest</h1>\n" +
-                "<h2 id=\"fonth2\">Team Red &#8594; %s  &#8660; %s &#8592; Team Blue </h2>" +
-                "<h3 id=\"fonth3\">Capture points</h3>" +
-                "<h4 id=\"fonth4\">Team Red</h4>" +
-                "<div id=\"font14\">" +
+        String html = "<html><head>"+CSS+"</head><body><h1>Conquest</h1>\n" +
+                "<h2>Team Red &#8594; %s  &#8660; %s &#8592; Team Blue </h2>" +
+                "<h3>Capture points</h3>" +
+                "<h4>Team Red</h4>" +
                 "<ul>" + red_flags + "</ul>" +
-                "</div>" +
                 "<h4>Team Blue</h4>" +
                 "<ul>" + blue_flags + "</ul>" +
                 "<h3>Number of Respawns</h3>" +

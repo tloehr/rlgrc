@@ -1,0 +1,30 @@
+body {
+    margin: 10px;
+    /*background-color: rgb(240, 240, 240);*/
+    font-family: arial, sans-serif;
+    font-size: 12px;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight:  bold;
+    margin-top: 5px;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight:  bold;
+    margin-top: 5px;
+}
+h4 {
+    font-size: 14px;
+    font-weight:  bold;
+    margin-top: 1px;
+}
+

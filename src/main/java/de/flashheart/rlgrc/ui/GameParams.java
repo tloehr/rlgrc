@@ -17,10 +17,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collections;
@@ -36,9 +32,11 @@ public abstract class GameParams extends JPanel {
     protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
     protected JCheckBox cbWait4Teams2BReady;
     private DateTimeFormatter dtf;
+    protected String CSS = "";
 
     public GameParams() {
         super();
+        load_default_css();
         dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
         file = Optional.empty();
         init_default_components();
@@ -175,5 +173,22 @@ public abstract class GameParams extends JPanel {
         });
         return buffer.append(tail).toString();
     }
+
+    protected void load_default_css() {
+        File myFile = FileUtils.getFile(System.getProperty("workspace"), "default.css");
+        String c;
+        try {
+            if (myFile.exists()) {
+                c = FileUtils.readFileToString(myFile, StandardCharsets.UTF_8);
+            } else {
+                c = Resources.toString(Resources.getResource("defaults/default.css"), Charset.defaultCharset());
+            }
+            CSS = "<style type=\"text/css\" media=\"all\">\n" + c + "</style>";
+        } catch (Exception e) {
+            log.error(e);
+            CSS = "";
+        }
+    }
+
 
 }

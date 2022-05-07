@@ -206,7 +206,7 @@ public class FrameMain extends JFrame {
 
         pnlMain.setEnabledAt(TAB_SETUP, current_state.isEmpty() || current_state.getString("game_state").equals(_state_PROLOG));
         pnlMain.setEnabledAt(TAB_RUNNING_GAME, !current_state.isEmpty());
-        if (!current_state.isEmpty()) update_running_game_tab();
+        //if (!current_state.isEmpty()) update_running_game_tab();
     }
 
     private void tab_selection_changed(ChangeEvent e) {
@@ -225,10 +225,13 @@ public class FrameMain extends JFrame {
                 break;
             }
             case TAB_RUNNING_GAME: {
-                update_running_game_tab();
+                btnLastSSE(null);
                 break;
             }
-
+            case TAB_AGENTS: {
+                btnRefreshAgents(null);
+                break;
+            }
         }
     }
 
@@ -277,10 +280,7 @@ public class FrameMain extends JFrame {
             int index = _states_.indexOf(state.toUpperCase());
             // toggle led
             _state_labels.get(index).setEnabled(!_state_labels.get(index).isEnabled());
-            if (last_sse_received != null) {
-                Duration.between(last_sse_received, LocalDateTime.now()).toSeconds();
-                lblLastSSE.setText(Duration.between(last_sse_received, LocalDateTime.now()).toSeconds() + "s ago");
-            }
+            btnLastSSE.setText(last_sse_received == null ? "never" : Duration.between(last_sse_received, LocalDateTime.now()).toSeconds() + "s ago");
         });
     }
 
@@ -400,7 +400,6 @@ public class FrameMain extends JFrame {
 
         txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         scrlGameStatus.getVerticalScrollBar().setValue(0);
-        connect_sse_client(current_game_id());
     }
 
 
@@ -542,8 +541,6 @@ public class FrameMain extends JFrame {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         String params = current_game_mode.read_parameters().toString(4);
         current_state = post("game/load", params, current_game_id());
-        shutdown_sse_client();
-        connect_sse_client(current_game_id());
         set_gui_to_situation();
         pnlMain.setSelectedIndex(TAB_RUNNING_GAME);
     }
@@ -554,10 +551,10 @@ public class FrameMain extends JFrame {
         sseClient = null;
     }
 
-    private void connect_sse_client(String id) {
+    private void connect_sse_client() {
         if (sseClient != null) return;
         sseClient = SSEClient.builder()
-                .url(txtURI.getText().trim() + "/api/game-sse?id=" + id)
+                .url(txtURI.getText().trim() + "/api/game-sse?id=" + current_game_id())
                 .useKeepAliveMechanismIfReceived(true)
                 .eventHandler(eventText -> {
                     try {
@@ -572,15 +569,26 @@ public class FrameMain extends JFrame {
                     }
                 })
                 .build();
+        // todo: retry when failing
         sseClient.start();
+        last_sse_received = sseClient.isSubscribedSuccessfully() ? LocalDateTime.now() : null;
     }
 
-    private String current_game_id(){
+    private String current_game_id() {
         return cmbGameSlots.getSelectedItem().toString();
     }
 
     private void thisWindowClosing(WindowEvent e) {
         disconnect();
+    }
+
+    private void btnLastSSE(ActionEvent e) {
+        if (sseClient != null && !sseClient.isSubscribedSuccessfully()) {
+            shutdown_sse_client();
+            connect_sse_client();
+        }
+        current_state = get("game/status", current_game_id());
+        update_running_game_tab();
     }
 
     private void initComponents() {
@@ -625,7 +633,7 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
-        lblLastSSE = new JLabel();
+        btnLastSSE = new JButton();
         scrlGameStatus = new JScrollPane();
         txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
@@ -664,14 +672,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -722,8 +730,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -797,8 +805,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -932,11 +940,12 @@ public class FrameMain extends JFrame {
                         lblEpilog.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkpurple.png")));
                         pnlGameStates.add(lblEpilog);
 
-                        //---- lblLastSSE ----
-                        lblLastSSE.setText(null);
-                        lblLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                        lblLastSSE.setToolTipText("Last Message received");
-                        pnlGameStates.add(lblLastSSE);
+                        //---- btnLastSSE ----
+                        btnLastSSE.setText(null);
+                        btnLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        btnLastSSE.setToolTipText("Last Message received");
+                        btnLastSSE.addActionListener(e -> btnLastSSE(e));
+                        pnlGameStates.add(btnLastSSE);
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
 
@@ -985,8 +994,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1013,8 +1022,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                            "left:default:grow",
-                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                                "left:default:grow",
+                                "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
@@ -1169,7 +1178,7 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
-    private JLabel lblLastSSE;
+    private JButton btnLastSSE;
     private JScrollPane scrlGameStatus;
     private JTextPane txtGameStatus;
     private JPanel pnlServer;

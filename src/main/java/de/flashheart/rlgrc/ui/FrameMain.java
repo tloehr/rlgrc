@@ -206,7 +206,7 @@ public class FrameMain extends JFrame {
 
         pnlMain.setEnabledAt(TAB_SETUP, current_state.isEmpty() || current_state.getString("game_state").equals(_state_PROLOG));
         pnlMain.setEnabledAt(TAB_RUNNING_GAME, !current_state.isEmpty());
-        //if (!current_state.isEmpty()) update_running_game_tab();
+        if (!current_state.isEmpty()) update_running_game_tab();
     }
 
     private void tab_selection_changed(ChangeEvent e) {
@@ -570,6 +570,7 @@ public class FrameMain extends JFrame {
                 })
                 .build();
         // todo: retry when failing
+        // todo: es scheint als würde die subscription erst laufen, wenn ein event passiert
         sseClient.start();
         last_sse_received = sseClient.isSubscribedSuccessfully() ? LocalDateTime.now() : null;
     }
@@ -583,7 +584,7 @@ public class FrameMain extends JFrame {
     }
 
     private void btnLastSSE(ActionEvent e) {
-        if (sseClient != null && !sseClient.isSubscribedSuccessfully()) {
+        if (sseClient == null || !sseClient.isSubscribedSuccessfully()) {
             shutdown_sse_client();
             connect_sse_client();
         }

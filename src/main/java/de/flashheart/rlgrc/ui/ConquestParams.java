@@ -4,11 +4,16 @@
 
 package de.flashheart.rlgrc.ui;
 
+import java.awt.event.*;
+
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
+import de.flashheart.rlgrc.misc.HTML;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import lombok.extern.log4j.Log4j2;
+import org.checkerframework.checker.units.qual.C;
+import org.jdesktop.swingx.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,6 +47,12 @@ public class ConquestParams extends GameParams {
         txtBlueSpawn.setInputVerifier(new NotEmptyVerifier());
     }
 
+    private void btnSwitchSides(ActionEvent e) {
+        String a = txtBlueSpawn.getText();
+        txtBlueSpawn.setText(txtRedSpawn.getText());
+        txtRedSpawn.setText(a);
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         pnlConquest = new JPanel();
@@ -62,7 +73,9 @@ public class ConquestParams extends GameParams {
         scrollPane2 = new JScrollPane();
         txtSirens = new JTextArea();
         label13 = new JLabel();
+        panel1 = new JPanel();
         txtRedSpawn = new JTextField();
+        btnSwitchSides = new JButton();
         txtBlueSpawn = new JTextField();
 
         //======== this ========
@@ -142,25 +155,38 @@ public class ConquestParams extends GameParams {
                 label13.setHorizontalAlignment(SwingConstants.CENTER);
                 pnl1234.add(label13, CC.xywh(5, 1, 3, 1, CC.DEFAULT, CC.FILL));
 
-                //---- txtRedSpawn ----
-                txtRedSpawn.setText("test");
-                txtRedSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
-                txtRedSpawn.setAlignmentX(0.5F);
-                txtRedSpawn.setBackground(new Color(255, 0, 51));
-                txtRedSpawn.setOpaque(true);
-                txtRedSpawn.setForeground(new Color(255, 255, 51));
-                txtRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                pnl1234.add(txtRedSpawn, CC.xywh(1, 7, 3, 1, CC.DEFAULT, CC.FILL));
+                //======== panel1 ========
+                {
+                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
-                //---- txtBlueSpawn ----
-                txtBlueSpawn.setText("test");
-                txtBlueSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
-                txtBlueSpawn.setAlignmentX(0.5F);
-                txtBlueSpawn.setBackground(new Color(51, 51, 255));
-                txtBlueSpawn.setOpaque(true);
-                txtBlueSpawn.setForeground(new Color(255, 255, 51));
-                txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                pnl1234.add(txtBlueSpawn, CC.xywh(5, 7, 3, 1, CC.FILL, CC.FILL));
+                    //---- txtRedSpawn ----
+                    txtRedSpawn.setText("test");
+                    txtRedSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
+                    txtRedSpawn.setAlignmentX(0.5F);
+                    txtRedSpawn.setBackground(new Color(255, 0, 51));
+                    txtRedSpawn.setOpaque(true);
+                    txtRedSpawn.setForeground(new Color(255, 255, 51));
+                    txtRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                    panel1.add(txtRedSpawn);
+
+                    //---- btnSwitchSides ----
+                    btnSwitchSides.setText(null);
+                    btnSwitchSides.setIcon(new ImageIcon(getClass().getResource("/artwork/lc_arrowshapes.png")));
+                    btnSwitchSides.setToolTipText("switch sides");
+                    btnSwitchSides.addActionListener(e -> btnSwitchSides(e));
+                    panel1.add(btnSwitchSides);
+
+                    //---- txtBlueSpawn ----
+                    txtBlueSpawn.setText("test");
+                    txtBlueSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
+                    txtBlueSpawn.setAlignmentX(0.5F);
+                    txtBlueSpawn.setBackground(new Color(51, 51, 255));
+                    txtBlueSpawn.setOpaque(true);
+                    txtBlueSpawn.setForeground(new Color(255, 255, 51));
+                    txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+                    panel1.add(txtBlueSpawn);
+                }
+                pnl1234.add(panel1, CC.xywh(1, 7, 7, 1));
             }
             pnlConquest.add(pnl1234, CC.xywh(1, 7, 7, 1, CC.FILL, CC.DEFAULT));
         }
@@ -216,29 +242,31 @@ public class ConquestParams extends GameParams {
         String red_flags = "";
 
         for (Object cp : game_state.getJSONArray("cps_held_by_red").toList()) {
-            red_flags += "<li>" + cp + "</li>\n";
+            red_flags += HTML.li(cp.toString());
         }
 
         for (Object cp : game_state.getJSONArray("cps_held_by_blue").toList()) {
-            blue_flags += "<li>" + cp + "</li>\n";
+            blue_flags += HTML.li(cp.toString());
         }
 
-        if (blue_flags.isEmpty()) blue_flags = "<li>none</li>\n";
-        if (red_flags.isEmpty()) red_flags = "<li>none</li>\n";
+        if (blue_flags.isEmpty()) blue_flags = HTML.li("none");
+        if (red_flags.isEmpty()) red_flags = HTML.li("none");
 
-        String html = "<html><head>"+CSS+"</head><body><h1>Conquest</h1>\n" +
-                "<h2>Team Red &#8594; %s  &#8660; %s &#8592; Team Blue </h2>" +
-                "<h3>Capture points</h3>" +
-                "<h4>Team Red</h4>" +
-                "<ul>" + red_flags + "</ul>" +
-                "<h4>Team Blue</h4>" +
-                "<ul>" + blue_flags + "</ul>" +
-                "<h3>Number of Respawns</h3>" +
-                "Team Red: %s<br/>" +
-                "Team Blue: %s<br/>" +
-                "<h3>Events</h3>" +
-                generate_table_for_events(game_state.getJSONArray("in_game_events")) +
-                "</body></html>";
+        String html =
+                HTML.document(CSS,
+                        HTML.h1("Conquest") +
+                                HTML.h2("Team Red &#8594; %s  &#8660; %s &#8592; Team Blue") +
+                                HTML.h2("Capture points") +
+                                HTML.h3("Team Red") +
+                                HTML.ul(red_flags) +
+                                HTML.h3("Team Blue") +
+                                HTML.ul(blue_flags) +
+                                HTML.h4("Number of Respawns") +
+                                "Team Red: %s" + HTML.linebreak() +
+                                "Team Blue: %s" +
+                                HTML.h2("Events") +
+                                generate_table_for_events(game_state.getJSONArray("in_game_events"))
+                );
         return String.format(html, game_state.getInt("remaining_red_tickets"), game_state.getInt("remaining_blue_tickets"), game_state.getInt("red_respawns"), game_state.getInt("blue_respawns"));
     }
 
@@ -261,7 +289,9 @@ public class ConquestParams extends GameParams {
     private JScrollPane scrollPane2;
     private JTextArea txtSirens;
     private JLabel label13;
+    private JPanel panel1;
     private JTextField txtRedSpawn;
+    private JButton btnSwitchSides;
     private JTextField txtBlueSpawn;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

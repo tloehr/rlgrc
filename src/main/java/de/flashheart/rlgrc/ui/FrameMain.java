@@ -398,7 +398,10 @@ public class FrameMain extends JFrame {
             _message_buttons.get(i).setEnabled(enabled);
         }
 
-        txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
+        log.debug(current_game_mode);
+        log.debug(current_state);
+        //txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
+        log.debug(current_game_mode.get_score_as_html(current_state));
         scrlGameStatus.getVerticalScrollBar().setValue(0);
     }
 

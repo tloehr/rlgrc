@@ -169,14 +169,6 @@ public abstract class GameParams extends JPanel {
             ));
         }
 
-//        events.forEach(obj -> {
-//            JSONObject event = (JSONObject) obj;
-//            buffer.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-//                    dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit"))),
-//                    event.getString("event"),
-//                    event.getString("new_state")
-//            ));
-//        });
         return HTML.table(
                 HTML.table_tr(
                         HTML.table_th("Timestamp") +

@@ -31,7 +31,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DateFormatter;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
@@ -126,6 +125,7 @@ public class FrameMain extends JFrame {
         initLogger();
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
         txtURI.setText(configs.get(Configs.REST_URI));
 
         tblAgents.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -385,23 +385,31 @@ public class FrameMain extends JFrame {
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
+        String mode = current_state.getString("mode");
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
 
         int index = _states_.indexOf(state.toUpperCase());
         // States
         for (int i = 0; i < 7; i++) {
-            _state_labels.get(i).setEnabled( state.equalsIgnoreCase(_state_labels.get(i).getName()));
+            _state_labels.get(i).setEnabled(state.equalsIgnoreCase(_state_labels.get(i).getName()));
         }
         // Messages
         for (int i = 0; i < 8; i++) {
             boolean enabled = !btnLock.isSelected() && Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
             _message_buttons.get(i).setEnabled(enabled);
         }
+        String html = current_game_mode.get_score_as_html(current_state);
 
-//        log.debug(current_game_mode);
-//        log.debug(current_state);
-//        log.debug(current_game_mode.get_score_as_html(current_state));
-        txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
+        if (state.equals(_state_EPILOG)) {
+            try {
+                String filename = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                FileUtils.writeStringToFile(new File(System.getProperty("workspace") + File.separator + "results" + File.separator + mode + "@" + filename + ".html"), html, Charset.defaultCharset());
+            } catch (IOException e) {
+                log.warn(e);
+            }
+        }
+
+        txtGameStatus.setText(html);
         scrlGameStatus.getVerticalScrollBar().setValue(0);
     }
 
@@ -624,7 +632,6 @@ public class FrameMain extends JFrame {
         pnlRunningGame = new JPanel();
         pnlMessages = new JPanel();
         btnLock = new JToggleButton();
-        btnLastSSE = new JButton();
         btnPrepare = new JButton();
         btnReset = new JButton();
         btnReady = new JButton();
@@ -634,6 +641,7 @@ public class FrameMain extends JFrame {
         btnContinue = new JButton();
         btnGameOver = new JButton();
         pnlGameStates = new JPanel();
+        btnLastSSE = new JButton();
         lblProlog = new JLabel();
         lblTeamsNotReady = new JLabel();
         lblTeamsReady = new JLabel();
@@ -679,14 +687,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -737,8 +745,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -812,8 +820,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -828,13 +836,6 @@ public class FrameMain extends JFrame {
                         btnLock.setPreferredSize(new Dimension(38, 38));
                         btnLock.addItemListener(e -> btnLockItemStateChanged(e));
                         pnlMessages.add(btnLock);
-
-                        //---- btnLastSSE ----
-                        btnLastSSE.setText(null);
-                        btnLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                        btnLastSSE.setToolTipText("Last Message received");
-                        btnLastSSE.addActionListener(e -> btnLastSSE(e));
-                        pnlMessages.add(btnLastSSE);
 
                         //---- btnPrepare ----
                         btnPrepare.setText("Prepare");
@@ -908,6 +909,13 @@ public class FrameMain extends JFrame {
                     //======== pnlGameStates ========
                     {
                         pnlGameStates.setLayout(new HorizontalLayout(10));
+
+                        //---- btnLastSSE ----
+                        btnLastSSE.setText(null);
+                        btnLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        btnLastSSE.setToolTipText("Last Message received");
+                        btnLastSSE.addActionListener(e -> btnLastSSE(e));
+                        pnlGameStates.add(btnLastSSE);
 
                         //---- lblProlog ----
                         lblProlog.setText("Prolog");
@@ -1011,8 +1019,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1039,8 +1047,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                            "left:default:grow",
-                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                                "left:default:grow",
+                                "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
@@ -1180,7 +1188,6 @@ public class FrameMain extends JFrame {
     private JPanel pnlRunningGame;
     private JPanel pnlMessages;
     private JToggleButton btnLock;
-    private JButton btnLastSSE;
     private JButton btnPrepare;
     private JButton btnReset;
     private JButton btnReady;
@@ -1190,6 +1197,7 @@ public class FrameMain extends JFrame {
     private JButton btnContinue;
     private JButton btnGameOver;
     private JPanel pnlGameStates;
+    private JButton btnLastSSE;
     private JLabel lblProlog;
     private JLabel lblTeamsNotReady;
     private JLabel lblTeamsReady;

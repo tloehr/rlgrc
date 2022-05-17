@@ -400,8 +400,8 @@ public class FrameMain extends JFrame {
 
         log.debug(current_game_mode);
         log.debug(current_state);
-        //txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         log.debug(current_game_mode.get_score_as_html(current_state));
+        txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         scrlGameStatus.getVerticalScrollBar().setValue(0);
     }
 
@@ -621,6 +621,8 @@ public class FrameMain extends JFrame {
         hSpacer2 = new JPanel(null);
         pnlRunningGame = new JPanel();
         pnlMessages = new JPanel();
+        btnLock = new JToggleButton();
+        btnLastSSE = new JButton();
         btnPrepare = new JButton();
         btnReset = new JButton();
         btnReady = new JButton();
@@ -637,7 +639,6 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
-        btnLastSSE = new JButton();
         scrlGameStatus = new JScrollPane();
         txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
@@ -676,14 +677,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -734,8 +735,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "fill:default:grow, $lgap, default"));
+                        "default:grow",
+                        "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -809,12 +810,28 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                            "default:grow",
-                            "default, $lgap, default, $rgap, default:grow"));
+                        "default:grow",
+                        "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
                         pnlMessages.setLayout(new HorizontalLayout(5));
+
+                        //---- btnLock ----
+                        btnLock.setText(null);
+                        btnLock.setIcon(new ImageIcon(getClass().getResource("/artwork/decrypted.png")));
+                        btnLock.setSelectedIcon(new ImageIcon(getClass().getResource("/artwork/encrypted.png")));
+                        btnLock.setContentAreaFilled(false);
+                        btnLock.setBorderPainted(false);
+                        btnLock.setPreferredSize(new Dimension(38, 38));
+                        pnlMessages.add(btnLock);
+
+                        //---- btnLastSSE ----
+                        btnLastSSE.setText(null);
+                        btnLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
+                        btnLastSSE.setToolTipText("Last Message received");
+                        btnLastSSE.addActionListener(e -> btnLastSSE(e));
+                        pnlMessages.add(btnLastSSE);
 
                         //---- btnPrepare ----
                         btnPrepare.setText("Prepare");
@@ -943,13 +960,6 @@ public class FrameMain extends JFrame {
                         lblEpilog.setIcon(new ImageIcon(getClass().getResource("/artwork/ledpurple.png")));
                         lblEpilog.setDisabledIcon(new ImageIcon(getClass().getResource("/artwork/leddarkpurple.png")));
                         pnlGameStates.add(lblEpilog);
-
-                        //---- btnLastSSE ----
-                        btnLastSSE.setText(null);
-                        btnLastSSE.setIcon(new ImageIcon(getClass().getResource("/artwork/irkickflash.png")));
-                        btnLastSSE.setToolTipText("Last Message received");
-                        btnLastSSE.addActionListener(e -> btnLastSSE(e));
-                        pnlGameStates.add(btnLastSSE);
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
 
@@ -998,8 +1008,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1026,8 +1036,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                                "left:default:grow",
-                                "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                            "left:default:grow",
+                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
@@ -1166,6 +1176,8 @@ public class FrameMain extends JFrame {
     private JPanel hSpacer2;
     private JPanel pnlRunningGame;
     private JPanel pnlMessages;
+    private JToggleButton btnLock;
+    private JButton btnLastSSE;
     private JButton btnPrepare;
     private JButton btnReset;
     private JButton btnReady;
@@ -1182,7 +1194,6 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
-    private JButton btnLastSSE;
     private JScrollPane scrlGameStatus;
     private JTextPane txtGameStatus;
     private JPanel pnlServer;

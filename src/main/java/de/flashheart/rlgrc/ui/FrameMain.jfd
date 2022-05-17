@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.13" encoding: "UTF-8"
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.14.1" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -148,6 +148,7 @@ new FormModel {
 								"contentAreaFilled": false
 								"borderPainted": false
 								"preferredSize": new java.awt.Dimension( 38, 38 )
+								addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "btnLockItemStateChanged", true ) )
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnLastSSE"

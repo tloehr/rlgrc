@@ -390,17 +390,17 @@ public class FrameMain extends JFrame {
         int index = _states_.indexOf(state.toUpperCase());
         // States
         for (int i = 0; i < 7; i++) {
-            _state_labels.get(i).setEnabled(state.equalsIgnoreCase(_state_labels.get(i).getName()));
+            _state_labels.get(i).setEnabled( state.equalsIgnoreCase(_state_labels.get(i).getName()));
         }
         // Messages
         for (int i = 0; i < 8; i++) {
-            boolean enabled = Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
+            boolean enabled = !btnLock.isSelected() && Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
             _message_buttons.get(i).setEnabled(enabled);
         }
 
-        log.debug(current_game_mode);
-        log.debug(current_state);
-        log.debug(current_game_mode.get_score_as_html(current_state));
+//        log.debug(current_game_mode);
+//        log.debug(current_state);
+//        log.debug(current_game_mode.get_score_as_html(current_state));
         txtGameStatus.setText(current_game_mode.get_score_as_html(current_state));
         scrlGameStatus.getVerticalScrollBar().setValue(0);
     }
@@ -572,8 +572,6 @@ public class FrameMain extends JFrame {
                     }
                 })
                 .build();
-        // todo: retry when failing
-        // todo: es scheint als würde die subscription erst laufen, wenn ein event passiert
         sseClient.start();
         last_sse_received = sseClient.isSubscribedSuccessfully() ? LocalDateTime.now() : null;
     }
@@ -592,6 +590,10 @@ public class FrameMain extends JFrame {
             connect_sse_client();
         }
         current_state = get("game/status", current_game_id());
+        update_running_game_tab();
+    }
+
+    private void btnLockItemStateChanged(ItemEvent e) {
         update_running_game_tab();
     }
 
@@ -824,6 +826,7 @@ public class FrameMain extends JFrame {
                         btnLock.setContentAreaFilled(false);
                         btnLock.setBorderPainted(false);
                         btnLock.setPreferredSize(new Dimension(38, 38));
+                        btnLock.addItemListener(e -> btnLockItemStateChanged(e));
                         pnlMessages.add(btnLock);
 
                         //---- btnLastSSE ----

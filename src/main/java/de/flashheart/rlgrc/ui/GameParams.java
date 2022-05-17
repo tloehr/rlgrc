@@ -1,10 +1,7 @@
 package de.flashheart.rlgrc.ui;
 
 import com.google.common.io.Resources;
-import de.flashheart.rlgrc.misc.JavaTimeConverter;
-import de.flashheart.rlgrc.misc.NotEmptyVerifier;
-import de.flashheart.rlgrc.misc.NumberVerifier;
-import de.flashheart.rlgrc.misc.RiverLayout;
+import de.flashheart.rlgrc.misc.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -160,18 +157,33 @@ public abstract class GameParams extends JPanel {
     abstract String get_score_as_html(JSONObject game_state);
 
     protected String generate_table_for_events(JSONArray events) {
-        String head = "<table><thead><tr><th>Timestamp</th><th>Event</th><th>State</th></tr></thead><tbody>";
-        String tail = "</tbody></table>";
-        StringBuffer buffer = new StringBuffer(head);
-        events.forEach(obj -> {
-            JSONObject event = (JSONObject) obj;
-            buffer.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
-                    dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit"))),
-                    event.getString("event"),
-                    event.getString("new_state")
+        StringBuffer buffer = new StringBuffer();
+
+        int max_events = events.length();
+        for (int e_index = max_events - 1; e_index >= 0; e_index--) {
+            JSONObject event = events.getJSONObject(e_index);
+            buffer.append(HTML.table_tr(
+                    HTML.table_td(dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit")))) +
+                            HTML.table_td(event.getString("event")) +
+                            HTML.table_td(event.getString("new_state"))
             ));
-        });
-        return buffer.append(tail).toString();
+        }
+
+//        events.forEach(obj -> {
+//            JSONObject event = (JSONObject) obj;
+//            buffer.append(String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>",
+//                    dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit"))),
+//                    event.getString("event"),
+//                    event.getString("new_state")
+//            ));
+//        });
+        return HTML.table(
+                HTML.table_tr(
+                        HTML.table_th("Timestamp") +
+                                HTML.table_th("Event") +
+                                HTML.table_th("State")
+                ),
+                buffer.toString(), "1"); //"<table><thead><tr><th>Timestamp</th><th>Event</th><th>State</th></tr></thead><tbody>";
     }
 
     protected void load_default_css() {

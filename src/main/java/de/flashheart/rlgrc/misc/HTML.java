@@ -52,7 +52,7 @@ public class HTML {
     }
 
     public static String table_td(String content) {
-        return table_td(content, null, 0);
+        return table_td(content, "", 0);
     }
 
     public static String table_td(String content, int colspan) {
@@ -109,8 +109,8 @@ public class HTML {
         return "<h4>" + content + "</h4>\n";
     }
 
-    public static String table(String content, String border) {
-        return "<table border=\"" + border + "\">" + content + "</table>\n";
+    public static String table(String head, String body, String border) {
+        return String.format("<table border=\"%s\"><thead>%s</thead><tbody>%s</tbody></table>\n",  border, head, body);
     }
 
 

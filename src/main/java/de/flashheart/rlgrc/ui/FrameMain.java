@@ -400,9 +400,10 @@ public class FrameMain extends JFrame {
         }
         String html = current_game_mode.get_score_as_html(current_state);
 
+        // at the end of a match, we save the results for later use
         if (state.equals(_state_EPILOG)) {
             try {
-                String filename = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                String filename = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
                 FileUtils.writeStringToFile(new File(System.getProperty("workspace") + File.separator + "results" + File.separator + mode + "@" + filename + ".html"), html, Charset.defaultCharset());
             } catch (IOException e) {
                 log.warn(e);
@@ -687,14 +688,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -745,8 +746,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "fill:default:grow, $lgap, default"));
+                        "default:grow",
+                        "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -820,8 +821,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                            "default:grow",
-                            "default, $lgap, default, $rgap, default:grow"));
+                        "default:grow",
+                        "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1019,8 +1020,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1047,8 +1048,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                                "left:default:grow",
-                                "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                            "left:default:grow",
+                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");

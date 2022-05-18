@@ -34,7 +34,7 @@ public abstract class GameParams extends JPanel {
     public GameParams() {
         super();
         load_default_css();
-        dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+        dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
         file = Optional.empty();
         init_default_components();
     }

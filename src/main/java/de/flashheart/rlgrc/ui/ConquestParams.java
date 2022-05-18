@@ -9,6 +9,7 @@ import java.awt.event.*;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.HTML;
+import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import de.flashheart.rlgrc.misc.NotEmptyVerifier;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +21,9 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 /**
  * @author Torsten Löhr
@@ -252,9 +256,11 @@ public class ConquestParams extends GameParams {
         if (blue_flags.isEmpty()) blue_flags = HTML.li("none");
         if (red_flags.isEmpty()) red_flags = HTML.li("none");
 
+        JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
+        LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Conquest") +
+                        HTML.h1("Conquest@"+first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
                                 HTML.h2("Team Red &#8594; %s  &#8660; %s &#8592; Team Blue") +
                                 HTML.h2("Capture points") +
                                 HTML.h3("Team Red") +

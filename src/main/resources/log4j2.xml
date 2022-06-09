@@ -17,8 +17,8 @@
 
         <RollingFile
                 name="RollingFile"
-                fileName="${APP_LOG_ROOT}/rlgagent.log"
-                filePattern="${APP_LOG_ROOT}/%d{yyyy-MM-dd}.rlgagent.log.gz"
+                fileName="${APP_LOG_ROOT}/rlgrc.log"
+                filePattern="${APP_LOG_ROOT}/%d{yyyy-MM-dd}.rlgrc.log.gz"
                 ignoreExceptions="false">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <!--            Rolling over every day-->
@@ -34,7 +34,7 @@
             <AppenderRef ref="STDOUT"/>
         </Logger>
         <Root level="${sys:loglevel:-DEBUG}">
-<!--            <AppenderRef ref="RollingFile"/>-->
+            <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="STDOUT"/>
         </Root>
     </Loggers>

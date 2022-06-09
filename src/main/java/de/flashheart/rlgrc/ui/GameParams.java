@@ -1,6 +1,7 @@
 package de.flashheart.rlgrc.ui;
 
 import com.google.common.io.Resources;
+import com.mchange.v2.lang.StringUtils;
 import de.flashheart.rlgrc.misc.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -23,16 +25,19 @@ import java.util.stream.Collectors;
 
 @Log4j2
 public abstract class GameParams extends JPanel {
+    private final Configs configs;
     protected JSONObject params;
     protected Optional<File> file;
     protected JPanel default_components;
     protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
-    protected JCheckBox cbWait4Teams2BReady, cbPlayIntroMusic;
+    protected JCheckBox cbWait4Teams2BReady;
+    protected JComboBox<String> cmbIntroMusic;
     private DateTimeFormatter dtf;
     protected String CSS = "";
 
-    public GameParams() {
+    public GameParams(Configs configs) {
         super();
+        this.configs = configs;
         load_default_css();
         dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
         file = Optional.empty();
@@ -45,7 +50,7 @@ public abstract class GameParams extends JPanel {
         txtStarterCountdown = new JTextField();
         txtResumeCountdown = new JTextField();
         cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
-        cbPlayIntroMusic = new JCheckBox("Intro Music");
+        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
         txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
         txtStarterCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
         txtResumeCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
@@ -54,13 +59,15 @@ public abstract class GameParams extends JPanel {
         txtStarterCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
         txtResumeCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
         default_components.add(txtComment, "hfill");
-        default_components.add(new JLabel("Countdown to Start"), "br left");
+        default_components.add(new JLabel("Starter Countdown"), "br left");
         default_components.add(txtStarterCountdown);
+        default_components.add(new JLabel("Intro MP3"), "br left");
+        default_components.add(cmbIntroMusic);
         default_components.add(new JLabel("Countdown to Resume"));
         default_components.add(txtResumeCountdown);
         default_components.add(cbWait4Teams2BReady);
-        default_components.add(cbPlayIntroMusic);
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
+
     }
 
     protected String getFilename() {
@@ -74,7 +81,7 @@ public abstract class GameParams extends JPanel {
         txtStarterCountdown.setText(params.get("starter_countdown").toString());
         txtResumeCountdown.setText(params.get("resume_countdown").toString());
         cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
-        cbPlayIntroMusic.setSelected(params.getBoolean("play_intro"));
+        cmbIntroMusic.setSelectedItem(params.getString("intro_mp3_file"));
     }
 
     protected void set_parameters(JSONObject params) {
@@ -88,7 +95,7 @@ public abstract class GameParams extends JPanel {
         params.put("starter_countdown", txtStarterCountdown.getText());
         params.put("resume_countdown", txtResumeCountdown.getText());
         params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
-        params.put("play_intro", Boolean.toString(cbPlayIntroMusic.isSelected()));
+        params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
         return params;
     }
 

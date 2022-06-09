@@ -132,7 +132,7 @@ public class FrameMain extends JFrame {
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
         //pnlGames.add("Conquest", new ConquestParams());
 
-        for (GameParams gameParam : Arrays.asList(new ConquestParams())) {
+        for (GameParams gameParam : Arrays.asList(new ConquestParams(configs))) {
             cmbGameModes.addItem(gameParam);
         }
 

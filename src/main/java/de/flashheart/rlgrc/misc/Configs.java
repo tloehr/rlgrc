@@ -9,6 +9,7 @@ public class Configs extends AbstractConfigs {
     public static final String LAST_GAME_ID = "last_game_id";
     public static final String LAST_GAME_MODE = "last_game_mode";
     public static final String LAST_CONQUEST_FILE = "last_conquest_file";
+    public static final String INTRO_MP3_FILES = "intro_mp3_files";
 
     public Configs() throws IOException {
         super(System.getProperties().getProperty("workspace"));
@@ -29,7 +30,7 @@ public class Configs extends AbstractConfigs {
         configs.setProperty(LAST_GAME_ID, "g1");
         configs.setProperty(LAST_GAME_MODE, "conquest");
         configs.setProperty(LAST_CONQUEST_FILE, "<default>");
-
+        configs.setProperty(INTRO_MP3_FILES, "<none>,<random>,bf3,feuerfrei,future1,future2,insomnia,killbill,nodyahead,sirius,thunder");
     }
 
 }

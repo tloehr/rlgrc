@@ -8,13 +8,8 @@ import java.awt.event.*;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
-import de.flashheart.rlgrc.misc.HTML;
-import de.flashheart.rlgrc.misc.JavaTimeConverter;
-import de.flashheart.rlgrc.misc.NotEmptyVerifier;
-import de.flashheart.rlgrc.misc.NumberVerifier;
+import de.flashheart.rlgrc.misc.*;
 import lombok.extern.log4j.Log4j2;
-import org.checkerframework.checker.units.qual.C;
-import org.jdesktop.swingx.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,7 +18,6 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 /**
  * @author Torsten Löhr
@@ -31,8 +25,8 @@ import java.time.format.FormatStyle;
 @Log4j2
 public class ConquestParams extends GameParams {
 
-    public ConquestParams() {
-        super();
+    public ConquestParams(Configs configs) {
+        super(configs);
         add(default_components);
         initComponents();
         initPanel();

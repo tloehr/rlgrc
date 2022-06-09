@@ -27,7 +27,7 @@ public abstract class GameParams extends JPanel {
     protected Optional<File> file;
     protected JPanel default_components;
     protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
-    protected JCheckBox cbWait4Teams2BReady;
+    protected JCheckBox cbWait4Teams2BReady, cbPlayIntroMusic;
     private DateTimeFormatter dtf;
     protected String CSS = "";
 
@@ -44,7 +44,8 @@ public abstract class GameParams extends JPanel {
         txtComment = new JTextField();
         txtStarterCountdown = new JTextField();
         txtResumeCountdown = new JTextField();
-        cbWait4Teams2BReady = new JCheckBox("Wait for Teams to REPORT-IN as ready");
+        cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
+        cbPlayIntroMusic = new JCheckBox("Intro Music");
         txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
         txtStarterCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
         txtResumeCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
@@ -58,6 +59,7 @@ public abstract class GameParams extends JPanel {
         default_components.add(new JLabel("Countdown to Resume"));
         default_components.add(txtResumeCountdown);
         default_components.add(cbWait4Teams2BReady);
+        default_components.add(cbPlayIntroMusic);
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
     }
 
@@ -72,6 +74,7 @@ public abstract class GameParams extends JPanel {
         txtStarterCountdown.setText(params.get("starter_countdown").toString());
         txtResumeCountdown.setText(params.get("resume_countdown").toString());
         cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
+        cbPlayIntroMusic.setSelected(params.getBoolean("play_intro"));
     }
 
     protected void set_parameters(JSONObject params) {
@@ -85,6 +88,7 @@ public abstract class GameParams extends JPanel {
         params.put("starter_countdown", txtStarterCountdown.getText());
         params.put("resume_countdown", txtResumeCountdown.getText());
         params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
+        params.put("play_intro", Boolean.toString(cbPlayIntroMusic.isSelected()));
         return params;
     }
 

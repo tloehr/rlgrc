@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -19,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -29,14 +31,17 @@ public abstract class GameParams extends JPanel {
     protected JSONObject params;
     protected Optional<File> file;
     protected JPanel default_components;
-    protected JTextField txtComment, txtStarterCountdown, txtResumeCountdown;
     protected JCheckBox cbWait4Teams2BReady;
     protected JComboBox<String> cmbIntroMusic;
     private DateTimeFormatter dtf;
     protected String CSS = "";
+    protected Font default_font = new Font(".SF NS Text", Font.PLAIN, 14);
+    protected Font large_font = new Font(".SF NS Text", Font.PLAIN, 18);
+    protected HashMap<String, JTextComponent> components;
 
     public GameParams(Configs configs) {
         super();
+        components = new HashMap<>();
         this.configs = configs;
         load_default_css();
         dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
@@ -46,28 +51,35 @@ public abstract class GameParams extends JPanel {
 
     private void init_default_components() {
         default_components = new JPanel(new RiverLayout(5, 5));
-        txtComment = new JTextField();
-        txtStarterCountdown = new JTextField();
-        txtResumeCountdown = new JTextField();
+
         cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
         cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
-        txtComment.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-        txtStarterCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
-        txtResumeCountdown.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
-        cbWait4Teams2BReady.setFont(new Font(".SF NS Text", Font.PLAIN, 14));
-        txtComment.setInputVerifier(new NotEmptyVerifier());
-        txtStarterCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
-        txtResumeCountdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
-        default_components.add(txtComment, "hfill");
-        default_components.add(new JLabel("Starter Countdown"), "br left");
-        default_components.add(txtStarterCountdown);
-        default_components.add(new JLabel("Intro MP3"), "br left");
+
+        cbWait4Teams2BReady.setFont(default_font);
+        default_components.add(create_textfield("comment", new NotEmptyVerifier()), "hfill");
+        default_components.add(create_label("Starter Countdown"), "br left");
+        default_components.add(create_textfield("starter_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)));
+        default_components.add(create_label("Intro MP3"), "br left");
         default_components.add(cmbIntroMusic);
-        default_components.add(new JLabel("Countdown to Resume"));
-        default_components.add(txtResumeCountdown);
+        default_components.add(create_label("Countdown to Resume"));
+        default_components.add(create_textfield("resume_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)));
         default_components.add(cbWait4Teams2BReady);
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
 
+    }
+
+    protected JLabel create_label(String label){
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(default_font);
+        return lbl;
+    }
+
+    protected JTextField create_textfield(String key, InputVerifier inputVerifier){
+        JTextField txt = new JTextField();
+        txt.setFont(default_font);
+        txt.setInputVerifier(inputVerifier);
+        components.put(key, txt);
+        return txt;
     }
 
     protected String getFilename() {
@@ -77,9 +89,7 @@ public abstract class GameParams extends JPanel {
     abstract String getMode();
 
     protected void set_parameters() {
-        txtComment.setText(params.getString("comment"));
-        txtStarterCountdown.setText(params.get("starter_countdown").toString());
-        txtResumeCountdown.setText(params.get("resume_countdown").toString());
+        components.forEach((key, jTextComponent) -> jTextComponent.setText(params.get(key).toString()));
         cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
         cmbIntroMusic.setSelectedItem(params.getString("intro_mp3_file"));
     }
@@ -91,9 +101,7 @@ public abstract class GameParams extends JPanel {
 
     protected JSONObject read_parameters() {
         params.clear();
-        params.put("comment", txtComment.getText());
-        params.put("starter_countdown", txtStarterCountdown.getText());
-        params.put("resume_countdown", txtResumeCountdown.getText());
+        components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
         params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
         params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
         return params;

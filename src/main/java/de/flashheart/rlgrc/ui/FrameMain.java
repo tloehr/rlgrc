@@ -9,7 +9,6 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.FlashStateLedJob;
 import de.flashheart.rlgrc.misc.Configs;
-import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import de.flashheart.rlgrc.networking.SSEClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -124,6 +123,7 @@ public class FrameMain extends JFrame {
     private void initFrame() throws IOException, SchedulerException {
         initLogger();
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
         txtURI.setText(configs.get(Configs.REST_URI));
@@ -132,7 +132,7 @@ public class FrameMain extends JFrame {
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
         //pnlGames.add("Conquest", new ConquestParams());
 
-        for (GameParams gameParam : Arrays.asList(new ConquestParams(configs))) {
+        for (GameParams gameParam : Arrays.asList(new ConquestParams(configs), new FarcryParams(configs))) {
             cmbGameModes.addItem(gameParam);
         }
 
@@ -606,6 +606,10 @@ public class FrameMain extends JFrame {
         update_running_game_tab();
     }
 
+    private void cmbGameModesItemStateChanged(ItemEvent e) {
+        update_setup_game_tab();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
@@ -761,6 +765,7 @@ public class FrameMain extends JFrame {
 
                         //---- cmbGameModes ----
                         cmbGameModes.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        cmbGameModes.addItemListener(e -> cmbGameModesItemStateChanged(e));
                         pnlFiles.add(cmbGameModes);
 
                         //---- btnFileNew ----

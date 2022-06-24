@@ -95,7 +95,7 @@ public class FrameMain extends JFrame {
     private Optional<String> selected_agent;
     private SSEClient sseClient;
     private LocalDateTime last_sse_received;
-    private final List<GameParams> game_mode_list;
+    private final HashMap<String, GameParams> game_modes;
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -118,7 +118,10 @@ public class FrameMain extends JFrame {
         this._message_buttons = Arrays.asList(btnPrepare, btnReset, btnReady, btnRun, btnPause, btnResume, btnContinue, btnGameOver);
         this._state_labels = Arrays.asList(lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblPausing, lblResuming, lblEpilog);
 
-        game_mode_list = Arrays.asList(new ConquestParams(configs), new FarcryParams(configs));
+
+        game_modes = new HashMap<>();
+        game_modes.put("conquest", new ConquestParams(configs));
+        game_modes.put("farcry", new FarcryParams(configs));
         initFrame();
     }
 
@@ -134,10 +137,7 @@ public class FrameMain extends JFrame {
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
         //pnlGames.add("Conquest", new ConquestParams());
 
-        for (GameParams gameParam : game_mode_list) {
-            cmbGameModes.addItem(gameParam);
-        }
-
+        game_modes.forEach((s, gameParams) -> cmbGameModes.addItem(gameParams));
         cmbGameSlots.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
             String text = "--";
             if (value != null) {
@@ -213,10 +213,8 @@ public class FrameMain extends JFrame {
         // und zwar erstmal nur für game:1
         if (pnlMain.getSelectedIndex() == TAB_SETUP) {
             if (!current_state.isEmpty()) {
-                final String mode = current_state.getString("mode");
-                GameParams current_params = game_mode_list.stream().filter(gameParams -> gameParams.getMode().equalsIgnoreCase(mode)).findFirst().get();
-                cmbGameModes.setSelectedItem(current_params);
-            } else cmbGameModes.setSelectedItem(game_mode_list.get(0));
+                cmbGameModes.setSelectedItem(game_modes.get(current_state.getString("mode")));
+            } else cmbGameModes.setSelectedItem(game_modes.get("conquest"));
         } else {
             if (!current_state.isEmpty()) update_running_game_tab();
         }
@@ -236,7 +234,7 @@ public class FrameMain extends JFrame {
 
         switch (pnlMain.getSelectedIndex()) {
             case TAB_SETUP: {
-                update_setup_game_tab();
+                update_setup_game_tab(Optional.ofNullable(game_modes.get(current_state.optString("mode"))));
                 break;
             }
             case TAB_RUNNING_GAME: {
@@ -384,25 +382,22 @@ public class FrameMain extends JFrame {
         set_gui_to_situation();
     }
 
-
-    private void update_setup_game_tab() {
-        GameParams current_game_setup = (GameParams) cmbGameModes.getSelectedItem();
-        if (current_game_setup == null) return; // for init phase
-        if (current_state.isEmpty()) current_game_setup.load_defaults();
-        else current_game_setup.set_parameters(current_state);
-        SwingUtilities.invokeLater(() -> {
-            pnlGameMode.removeAll();
-            pnlGameMode.add(current_game_setup);
-            this.invalidate();
-            this.repaint();
+    private void update_setup_game_tab(Optional<GameParams> current_game_setup) {
+        current_game_setup.ifPresent(gameParams -> {
+            if (current_state.isEmpty()) gameParams.load_defaults();
+            else gameParams.set_parameters(current_state);
+            SwingUtilities.invokeLater(() -> {
+                pnlGameMode.removeAll();
+                pnlGameMode.add(gameParams);
+                this.invalidate();
+                this.repaint();
+            });
         });
     }
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
-
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
 
         int index = _states_.indexOf(state.toUpperCase());
         // States
@@ -414,7 +409,8 @@ public class FrameMain extends JFrame {
             boolean enabled = !btnLock.isSelected() && Boolean.valueOf(state_buttons_enable_table[index][i] == 1 ? true : false);
             _message_buttons.get(i).setEnabled(enabled);
         }
-        String html = current_game_mode.get_score_as_html(current_state);
+
+        String html = game_modes.get(mode).get_score_as_html(current_state);
 
         // at the end of a match, we save the results for later use
         if (state.equals(_state_EPILOG)) {
@@ -623,7 +619,7 @@ public class FrameMain extends JFrame {
     }
 
     private void cmbGameModesItemStateChanged(ItemEvent e) {
-        update_setup_game_tab();
+        update_setup_game_tab(Optional.of((GameParams) e.getItem()));
     }
 
     private void initComponents() {
@@ -708,14 +704,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -766,8 +762,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -842,8 +838,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1041,8 +1037,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1069,8 +1065,8 @@ public class FrameMain extends JFrame {
                     //======== pnlTesting ========
                     {
                         pnlTesting.setLayout(new FormLayout(
-                            "left:default:grow",
-                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                                "left:default:grow",
+                                "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");

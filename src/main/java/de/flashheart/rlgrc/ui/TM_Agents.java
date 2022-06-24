@@ -93,7 +93,7 @@ public class TM_Agents extends AbstractTableModel {
                 break;
             }
             case 3: {
-                String ap = agents_states.get(agent, "ap");
+                String ap = agents_states.get(agent, "ap", "null");
                 // check if there is a better name for this ap in config.txt. If not we simply show the MAC address.
                 value = configs.get("ap_" + ap.toLowerCase(), ap);
                 break;

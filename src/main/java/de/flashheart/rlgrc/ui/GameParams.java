@@ -213,5 +213,4 @@ public abstract class GameParams extends JPanel {
         }
     }
 
-
 }

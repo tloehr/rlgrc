@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.14.1" encoding: "UTF-8"
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.15" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -154,7 +154,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnPrepare"
 								"text": "Prepare"
-								"toolTipText": "Start loaded game"
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font0
@@ -163,7 +163,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnReset"
 								"text": "Reset"
-								"toolTipText": "Start loaded game"
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font0
@@ -172,7 +172,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnReady"
 								"text": "Ready"
-								"toolTipText": "Start loaded game"
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font0
@@ -183,14 +183,14 @@ new FormModel {
 								"text": "Run"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font1
-								"toolTipText": "Pause the running game"
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"actionCommand": "run"
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnPause"
 								"text": "Pause"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Reset the game to the state as if it was just loaded."
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font1
 								"actionCommand": "pause"
 							} )
@@ -198,7 +198,7 @@ new FormModel {
 								name: "btnResume"
 								"text": "Resume"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Reset the game to the state as if it was just loaded."
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font1
 								"actionCommand": "resume"
 							} )
@@ -206,7 +206,7 @@ new FormModel {
 								name: "btnContinue"
 								"text": "Continue"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Reset the game to the state as if it was just loaded."
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font1
 								"actionCommand": "continue"
 							} )
@@ -214,7 +214,7 @@ new FormModel {
 								name: "btnGameOver"
 								"text": "Game Over"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
-								"toolTipText": "Reset the game to the state as if it was just loaded."
+								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font1
 								"actionCommand": "game_over"
 							} )

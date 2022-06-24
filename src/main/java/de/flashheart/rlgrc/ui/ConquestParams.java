@@ -82,8 +82,8 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                    "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                    "3*(default, $lgap), fill:default:grow"));
+                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
@@ -113,9 +113,9 @@ public class ConquestParams extends GameParams {
             //======== pnl1234 ========
             {
                 pnl1234.setLayout(new FormLayout(
-                        "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                        "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
-                ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
+                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                    "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
+                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
 
                 //---- label10 ----
                 label10.setText("Capture Points");

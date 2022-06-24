@@ -6,7 +6,7 @@
       "ag01"
     ],
     "capture_sirens": [
-      "ag50"
+      "ag51"
     ],
     "attacker_spawn": [
       "ag30"
@@ -19,7 +19,7 @@
       "ag31"
     ],
     "sirens": [
-      "ag50"
+      "ag51"
     ]
   },
   "game_time": 600,

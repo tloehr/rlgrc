@@ -95,6 +95,7 @@ public class FrameMain extends JFrame {
     private Optional<String> selected_agent;
     private SSEClient sseClient;
     private LocalDateTime last_sse_received;
+    private final List<GameParams> game_mode_list;
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -117,6 +118,7 @@ public class FrameMain extends JFrame {
         this._message_buttons = Arrays.asList(btnPrepare, btnReset, btnReady, btnRun, btnPause, btnResume, btnContinue, btnGameOver);
         this._state_labels = Arrays.asList(lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblPausing, lblResuming, lblEpilog);
 
+        game_mode_list = Arrays.asList(new ConquestParams(configs), new FarcryParams(configs));
         initFrame();
     }
 
@@ -132,7 +134,7 @@ public class FrameMain extends JFrame {
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
         //pnlGames.add("Conquest", new ConquestParams());
 
-        for (GameParams gameParam : Arrays.asList(new ConquestParams(configs), new FarcryParams(configs))) {
+        for (GameParams gameParam : game_mode_list) {
             cmbGameModes.addItem(gameParam);
         }
 
@@ -206,7 +208,20 @@ public class FrameMain extends JFrame {
 
         pnlMain.setEnabledAt(TAB_SETUP, current_state.isEmpty() || current_state.getString("game_state").equals(_state_PROLOG));
         pnlMain.setEnabledAt(TAB_RUNNING_GAME, !current_state.isEmpty());
-        if (!current_state.isEmpty()) update_running_game_tab();
+        // todo: nach neustart, wenn ein spiel schon läuft, dann glaubt er alles ist conquest auch wenn farcry läuft.
+        // hier muss der richtige game mode gesetzt werden. de.flashheart.rlgrc.ui.FrameMain org.json.JSONException: JSONObject["cps_held_by_red"] not found.
+        // und zwar erstmal nur für game:1
+        if (pnlMain.getSelectedIndex() == TAB_SETUP) {
+            if (!current_state.isEmpty()) {
+                final String mode = current_state.getString("mode");
+                GameParams current_params = game_mode_list.stream().filter(gameParams -> gameParams.getMode().equalsIgnoreCase(mode)).findFirst().get();
+                cmbGameModes.setSelectedItem(current_params);
+            } else cmbGameModes.setSelectedItem(game_mode_list.get(0));
+        } else {
+            if (!current_state.isEmpty()) update_running_game_tab();
+        }
+
+        cmbGameModes.setEnabled(current_state.isEmpty());
     }
 
     private void tab_selection_changed(ChangeEvent e) {
@@ -378,14 +393,15 @@ public class FrameMain extends JFrame {
         SwingUtilities.invokeLater(() -> {
             pnlGameMode.removeAll();
             pnlGameMode.add(current_game_setup);
-//            pnlParams.invalidate();
-//            pnlParams.repaint();
+            this.invalidate();
+            this.repaint();
         });
     }
 
     private void update_running_game_tab() {
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
+
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
 
         int index = _states_.indexOf(state.toUpperCase());
@@ -845,7 +861,7 @@ public class FrameMain extends JFrame {
 
                         //---- btnPrepare ----
                         btnPrepare.setText("Prepare");
-                        btnPrepare.setToolTipText("Start loaded game");
+                        btnPrepare.setToolTipText(null);
                         btnPrepare.setIcon(null);
                         btnPrepare.setPreferredSize(null);
                         btnPrepare.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
@@ -854,7 +870,7 @@ public class FrameMain extends JFrame {
 
                         //---- btnReset ----
                         btnReset.setText("Reset");
-                        btnReset.setToolTipText("Start loaded game");
+                        btnReset.setToolTipText(null);
                         btnReset.setIcon(null);
                         btnReset.setPreferredSize(null);
                         btnReset.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
@@ -863,7 +879,7 @@ public class FrameMain extends JFrame {
 
                         //---- btnReady ----
                         btnReady.setText("Ready");
-                        btnReady.setToolTipText("Start loaded game");
+                        btnReady.setToolTipText(null);
                         btnReady.setIcon(null);
                         btnReady.setPreferredSize(null);
                         btnReady.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
@@ -874,14 +890,14 @@ public class FrameMain extends JFrame {
                         btnRun.setText("Run");
                         btnRun.setIcon(null);
                         btnRun.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
-                        btnRun.setToolTipText("Pause the running game");
+                        btnRun.setToolTipText(null);
                         btnRun.setActionCommand("run");
                         pnlMessages.add(btnRun);
 
                         //---- btnPause ----
                         btnPause.setText("Pause");
                         btnPause.setIcon(null);
-                        btnPause.setToolTipText("Reset the game to the state as if it was just loaded.");
+                        btnPause.setToolTipText(null);
                         btnPause.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnPause.setActionCommand("pause");
                         pnlMessages.add(btnPause);
@@ -889,7 +905,7 @@ public class FrameMain extends JFrame {
                         //---- btnResume ----
                         btnResume.setText("Resume");
                         btnResume.setIcon(null);
-                        btnResume.setToolTipText("Reset the game to the state as if it was just loaded.");
+                        btnResume.setToolTipText(null);
                         btnResume.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnResume.setActionCommand("resume");
                         pnlMessages.add(btnResume);
@@ -897,7 +913,7 @@ public class FrameMain extends JFrame {
                         //---- btnContinue ----
                         btnContinue.setText("Continue");
                         btnContinue.setIcon(null);
-                        btnContinue.setToolTipText("Reset the game to the state as if it was just loaded.");
+                        btnContinue.setToolTipText(null);
                         btnContinue.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnContinue.setActionCommand("continue");
                         pnlMessages.add(btnContinue);
@@ -905,7 +921,7 @@ public class FrameMain extends JFrame {
                         //---- btnGameOver ----
                         btnGameOver.setText("Game Over");
                         btnGameOver.setIcon(null);
-                        btnGameOver.setToolTipText("Reset the game to the state as if it was just loaded.");
+                        btnGameOver.setToolTipText(null);
                         btnGameOver.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnGameOver.setActionCommand("game_over");
                         pnlMessages.add(btnGameOver);

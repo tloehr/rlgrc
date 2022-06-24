@@ -1,9 +1,6 @@
 package de.flashheart.rlgrc.ui;
 
-import de.flashheart.rlgrc.misc.Configs;
-import de.flashheart.rlgrc.misc.NotEmptyVerifier;
-import de.flashheart.rlgrc.misc.NumberVerifier;
-import de.flashheart.rlgrc.misc.RiverLayout;
+import de.flashheart.rlgrc.misc.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -12,6 +9,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 public class FarcryParams extends GameParams {
 
@@ -113,6 +114,24 @@ public class FarcryParams extends GameParams {
 
     @Override
     String get_score_as_html(JSONObject game_state) {
-        return "farcry dummy";
+
+        JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
+
+        LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
+        String active_agent = game_state.getJSONObject("agents").getJSONArray("capture_points").getString(game_state.getInt("active_capture_point"));
+        String state = game_state.getJSONObject("agent_states").getString(active_agent);
+        LocalDateTime remainingTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(game_state.getInt("remaining")),
+                TimeZone.getTimeZone("UTC").toZoneId());
+
+        String html =
+                HTML.document(CSS,
+                        HTML.h1("FarCry@"+first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
+                                HTML.h2("Active capture point: %s State: %s") +
+                                HTML.h3("Remaining Time %s") +
+                                HTML.h2("Events") +
+                                generate_table_for_events(game_state.getJSONArray("in_game_events"))
+                );
+        return String.format(html, active_agent, state, remainingTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+
     }
 }

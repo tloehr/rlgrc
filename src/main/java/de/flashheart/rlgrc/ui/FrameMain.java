@@ -106,6 +106,9 @@ public class FrameMain extends JFrame {
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
         this.current_state = new JSONObject();
         this.state_flashing_job = new JobKey(FlashStateLedJob.name, "group1");
+        game_modes = new HashMap<>();
+        game_modes.put("conquest", new ConquestParams(configs));
+        game_modes.put("farcry", new FarcryParams(configs));
 
         initComponents();
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
@@ -118,10 +121,6 @@ public class FrameMain extends JFrame {
         this._message_buttons = Arrays.asList(btnPrepare, btnReset, btnReady, btnRun, btnPause, btnResume, btnContinue, btnGameOver);
         this._state_labels = Arrays.asList(lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblPausing, lblResuming, lblEpilog);
 
-
-        game_modes = new HashMap<>();
-        game_modes.put("conquest", new ConquestParams(configs));
-        game_modes.put("farcry", new FarcryParams(configs));
         initFrame();
     }
 

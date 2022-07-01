@@ -67,8 +67,8 @@ public class FarcryParams extends GameParams {
         add(txtCaptureSirens, "hfill");
         add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
         add(txtAttacker, "br left");
-        add(btn_switch,"tab");
-        add(txtDefender,"tab");
+        add(btn_switch, "tab");
+        add(txtDefender, "tab");
 
     }
 
@@ -90,13 +90,11 @@ public class FarcryParams extends GameParams {
     @Override
     protected JSONObject read_parameters() {
         super.read_parameters();
-//        params.put("start_bleed_interval", Double.parseDouble(txtCnqSBleedInt.getText()));
-//        params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
 
         JSONObject agents = new JSONObject();
         agents.put("capture_points", to_jsonarray(txtCapturePoints.getText()));
         agents.put("capture_sirens", to_jsonarray(txtCaptureSirens.getText()));
-//        agents.put("sirens", to_jsonarray(txtSirens.getText()));
+        agents.put("sirens", to_jsonarray(txtCaptureSirens.getText()));
         agents.put("attacker_spawn", new JSONArray().put(txtAttacker.getText()));
         agents.put("defender_spawn", new JSONArray().put(txtDefender.getText()));
         agents.put("spawns", new JSONArray().put(txtAttacker.getText()).put(txtDefender.getText()));
@@ -125,7 +123,7 @@ public class FarcryParams extends GameParams {
 
         String html =
                 HTML.document(CSS,
-                        HTML.h1("FarCry@"+first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
+                        HTML.h1("FarCry@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
                                 HTML.h2("Active capture point: %s State: %s") +
                                 HTML.h3("Remaining Time %s") +
                                 HTML.h2("Events") +

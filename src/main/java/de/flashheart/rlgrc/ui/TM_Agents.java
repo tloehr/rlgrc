@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 @Log4j2
 public class TM_Agents extends AbstractTableModel {
@@ -93,9 +94,9 @@ public class TM_Agents extends AbstractTableModel {
                 break;
             }
             case 3: {
-                String ap = agents_states.get(agent, "ap", "null");
+                Optional<String> ap = Optional.ofNullable(agents_states.get(agent, "ap"));
                 // check if there is a better name for this ap in config.txt. If not we simply show the MAC address.
-                value = configs.get("ap_" + ap.toLowerCase(), ap);
+                value = configs.get("ap_" + ap.orElse("null").toLowerCase());
                 break;
             }
             case 4: {

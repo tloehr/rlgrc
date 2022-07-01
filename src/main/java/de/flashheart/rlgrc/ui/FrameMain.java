@@ -96,6 +96,7 @@ public class FrameMain extends JFrame {
     private SSEClient sseClient;
     private LocalDateTime last_sse_received;
     private final HashMap<String, GameParams> game_modes;
+    private boolean summary_written_on_epilog = false;
 
     public FrameMain(Configs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -410,12 +411,13 @@ public class FrameMain extends JFrame {
         }
 
         String html = game_modes.get(mode).get_score_as_html(current_state);
-
         // at the end of a match, we save the results for later use
-        if (state.equals(_state_EPILOG)) {
+        if (state.equals(_state_PROLOG)) summary_written_on_epilog = false;
+        if (state.equals(_state_EPILOG) && !summary_written_on_epilog) {
             try {
+                summary_written_on_epilog = true;
                 String filename = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-                FileUtils.writeStringToFile(new File(System.getProperty("workspace") + File.separator + "results" + File.separator + mode + "@" + filename + ".html"), html, Charset.defaultCharset());
+                FileUtils.writeStringToFile(new File(System.getProperty("workspace") + File.separator + "results" + File.separator + mode + "(at)" + filename + ".html"), html, Charset.defaultCharset());
             } catch (IOException e) {
                 log.warn(e);
             }

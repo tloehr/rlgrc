@@ -33,10 +33,12 @@ public class FarcryParams extends GameParams {
         txtCapturePoints = new JTextField();
         txtCapturePoints.setInputVerifier(new NotEmptyVerifier());
         txtCapturePoints.setFont(default_font);
+        txtCapturePoints.setToolTipText("Comma separated");
 
         txtCaptureSirens = new JTextField();
         txtCaptureSirens.setInputVerifier(new NotEmptyVerifier());
         txtCaptureSirens.setFont(default_font);
+        txtCaptureSirens.setToolTipText("Comma separated");
 
         txtAttacker = new JTextField();
         txtAttacker.setBackground(Color.RED);
@@ -77,14 +79,25 @@ public class FarcryParams extends GameParams {
         super.set_parameters();
         txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtCaptureSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_sirens")));
-//        txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
-//        txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
-//        txtCnqSBleedInt.setText(params.get("start_bleed_interval").toString());
-//        txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
-//        txtCPs.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
-//        txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
         txtAttacker.setText(params.getJSONObject("agents").getJSONArray("attacker_spawn").getString(0));
         txtDefender.setText(params.getJSONObject("agents").getJSONArray("defender_spawn").getString(0));
+    }
+
+    @Override
+    String get_in_game_event_description(JSONObject game_state) {
+        String type = game_state.getString("type");
+        if (type.equalsIgnoreCase("general_game_state_change")) {
+            return game_state.getString("message");
+        }
+        if (type.equalsIgnoreCase("in_game_state_change")) {
+            if (game_state.getString("item").equals("capture_point")) {
+                return game_state.getString("agent") + " => " + game_state.getString("state");
+            }
+            if (game_state.getString("item").equals("overtime")) {
+                return "overtime";
+            }
+        }
+        return "";
     }
 
     @Override

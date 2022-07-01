@@ -19,10 +19,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -68,13 +65,13 @@ public abstract class GameParams extends JPanel {
 
     }
 
-    protected JLabel create_label(String label){
+    protected JLabel create_label(String label) {
         JLabel lbl = new JLabel(label);
         lbl.setFont(default_font);
         return lbl;
     }
 
-    protected JTextField create_textfield(String key, InputVerifier inputVerifier){
+    protected JTextField create_textfield(String key, InputVerifier inputVerifier) {
         JTextField txt = new JTextField();
         txt.setFont(default_font);
         txt.setInputVerifier(inputVerifier);
@@ -158,8 +155,13 @@ public abstract class GameParams extends JPanel {
         return myFile;
     }
 
+    /**
+     * converts a jsonarray to a comma delimited string
+     * @param jsonArray
+     * @return
+     */
     protected String to_string_list(JSONArray jsonArray) {
-        return jsonArray.toList().toString().replaceAll("\\[|\\]| ", "").replaceAll(",", "\n");
+        return jsonArray.toList().stream().map(o -> o.toString().trim()).collect(Collectors.joining(","));
     }
 
     protected JSONArray to_jsonarray(String list) {
@@ -175,6 +177,8 @@ public abstract class GameParams extends JPanel {
      */
     abstract String get_score_as_html(JSONObject game_state);
 
+    abstract String get_in_game_event_description(JSONObject game_state);
+
     protected String generate_table_for_events(JSONArray events) {
         StringBuffer buffer = new StringBuffer();
 
@@ -183,9 +187,9 @@ public abstract class GameParams extends JPanel {
             JSONObject event = events.getJSONObject(e_index);
             buffer.append(HTML.table_tr(
                     HTML.table_td(dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit")))) +
-                            HTML.table_td(event.getString("event")) +
+                            HTML.table_td(get_in_game_event_description(event.getJSONObject("event")) +
                             HTML.table_td(event.getString("new_state"))
-            ));
+            )));
         }
 
         return HTML.table(

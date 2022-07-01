@@ -10,6 +10,10 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.*;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.keyvalue.MultiKey;
+import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,7 +21,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 
 /**
  * @author Torsten Löhr
@@ -82,8 +89,8 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                "3*(default, $lgap), fill:default:grow"));
+                    "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                    "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
@@ -113,9 +120,9 @@ public class ConquestParams extends GameParams {
             //======== pnl1234 ========
             {
                 pnl1234.setLayout(new FormLayout(
-                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                    "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
-                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
+                        "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                        "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
+                ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
 
                 //---- label10 ----
                 label10.setText("Capture Points");
@@ -234,6 +241,112 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
+    String get_in_game_event_description(JSONObject game_state) {
+        String type = game_state.getString("type");
+        if (type.equalsIgnoreCase("general_game_state_change")) {
+            return game_state.getString("message");
+        }
+        if (type.equalsIgnoreCase("in_game_state_change")) {
+            if (game_state.getString("item").equals("capture_point")) {
+                return game_state.getString("agent") + " => " + game_state.getString("state");
+            }
+            if (game_state.getString("item").equals("respawn")) {
+                return "Respawn Team " + game_state.getString("team") + ": #" + game_state.getInt("value");
+            }
+        }
+        return "";
+    }
+
+
+    /**
+     * preprocess events from conquest to combine double buttons on flags (you have to push the button twice to get your
+     * team color when you are red)
+     *
+     * @param in_events
+     * @return
+     */
+//    protected String generate_table_for_events(JSONArray in_events) {
+//        JSONArray out_events = new JSONArray();
+//
+//        HashMap<String, Pair<String, LocalDateTime>> prev_event_map = new HashMap<>();
+//        int max_events = in_events.length();
+//
+//        for (int e_index = max_events - 1; e_index >= 0; e_index--) {
+//            JSONObject in_event = in_events.getJSONObject(e_index);
+//            JSONObject in_game_event = in_event.getJSONObject("event");
+//            if (in_game_event.getString("event").equalsIgnoreCase("capture_point")) {
+//                LocalDateTime this_event_pit = JavaTimeConverter.from_iso8601(in_event.getString("pit"));
+//                LocalDateTime prev_event_pit = LocalDateTime.MIN;
+//                String agent = in_game_event.getString("agent");
+//                String team = in_game_event.getString("team");
+//
+//                if (prev_event_map.containsKey(agent)) {
+//                    prev_event_pit = JavaTimeConverter.from_iso8601(in_event.getString("pit"));
+//                    if (Math.abs(ChronoUnit.SECONDS.between(prev_event_pit, this_event_pit)) > 2)
+//                        out_events.put(in_event);
+//                    else {
+//                        in_event.put("team", )
+//                    }
+//                } else {
+//                    prev_event_map.put(agent, new ImmutablePair<>(team, this_event_pit));
+//                    out_events.put(in_event);
+//                }
+//            }
+//
+//        }
+//
+//        return super.generate_table_for_events(out_events);
+//    }
+//    protected String generate_table_for_events(JSONArray in_events) {
+//        // records the last capture point event for a specific agent. so that we can overwrite the last event when it was less than 2 seconds ago (double presses)
+//        HashMap<String, LocalDateTime> last_cp_event_map = new HashMap();
+//        final JSONArray out_events = new JSONArray();
+//
+//        in_events.forEach(o -> {
+//            JSONObject in_event = (JSONObject) o;
+//            LocalDateTime pit = JavaTimeConverter.from_iso8601(in_event.getString("pit"));
+//            JSONObject in_game_event = in_event.getJSONObject("event");
+//            String type = in_game_event.getString("type");
+//            String agent = in_game_event.getString("agent");
+//            if (type.equals("capture_point")) {
+//                if (ChronoUnit.SECONDS.between(last_cp_event_map.getOrDefault(agent, LocalDateTime.MIN), pit) <= 2) {
+//
+//                }
+//            } else {
+//                out_events.put("");
+//            }
+//
+//            out_events.put(elem);
+//        });
+//
+//        int max_events = in_events.length();
+//        for (int e_index = 0; e_index < max_events; e_index++) {
+//            JSONObject in_event = in_events.getJSONObject(e_index);
+//            JSONObject in_game_event = in_event.getJSONObject("event");
+//            if (in_game_event.getString("event").equalsIgnoreCase("capture_point")) {
+//                LocalDateTime this_event_pit = JavaTimeConverter.from_iso8601(in_event.getString("pit"));
+//                LocalDateTime prev_event_pit = LocalDateTime.MIN;
+//                String agent = in_game_event.getString("agent");
+//                String team = in_game_event.getString("team");
+//
+//                if (prev_event_map.containsKey(agent)) {
+//                    prev_event_pit = JavaTimeConverter.from_iso8601(in_event.getString("pit"));
+//                    if (Math.abs(ChronoUnit.SECONDS.between(prev_event_pit, this_event_pit)) > 2)
+//                        out_events.put(in_event);
+//                    else {
+//                        in_event.put("team", )
+//                    }
+//                } else {
+//                    prev_event_map.put(agent, new ImmutablePair<>(team, this_event_pit));
+//                    out_events.put(in_event);
+//                }
+//            }
+//
+//        }
+//
+//        return super.generate_table_for_events(out_events);
+//    }
+    @Override
     protected String get_score_as_html(JSONObject game_state) {
 
         String blue_flags = "";
@@ -254,7 +367,7 @@ public class ConquestParams extends GameParams {
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Conquest@"+first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
+                        HTML.h1("Conquest@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
                                 HTML.h2("Team Red &#8594; %s  &#8660; %s &#8592; Team Blue") +
                                 HTML.h2("Capture points") +
                                 HTML.h3("Team Red") +

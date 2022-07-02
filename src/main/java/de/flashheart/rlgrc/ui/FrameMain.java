@@ -355,7 +355,7 @@ public class FrameMain extends JFrame {
     }
 
     public void addLog(String text) {
-        log.debug(text);
+        log.trace(text);
         SwingUtilities.invokeLater(() -> {
             txtLogger.append(LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT)) + ": " + text + "\n");
             scrollLog.getVerticalScrollBar().setValue(scrollLog.getVerticalScrollBar().getMaximum());

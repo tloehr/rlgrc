@@ -136,7 +136,7 @@ public class FarcryParams extends GameParams {
         String state = game_state.getString("game_state");
         if (state.equals("RUNNING")) {
             String next = "last one";
-            if (max_capture_points > 1 && capture_points_taken < max_capture_points) {
+            if (max_capture_points > 1 && capture_points_taken < max_capture_points - 1) {
                 next = "Next: " + game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken + 1);
             }
             String active_agent = capture_points_taken < max_capture_points ? game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken) : "";

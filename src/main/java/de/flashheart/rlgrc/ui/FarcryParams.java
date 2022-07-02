@@ -129,20 +129,32 @@ public class FarcryParams extends GameParams {
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
 
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
-        String active_agent = game_state.getJSONObject("agents").getJSONArray("capture_points").getString(game_state.getInt("active_capture_point"));
-        String state = game_state.getJSONObject("agent_states").getString(active_agent);
+        int capture_points_taken = game_state.getInt("capture_points_taken");
+        int max_capture_points = game_state.getInt("max_capture_points");
+
+
+        String state = game_state.getString("game_state");
+        if (state.equals("RUNNING")) {
+            String next = "last one";
+            if (max_capture_points > 1 && capture_points_taken < max_capture_points) {
+                next = "Next: " + game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken + 1);
+            }
+            String active_agent = capture_points_taken < max_capture_points ? game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken) : "";
+            state = active_agent + ": " + game_state.getJSONObject("agent_states").getString(active_agent) + ", " + next;
+        }
         LocalDateTime remainingTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(game_state.getInt("remaining")),
                 TimeZone.getTimeZone("UTC").toZoneId());
 
         String html =
                 HTML.document(CSS,
                         HTML.h1("FarCry@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
-                                HTML.h2("Active capture point: %s State: %s") +
+                                HTML.h2("CPs taken: %d out of %d") +
+                                HTML.h3("%s") +
                                 HTML.h3("Remaining Time %s") +
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
-        return String.format(html, active_agent, state, remainingTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        return String.format(html, capture_points_taken, max_capture_points, state, remainingTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
 
     }
 }

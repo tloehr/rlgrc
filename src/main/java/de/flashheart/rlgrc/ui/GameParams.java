@@ -157,6 +157,7 @@ public abstract class GameParams extends JPanel {
 
     /**
      * converts a jsonarray to a comma delimited string
+     *
      * @param jsonArray
      * @return
      */
@@ -187,9 +188,9 @@ public abstract class GameParams extends JPanel {
             JSONObject event = events.getJSONObject(e_index);
             buffer.append(HTML.table_tr(
                     HTML.table_td(dtf.format(JavaTimeConverter.from_iso8601(event.getString("pit")))) +
-                            HTML.table_td(get_in_game_event_description(event.getJSONObject("event")) +
+                            HTML.table_td(get_in_game_event_description(event.getJSONObject("event"))) +
                             HTML.table_td(event.getString("new_state"))
-            )));
+            ));
         }
 
         return HTML.table(

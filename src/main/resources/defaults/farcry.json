@@ -24,7 +24,7 @@
   },
   "game_time": 600,
   "bomb_time": 180,
-  "respawn_period": 20,
+  "respawn_time": 0,
   "wait4teams2B_ready": true,
   "intro_mp3_file": "<random>",
   "starter_countdown": 30,

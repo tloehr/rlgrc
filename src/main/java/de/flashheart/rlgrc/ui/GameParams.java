@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
@@ -55,13 +57,30 @@ public abstract class GameParams extends JPanel {
         cbWait4Teams2BReady.setFont(default_font);
         default_components.add(create_textfield("comment", new NotEmptyVerifier()), "hfill");
         default_components.add(create_label("Starter Countdown"), "br left");
-        default_components.add(create_textfield("starter_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)));
-        default_components.add(create_label("Intro MP3"), "br left");
-        default_components.add(cmbIntroMusic);
-        default_components.add(create_label("Countdown to Resume"));
-        default_components.add(create_textfield("resume_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)));
+        default_components.add(create_textfield("starter_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)), "left");
+        default_components.add(create_label("Intro MP3"), "left");
+        default_components.add(cmbIntroMusic, "left");
+        default_components.add(create_label("Countdown to Resume"), "left");
+        default_components.add(create_textfield("resume_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)), "left");
         default_components.add(cbWait4Teams2BReady);
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
+
+        //components.get("starter_countdown").add
+        cmbIntroMusic.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (e.getItem().toString().equals("<none>")) return;
+                components.get("starter_countdown").setText("30");
+            }
+        });
+
+        components.get("starter_countdown").addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (!((JTextField) e.getSource()).getText().equals("30")){
+                    cmbIntroMusic.setSelectedItem("<none>");
+                }
+            }
+        });
 
     }
 

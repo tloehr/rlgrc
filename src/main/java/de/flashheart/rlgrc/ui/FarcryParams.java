@@ -20,6 +20,7 @@ public class FarcryParams extends GameParams {
     private JTextField txtCaptureSirens;
     private JTextField txtAttacker;
     private JTextField txtDefender;
+    private JTextField txtRespawnTimer;
     private JButton btn_switch;
 
     public FarcryParams(Configs configs) {
@@ -39,6 +40,11 @@ public class FarcryParams extends GameParams {
         txtCaptureSirens.setInputVerifier(new NotEmptyVerifier());
         txtCaptureSirens.setFont(default_font);
         txtCaptureSirens.setToolTipText("Comma separated");
+
+        txtRespawnTimer = new JTextField();
+        txtRespawnTimer.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, BigDecimal.valueOf(1000l), true));
+        txtRespawnTimer.setFont(default_font);
+        txtRespawnTimer.setToolTipText("set 0 to disable mechanism");
 
         txtAttacker = new JTextField();
         txtAttacker.setBackground(Color.RED);
@@ -60,17 +66,19 @@ public class FarcryParams extends GameParams {
         setLayout(new RiverLayout(5, 5));
         add(default_components);
         add(new JLabel("Gametime in Seconds"), "br left");
-        add(create_textfield("game_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "hfill");
-        add(new JLabel("Bombtime in Seconds"), "br left");
-        add(create_textfield("bomb_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "hfill");
+        add(create_textfield("game_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "left");
+        add(new JLabel("Bombtime in Seconds"), "tab");
+        add(create_textfield("bomb_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "left");
+        add(new JLabel("Respawn Timer"), "tab");
+        add(create_textfield("respawn_time", new NumberVerifier(BigDecimal.ZERO, BigDecimal.valueOf(1000), true)), "left");
         add(new JLabel("Capture Points"), "br left");
         add(txtCapturePoints, "hfill");
         add(new JLabel("Capture Sirens"), "br left");
         add(txtCaptureSirens, "hfill");
         add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
         add(txtAttacker, "br left");
-        add(btn_switch, "tab");
-        add(txtDefender, "tab");
+        add(btn_switch, "left");
+        add(txtDefender, "left");
 
     }
 

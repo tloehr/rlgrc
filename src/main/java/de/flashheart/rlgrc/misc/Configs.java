@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public class Configs extends AbstractConfigs {
     public static final String REST_URI = "rest_uri";
-    public static final String LAST_GAME_ID = "last_game_id";
-    public static final String LAST_GAME_MODE = "last_game_mode";
-    public static final String LAST_CONQUEST_FILE = "last_conquest_file";
+//    public static final String LAST_GAME_ID = "last_game_id";
+//    public static final String LAST_GAME_MODE = "last_game_mode";
+//    public static final String LAST_CONQUEST_FILE = "last_conquest_file";
     public static final String INTRO_MP3_FILES = "intro_mp3_files";
 
     public Configs() throws IOException {
@@ -27,10 +27,10 @@ public class Configs extends AbstractConfigs {
     @Override
     public void loadDefaults() {
         configs.setProperty(REST_URI, "http://localhost:8090");
-        configs.setProperty(LAST_GAME_ID, "g1");
-        configs.setProperty(LAST_GAME_MODE, "conquest");
-        configs.setProperty(LAST_CONQUEST_FILE, "<default>");
-        configs.setProperty(INTRO_MP3_FILES, "<none>,<random>,bf3,feuerfrei,future1,future2,insomnia,killbill,nodyahead,sirius,thunder");
+//        configs.setProperty(LAST_GAME_ID, "g1");
+//        configs.setProperty(LAST_GAME_MODE, "conquest");
+//        configs.setProperty(LAST_CONQUEST_FILE, "<default>");
+        configs.setProperty(INTRO_MP3_FILES, "<none>,<random>,bf3,eminem,feuerfrei,future1,future2,insomnia,killbill,metallica,nodyahead,sirius,thunder");
     }
 
 }

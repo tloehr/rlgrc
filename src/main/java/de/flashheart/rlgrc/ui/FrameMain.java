@@ -624,6 +624,15 @@ public class FrameMain extends JFrame {
         update_setup_game_tab(Optional.of((GameParams) e.getItem()));
     }
 
+    private void btnPowerSaveOn(ActionEvent e) {
+        post("system/powersave_agents", "", new Properties());
+    }
+
+    private void btnPowerSaveOff(ActionEvent e) {
+        post("system/welcome_agents", "", new Properties());
+    }
+
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         createUIComponents();
@@ -682,6 +691,11 @@ public class FrameMain extends JFrame {
         txtAgent = new JTextArea();
         pnlTesting = new JPanel();
         btnRefreshAgents = new JButton();
+        separator1 = new JSeparator();
+        vSpacer1 = new JPanel(null);
+        btnPowerSaveOn = new JButton();
+        btnPowerSaveOff = new JButton();
+        vSpacer2 = new JPanel(null);
         button1 = new JButton();
         button2 = new JButton();
         button3 = new JButton();
@@ -1066,16 +1080,39 @@ public class FrameMain extends JFrame {
 
                     //======== pnlTesting ========
                     {
-                        pnlTesting.setLayout(new FormLayout(
-                            "left:default:grow",
-                            "fill:default, fill:default:grow, 9*(fill:default), 2*(default)"));
+                        pnlTesting.setLayout(new BoxLayout(pnlTesting, BoxLayout.PAGE_AXIS));
 
                         //---- btnRefreshAgents ----
                         btnRefreshAgents.setText("Update");
                         btnRefreshAgents.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
                         btnRefreshAgents.setIcon(new ImageIcon(getClass().getResource("/artwork/reload-on.png")));
+                        btnRefreshAgents.setMaximumSize(new Dimension(32767, 34));
                         btnRefreshAgents.addActionListener(e -> btnRefreshAgents(e));
-                        pnlTesting.add(btnRefreshAgents, CC.xy(1, 1, CC.FILL, CC.DEFAULT));
+                        pnlTesting.add(btnRefreshAgents);
+
+                        //---- separator1 ----
+                        separator1.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(separator1);
+                        pnlTesting.add(vSpacer1);
+
+                        //---- btnPowerSaveOn ----
+                        btnPowerSaveOn.setText("Sleep");
+                        btnPowerSaveOn.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnPowerSaveOn.setIcon(new ImageIcon(getClass().getResource("/artwork/bluemoon.png")));
+                        btnPowerSaveOn.setToolTipText("send idle agents to powersave mode");
+                        btnPowerSaveOn.setMaximumSize(new Dimension(32767, 34));
+                        btnPowerSaveOn.addActionListener(e -> btnPowerSaveOn(e));
+                        pnlTesting.add(btnPowerSaveOn);
+
+                        //---- btnPowerSaveOff ----
+                        btnPowerSaveOff.setText("Wake up");
+                        btnPowerSaveOff.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnPowerSaveOff.setIcon(new ImageIcon(getClass().getResource("/artwork/sun-3-28.png")));
+                        btnPowerSaveOff.setToolTipText("welcome back to idle agents");
+                        btnPowerSaveOff.setMaximumSize(new Dimension(32767, 34));
+                        btnPowerSaveOff.addActionListener(e -> btnPowerSaveOff(e));
+                        pnlTesting.add(btnPowerSaveOff);
+                        pnlTesting.add(vSpacer2);
 
                         //---- button1 ----
                         button1.setText("White");
@@ -1083,7 +1120,8 @@ public class FrameMain extends JFrame {
                         button1.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
                         button1.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button1.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button1, CC.xy(1, 3, CC.FILL, CC.DEFAULT));
+                        button1.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button1);
 
                         //---- button2 ----
                         button2.setText("Red");
@@ -1091,7 +1129,8 @@ public class FrameMain extends JFrame {
                         button2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
                         button2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button2.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button2, CC.xy(1, 4, CC.FILL, CC.DEFAULT));
+                        button2.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button2);
 
                         //---- button3 ----
                         button3.setText("Yellow");
@@ -1099,7 +1138,8 @@ public class FrameMain extends JFrame {
                         button3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
                         button3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button3.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button3, CC.xy(1, 5, CC.FILL, CC.DEFAULT));
+                        button3.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button3);
 
                         //---- button4 ----
                         button4.setText("Green");
@@ -1107,7 +1147,8 @@ public class FrameMain extends JFrame {
                         button4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
                         button4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button4.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button4, CC.xy(1, 6, CC.FILL, CC.DEFAULT));
+                        button4.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button4);
 
                         //---- button5 ----
                         button5.setText("Blue");
@@ -1115,7 +1156,8 @@ public class FrameMain extends JFrame {
                         button5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
                         button5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button5.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button5, CC.xy(1, 7, CC.FILL, CC.DEFAULT));
+                        button5.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button5);
 
                         //---- button6 ----
                         button6.setText("Buzzer");
@@ -1123,7 +1165,8 @@ public class FrameMain extends JFrame {
                         button6.setIcon(new ImageIcon(getClass().getResource("/artwork/buzzer.png")));
                         button6.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button6.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button6, CC.xy(1, 8, CC.FILL, CC.DEFAULT));
+                        button6.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button6);
 
                         //---- button7 ----
                         button7.setText("Siren 1");
@@ -1131,7 +1174,8 @@ public class FrameMain extends JFrame {
                         button7.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
                         button7.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button7.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button7, CC.xy(1, 9, CC.FILL, CC.DEFAULT));
+                        button7.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button7);
 
                         //---- button8 ----
                         button8.setText("Siren 2");
@@ -1139,7 +1183,8 @@ public class FrameMain extends JFrame {
                         button8.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
                         button8.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button8.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button8, CC.xy(1, 10, CC.FILL, CC.DEFAULT));
+                        button8.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button8);
 
                         //---- button9 ----
                         button9.setText("Siren 3");
@@ -1147,7 +1192,8 @@ public class FrameMain extends JFrame {
                         button9.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
                         button9.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button9.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button9, CC.xy(1, 11, CC.FILL, CC.DEFAULT));
+                        button9.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button9);
 
                         //---- button10 ----
                         button10.setText("Siren 4");
@@ -1155,7 +1201,8 @@ public class FrameMain extends JFrame {
                         button10.setIcon(new ImageIcon(getClass().getResource("/artwork/siren.png")));
                         button10.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button10.setHorizontalAlignment(SwingConstants.LEFT);
-                        pnlTesting.add(button10, CC.xy(1, 12, CC.FILL, CC.DEFAULT));
+                        button10.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button10);
                     }
                     pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
@@ -1240,6 +1287,11 @@ public class FrameMain extends JFrame {
     private JTextArea txtAgent;
     private JPanel pnlTesting;
     private JButton btnRefreshAgents;
+    private JSeparator separator1;
+    private JPanel vSpacer1;
+    private JButton btnPowerSaveOn;
+    private JButton btnPowerSaveOff;
+    private JPanel vSpacer2;
     private JButton button1;
     private JButton button2;
     private JButton button3;

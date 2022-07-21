@@ -96,7 +96,7 @@ public class TM_Agents extends AbstractTableModel {
             case 3: {
                 Optional<String> optAP = Optional.ofNullable(agents_states.get(agent, "ap"));
                 // check if there is a better name for this ap in config.txt. If not we simply show the MAC address.
-                value = optAP.isPresent() ? configs.get("ap_" + optAP.get(), optAP.get()) : "--";
+                value = optAP.isPresent() ? configs.get("ap_" + optAP.get().toLowerCase(), optAP.get()) : "--";
                 break;
             }
             case 4: {

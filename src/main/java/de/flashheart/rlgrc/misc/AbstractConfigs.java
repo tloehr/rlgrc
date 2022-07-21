@@ -4,6 +4,8 @@ package de.flashheart.rlgrc.misc;
 import com.mchange.v2.lang.StringUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.properties.SortedProperties;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -113,6 +115,31 @@ public abstract class AbstractConfigs {
             log.debug(ex);
             System.exit(0);
         }
+    }
+
+
+    /**
+     * Merge "source" into "target". If fields have equal name, merge them recursively.
+     * see <a href="https://stackoverflow.com/a/15070484">origin</a>
+     * @return the merged object (target).
+     */
+    public static JSONObject deepMerge(JSONObject source, JSONObject target) throws JSONException {
+        for (String key : JSONObject.getNames(source)) {
+            Object value = source.get(key);
+            if (!target.has(key)) {
+                // new value for "key":
+                target.put(key, value);
+            } else {
+                // existing value for "key" - recursively deep merge:
+                if (value instanceof JSONObject) {
+                    JSONObject valueJson = (JSONObject) value;
+                    deepMerge(valueJson, target.getJSONObject(key));
+                } else {
+                    target.put(key, value);
+                }
+            }
+        }
+        return target;
     }
 
 }

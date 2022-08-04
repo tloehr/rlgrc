@@ -1,0 +1,30 @@
+{
+  "comment": "Center Flags x3",
+  "rest_url": "http://localhost:8090/api/game/load",
+  "class": "de.flashheart.rlg.commander.games.CenterFlags",
+  "agents": {
+    "capture_points": [
+      "ag01",
+      "ag02",
+      "ag03"
+    ],
+    "red_spawn": [
+      "ag30"
+    ],
+    "blue_spawn": [
+      "ag31"
+    ],
+    "spawns": [
+      "ag30",
+      "ag31"
+    ],
+    "sirens": [
+      "ag51"
+    ]
+  },
+  "game_time": 2700,
+  "wait4teams2B_ready": false,
+  "intro_mp3_file": "<random>",
+  "starter_countdown": 30,
+  "resume_countdown": 0
+}

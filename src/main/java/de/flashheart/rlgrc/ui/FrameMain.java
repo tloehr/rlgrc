@@ -111,6 +111,7 @@ public class FrameMain extends JFrame {
         game_modes = new HashMap<>();
         game_modes.put("conquest", new ConquestParams(configs));
         game_modes.put("farcry", new FarcryParams(configs));
+        game_modes.put("centerflags", new CenterFlagsParams(configs));
 
         initComponents();
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
@@ -131,6 +132,7 @@ public class FrameMain extends JFrame {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "centerflags"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
         txtURI.setText(configs.get(Configs.REST_URI));
 

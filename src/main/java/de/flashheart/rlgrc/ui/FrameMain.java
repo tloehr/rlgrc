@@ -209,20 +209,24 @@ public class FrameMain extends JFrame {
             return;
         }
 
-        pnlMain.setEnabledAt(TAB_SETUP, current_state.isEmpty() || current_state.getString("game_state").equals(_state_PROLOG));
-        pnlMain.setEnabledAt(TAB_RUNNING_GAME, !current_state.isEmpty());
+        pnlMain.setEnabledAt(TAB_SETUP, !is_game_loaded_on_server() || current_state.getString("game_state").equals(_state_PROLOG));
+        pnlMain.setEnabledAt(TAB_RUNNING_GAME, is_game_loaded_on_server());
         // todo: nach neustart, wenn ein spiel schon läuft, dann glaubt er alles ist conquest auch wenn farcry läuft.
         // hier muss der richtige game mode gesetzt werden. de.flashheart.rlgrc.ui.FrameMain org.json.JSONException: JSONObject["cps_held_by_red"] not found.
         // und zwar erstmal nur für game:1
         if (pnlMain.getSelectedIndex() == TAB_SETUP) {
-            if (!current_state.isEmpty()) {
+            if (is_game_loaded_on_server()) {
                 cmbGameModes.setSelectedItem(game_modes.get(current_state.getString("mode")));
             } else cmbGameModes.setSelectedItem(game_modes.get("conquest"));
         } else {
-            if (!current_state.isEmpty()) update_running_game_tab();
+            update_running_game_tab();
         }
 
-        cmbGameModes.setEnabled(current_state.isEmpty());
+        cmbGameModes.setEnabled(!is_game_loaded_on_server());
+    }
+
+    private boolean is_game_loaded_on_server() {
+        return current_state.keySet().contains("game_state");
     }
 
     private void tab_selection_changed(ChangeEvent e) {
@@ -387,7 +391,7 @@ public class FrameMain extends JFrame {
 
     private void update_setup_game_tab(Optional<GameParams> current_game_setup) {
         current_game_setup.ifPresent(gameParams -> {
-            if (current_state.isEmpty()) gameParams.load_defaults();
+            if (!is_game_loaded_on_server()) gameParams.load_defaults();
             else gameParams.set_parameters(current_state);
             SwingUtilities.invokeLater(() -> {
                 pnlGameMode.removeAll();
@@ -399,6 +403,7 @@ public class FrameMain extends JFrame {
     }
 
     private void update_running_game_tab() {
+        if (!is_game_loaded_on_server()) return;
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
 
@@ -722,14 +727,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -780,8 +785,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -856,8 +861,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1055,8 +1060,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {

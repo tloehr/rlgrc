@@ -5,12 +5,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 public class CenterFlagsParams extends GameParams {
 
@@ -118,36 +121,53 @@ public class CenterFlagsParams extends GameParams {
 
     @Override
     String get_score_as_html(JSONObject game_state) {
-
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
-
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
-//        int capture_points_taken = game_state.getInt("capture_points_taken");
-//        int max_capture_points = game_state.getInt("max_capture_points");
 
 
-//        String state = game_state.getString("game_state");
-//        if (state.equals("RUNNING")) {
-//            String next = "last one";
-//            if (max_capture_points > 1 && capture_points_taken < max_capture_points - 1) {
-//                next = "Next: " + game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken + 1);
-//            }
-//            String active_agent = capture_points_taken < max_capture_points ? game_state.getJSONObject("agents").getJSONArray("capture_points").getString(capture_points_taken) : "";
-//            state = active_agent + ": " + game_state.getJSONObject("agent_states").getString(active_agent) + ", " + next;
-//        }
-//        LocalDateTime remainingTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(game_state.getInt("remaining")),
-//                TimeZone.getTimeZone("UTC").toZoneId());
-//
-//        String html =
-//                HTML.document(CSS,
-//                        HTML.h1("CenterFlags@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
-//                                HTML.h2("CPs taken: %d out of %d") +
-//                                HTML.h3("%s") +
-//                                HTML.h3("Remaining Time %s") +
-//                                HTML.h2("Events") +
-//                                generate_table_for_events(game_state.getJSONArray("in_game_events"))
-//                );
-        return String.format("not yet");
+        // Preparing Score Table
+        JSONObject scores = game_state.getJSONObject("scores");
+        List capture_points = game_state.getJSONObject("agents").getJSONArray("capture_points").toList().stream().sorted().collect(Collectors.toList());
+        StringBuffer buffer = new StringBuffer();
 
+        capture_points.forEach(o -> {
+            String agent = o.toString();
+
+            String color = "white";
+            if (game_state.getJSONObject( "agent_states").getString(agent).equalsIgnoreCase("red")) color = "red";
+            if (game_state.getJSONObject( "agent_states").getString(agent).equalsIgnoreCase("blue")) color = "blue";
+
+            buffer.append(HTML.table_tr(
+                    String.format("<td bgcolor=%s>" + agent + "</td>", color) +
+                    HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong(agent)))) +
+                    HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong(agent))))
+            ));
+        });
+        buffer.append(HTML.table_tr(
+                HTML.table_td(HTML.bold("SUMs")) +
+                HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong("all"))))) +
+                        HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong("all")))))
+        ));
+
+        String html =
+                HTML.document(CSS,
+                        HTML.h1("Center-Flags @" + first_pit.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"))) +
+                                HTML.h2("Match length: %s, remaining time: %s") +
+                                HTML.h2("Score") +
+                                HTML.table(
+                                        HTML.table_tr(
+                                                HTML.table_th("Agent") +
+                                                        HTML.table_th("Blue Score") +
+                                                        HTML.table_th("Red Score")
+                                        ),
+                                        buffer.toString(), "1") +
+                                HTML.h2("Events") +
+                                generate_table_for_events(game_state.getJSONArray("in_game_events"))
+                );
+        return String.format(html,
+                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
+                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
+                game_state.getString("game_state")
+        );
     }
 }

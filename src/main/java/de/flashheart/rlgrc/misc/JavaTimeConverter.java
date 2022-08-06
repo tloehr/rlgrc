@@ -1,10 +1,9 @@
 package de.flashheart.rlgrc.misc;
 
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class JavaTimeConverter {
 
@@ -44,5 +43,14 @@ public class JavaTimeConverter {
 
     public static LocalDateTime from_iso8601(String iso8601) {
         return ZonedDateTime.parse(iso8601).toLocalDateTime();
+    }
+
+
+    public static String format(Instant instant){
+        return format(instant, "HH:mm:ss");
+
+    }
+    public static String format(Instant instant, String format){
+        return ZonedDateTime.ofInstant(instant, TimeZone.getTimeZone("UTC").toZoneId()).format(DateTimeFormatter.ofPattern(format));
     }
 }

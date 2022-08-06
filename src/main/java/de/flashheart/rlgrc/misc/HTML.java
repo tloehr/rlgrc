@@ -1,5 +1,7 @@
 package de.flashheart.rlgrc.misc;
 
+import java.awt.*;
+
 public class HTML {
 
 
@@ -113,6 +115,24 @@ public class HTML {
         return String.format("<table border=\"%s\"><thead>%s</thead><tbody>%s</tbody></table>\n",  border, head, body);
     }
 
+    public static String color(Color color, String in) {
+        return "<font color=#" + getHTMLColor(color) + ">" + in + "</font>";
+    }
+
+    public static String getHTMLColor(Color c) {
+        StringBuilder sb = new StringBuilder("");
+
+        if (c.getRed() < 16) sb.append('0');
+        sb.append(Integer.toHexString(c.getRed()));
+
+        if (c.getGreen() < 16) sb.append('0');
+        sb.append(Integer.toHexString(c.getGreen()));
+
+        if (c.getBlue() < 16) sb.append('0');
+        sb.append(Integer.toHexString(c.getBlue()));
+
+        return sb.toString();
+    }
 
     public static String linebreak() {
         return "<br/>";

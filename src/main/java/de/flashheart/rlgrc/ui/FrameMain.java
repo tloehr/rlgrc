@@ -150,7 +150,7 @@ public class FrameMain extends JFrame {
         });
         cmbGameModes.setRenderer((list, value, index, isSelected, cellHasFocus) -> new DefaultListCellRenderer().getListCellRendererComponent(list, ((GameParams) value).getMode(), index, isSelected, cellHasFocus));
 
-        for (JButton testButton : Arrays.asList(button1, button2, button2, button3, button4, button5, button6, button7, button8, button9, button10)) {
+        for (JButton testButton : Arrays.asList(button1, button2, button2, button3, button4, button5, button6, button7, button8, button9, button10, button11, button12)) {
             testButton.addActionListener(e -> {
                 if (selected_agent.isEmpty()) return;
                 Properties properties = new Properties();
@@ -713,6 +713,8 @@ public class FrameMain extends JFrame {
         button8 = new JButton();
         button9 = new JButton();
         button10 = new JButton();
+        button11 = new JButton();
+        button12 = new JButton();
         pnlAbout = new JPanel();
         scrollPane2 = new JScrollPane();
         txtAbout = new JTextPane();
@@ -727,14 +729,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -785,8 +787,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "fill:default:grow, $lgap, default"));
+                        "default:grow",
+                        "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -861,8 +863,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                            "default:grow",
-                            "default, $lgap, default, $rgap, default:grow"));
+                        "default:grow",
+                        "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1020,6 +1022,7 @@ public class FrameMain extends JFrame {
 
                         //---- txtGameStatus ----
                         txtGameStatus.setContentType("text/html");
+                        txtGameStatus.setEditable(false);
                         scrlGameStatus.setViewportView(txtGameStatus);
                     }
                     pnlRunningGame.add(scrlGameStatus, CC.xy(1, 5, CC.FILL, CC.FILL));
@@ -1060,8 +1063,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {
@@ -1210,6 +1213,24 @@ public class FrameMain extends JFrame {
                         button10.setHorizontalAlignment(SwingConstants.LEFT);
                         button10.setMaximumSize(new Dimension(32767, 34));
                         pnlTesting.add(button10);
+
+                        //---- button11 ----
+                        button11.setText("Play");
+                        button11.setActionCommand("play");
+                        button11.setIcon(new ImageIcon(getClass().getResource("/artwork/player_play.png")));
+                        button11.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button11.setHorizontalAlignment(SwingConstants.LEFT);
+                        button11.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button11);
+
+                        //---- button12 ----
+                        button12.setText("Stop");
+                        button12.setActionCommand("stop");
+                        button12.setIcon(new ImageIcon(getClass().getResource("/artwork/player_stop.png")));
+                        button12.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                        button12.setHorizontalAlignment(SwingConstants.LEFT);
+                        button12.setMaximumSize(new Dimension(32767, 34));
+                        pnlTesting.add(button12);
                     }
                     pnlAgents.add(pnlTesting, CC.xy(3, 1));
                 }
@@ -1309,6 +1330,8 @@ public class FrameMain extends JFrame {
     private JButton button8;
     private JButton button9;
     private JButton button10;
+    private JButton button11;
+    private JButton button12;
     private JPanel pnlAbout;
     private JScrollPane scrollPane2;
     private JTextPane txtAbout;

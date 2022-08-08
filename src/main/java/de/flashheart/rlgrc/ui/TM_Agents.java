@@ -83,8 +83,7 @@ public class TM_Agents extends AbstractTableModel {
                 break;
             }
             case 1: {
-                LocalDateTime ldt = JavaTimeConverter.from_iso8601(agents_states.get(agent, "timestamp"));
-                value = ldt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM));
+                value = agents_states.get("version");
                 break;
             }
             case 2: {

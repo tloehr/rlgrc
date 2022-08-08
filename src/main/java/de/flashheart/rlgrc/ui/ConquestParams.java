@@ -241,17 +241,17 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    String get_in_game_event_description(JSONObject game_state) {
-        String type = game_state.getString("type");
+    String get_in_game_event_description(JSONObject event) {
+        String type = event.getString("type");
         if (type.equalsIgnoreCase("general_game_state_change")) {
-            return game_state.getString("message");
+            return event.getString("message");
         }
         if (type.equalsIgnoreCase("in_game_state_change")) {
-            if (game_state.getString("item").equals("capture_point")) {
-                return game_state.getString("agent") + " => " + game_state.getString("state");
+            if (event.getString("item").equals("capture_point")) {
+                return event.getString("agent") + " => " + event.getString("state");
             }
-            if (game_state.getString("item").equals("respawn")) {
-                return "Respawn Team " + game_state.getString("team") + ": #" + game_state.getInt("value");
+            if (event.getString("item").equals("respawn")) {
+                return "Respawn Team " + event.getString("team") + ": #" + event.getInt("value");
             }
         }
         return "";
@@ -367,7 +367,7 @@ public class ConquestParams extends GameParams {
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Conquest@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
+                        HTML.h1("Conquest @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Team Red &#8594; %s  &#8660; %s &#8592; Team Blue") +
                                 HTML.h2("Capture points") +
                                 HTML.h3("Team Red") +

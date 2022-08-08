@@ -92,16 +92,16 @@ public class FarcryParams extends GameParams {
     }
 
     @Override
-    String get_in_game_event_description(JSONObject game_state) {
-        String type = game_state.getString("type");
+    String get_in_game_event_description(JSONObject event) {
+        String type = event.getString("type");
         if (type.equalsIgnoreCase("general_game_state_change")) {
-            return game_state.getString("message");
+            return event.getString("message");
         }
         if (type.equalsIgnoreCase("in_game_state_change")) {
-            if (game_state.getString("item").equals("capture_point")) {
-                return game_state.getString("agent") + " => " + game_state.getString("state");
+            if (event.getString("item").equals("capture_point")) {
+                return event.getString("agent") + " => " + event.getString("state");
             }
-            if (game_state.getString("item").equals("overtime")) {
+            if (event.getString("item").equals("overtime")) {
                 return "overtime";
             }
         }
@@ -155,7 +155,7 @@ public class FarcryParams extends GameParams {
 
         String html =
                 HTML.document(CSS,
-                        HTML.h1("FarCry@" + first_pit.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) +
+                        HTML.h1("FarCry Assault @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("CPs taken: %d out of %d") +
                                 HTML.h3("%s") +
                                 HTML.h3("Remaining Time %s") +

@@ -84,14 +84,22 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    String get_in_game_event_description(JSONObject game_state) {
-        String type = game_state.getString("type");
+    String get_in_game_event_description(JSONObject event) {
+        String type = event.getString("type");
         if (type.equalsIgnoreCase("general_game_state_change")) {
-            return game_state.getString("message");
+            return event.getString("message");
         }
+
         if (type.equalsIgnoreCase("in_game_state_change")) {
-            if (game_state.getString("item").equals("capture_point")) {
-                return game_state.getString("agent") + " => " + game_state.getString("state");
+            String zeus = (event.has("zeus") ? HTML.linebreak()+ "(by the hand of ZEUS)" : "");
+            if (event.getString("item").equals("capture_point")) {
+                return event.getString("agent") + " => " + event.getString("state")
+                        + zeus;
+            }
+            if (event.getString("item").equals("add_seconds")) {
+                String text = event.getLong("amount") >= 0 ? "has been granted %d seconds" : "has lost %d seconds";
+                return "Team " + event.getString("team") + String.format(text, event.getLong("amount"))
+                        + zeus;
             }
         }
         return "";
@@ -134,24 +142,26 @@ public class CenterFlagsParams extends GameParams {
             String agent = o.toString();
 
             String color = "white";
-            if (game_state.getJSONObject( "agent_states").getString(agent).equalsIgnoreCase("red")) color = "red";
-            if (game_state.getJSONObject( "agent_states").getString(agent).equalsIgnoreCase("blue")) color = "blue";
+            if (game_state.getJSONObject("agent_states").getString(agent).toLowerCase().matches("red|game_over_red"))
+                color = "red";
+            if (game_state.getJSONObject("agent_states").getString(agent).toLowerCase().matches("blue|game_over_blue"))
+                color = "blue";
 
             buffer.append(HTML.table_tr(
                     String.format("<td bgcolor=%s>" + agent + "</td>", color) +
-                    HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong(agent)))) +
-                    HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong(agent))))
+                            HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong(agent)))) +
+                            HTML.table_td(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong(agent))))
             ));
         });
         buffer.append(HTML.table_tr(
                 HTML.table_td(HTML.bold("SUMs")) +
-                HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong("all"))))) +
+                        HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("blue").getLong("all"))))) +
                         HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong("all")))))
         ));
 
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Center-Flags @" + first_pit.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"))) +
+                        HTML.h1("Center-Flags @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Match length: %s, remaining time: %s") +
                                 HTML.h2("Score") +
                                 HTML.table(

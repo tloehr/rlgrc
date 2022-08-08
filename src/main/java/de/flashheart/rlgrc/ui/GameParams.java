@@ -197,7 +197,7 @@ public abstract class GameParams extends JPanel {
      */
     abstract String get_score_as_html(JSONObject game_state);
 
-    abstract String get_in_game_event_description(JSONObject game_state);
+    abstract String get_in_game_event_description(JSONObject event);
 
     protected String generate_table_for_events(JSONArray events) {
         StringBuffer buffer = new StringBuffer();

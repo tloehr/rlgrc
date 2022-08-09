@@ -97,7 +97,7 @@ public class CenterFlagsParams extends GameParams {
                         + zeus;
             }
             if (event.getString("item").equals("add_seconds")) {
-                String text = event.getLong("amount") >= 0 ? "has been granted %d seconds" : "has lost %d seconds";
+                String text = event.getLong("amount") >= 0 ? " has been granted %d seconds" : " has lost %d seconds";
                 return "Team " + event.getString("team") + String.format(text, event.getLong("amount"))
                         + zeus;
             }

@@ -22,7 +22,7 @@ public class TM_Agents extends AbstractTableModel {
     private final HashMap<String, JSONObject> tooltips;
     private final ArrayList<String> agents;
     private final Configs configs;
-    private String[] colnames = new String[]{"Agent", "Timestamp", "last contact", "AP", "WIFI"};
+    private String[] colnames = new String[]{"Agent", "Version", "last contact", "AP", "WIFI"};
 
     public TM_Agents(JSONObject agent_states, Configs configs) throws JSONException {
         this.configs = configs;
@@ -83,7 +83,7 @@ public class TM_Agents extends AbstractTableModel {
                 break;
             }
             case 1: {
-                value = agents_states.get("version");
+                value = agents_states.get(agent, "version");
                 break;
             }
             case 2: {

@@ -3,6 +3,7 @@ package de.flashheart.rlgrc.ui;
 import com.google.common.io.Resources;
 import com.mchange.v2.lang.StringUtils;
 import de.flashheart.rlgrc.misc.*;
+import de.flashheart.rlgrc.ui.zeus.Zeus;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -198,6 +199,10 @@ public abstract class GameParams extends JPanel {
     abstract String get_score_as_html(JSONObject game_state);
 
     abstract String get_in_game_event_description(JSONObject event);
+
+    Optional<Zeus> get_zeus(){
+        return Optional.empty();
+    }
 
     protected String generate_table_for_events(JSONArray events) {
         StringBuffer buffer = new StringBuffer();

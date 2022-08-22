@@ -639,6 +639,16 @@ public class FrameMain extends JFrame {
         post("system/welcome_agents", "", new Properties());
     }
 
+    private void btnZeus(ActionEvent e) {
+        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
+        if (!current_game_mode.get_zeus().isPresent()) return;
+        current_game_mode.get_zeus().ifPresent(zeus -> {
+            JDialog dialog = new JDialog(this, true);
+            dialog.setContentPane(current_game_mode.get_zeus().get());
+            dialog.setVisible(true);
+        });
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -667,6 +677,7 @@ public class FrameMain extends JFrame {
         pnlRunningGame = new JPanel();
         pnlMessages = new JPanel();
         btnLock = new JToggleButton();
+        btnZeus = new JButton();
         btnPrepare = new JButton();
         btnReset = new JButton();
         btnReady = new JButton();
@@ -877,12 +888,24 @@ public class FrameMain extends JFrame {
                         btnLock.setContentAreaFilled(false);
                         btnLock.setBorderPainted(false);
                         btnLock.setPreferredSize(new Dimension(38, 38));
+                        btnLock.setToolTipText("Lock");
                         btnLock.addItemListener(e -> btnLockItemStateChanged(e));
                         pnlMessages.add(btnLock);
 
+                        //---- btnZeus ----
+                        btnZeus.setText(null);
+                        btnZeus.setIcon(new ImageIcon(getClass().getResource("/artwork/zeus-28.png")));
+                        btnZeus.setSelectedIcon(null);
+                        btnZeus.setContentAreaFilled(false);
+                        btnZeus.setBorderPainted(false);
+                        btnZeus.setPreferredSize(new Dimension(38, 38));
+                        btnZeus.setToolTipText("Zeus");
+                        btnZeus.addActionListener(e -> btnZeus(e));
+                        pnlMessages.add(btnZeus);
+
                         //---- btnPrepare ----
                         btnPrepare.setText("Prepare");
-                        btnPrepare.setToolTipText(null);
+                        btnPrepare.setToolTipText("Prepare");
                         btnPrepare.setIcon(null);
                         btnPrepare.setPreferredSize(null);
                         btnPrepare.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
@@ -1283,6 +1306,7 @@ public class FrameMain extends JFrame {
     private JPanel pnlRunningGame;
     private JPanel pnlMessages;
     private JToggleButton btnLock;
+    private JButton btnZeus;
     private JButton btnPrepare;
     private JButton btnReset;
     private JButton btnReady;

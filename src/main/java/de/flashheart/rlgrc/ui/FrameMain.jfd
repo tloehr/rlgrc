@@ -148,13 +148,25 @@ new FormModel {
 								"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
 								"contentAreaFilled": false
 								"borderPainted": false
-								"preferredSize": new java.awt.Dimension( 38, 38 )
+								"preferredSize": &Dimension2 new java.awt.Dimension( 38, 38 )
+								"toolTipText": "Lock"
 								addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "btnLockItemStateChanged", true ) )
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnZeus"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/zeus-28.png" )
+								"selectedIcon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"contentAreaFilled": false
+								"borderPainted": false
+								"preferredSize": #Dimension2
+								"toolTipText": "Zeus"
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnZeus", true ) )
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "btnPrepare"
 								"text": "Prepare"
-								"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"toolTipText": "Prepare"
 								"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"font": #Font0
@@ -496,7 +508,7 @@ new FormModel {
 								"icon": #SwingIcon1
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": &Dimension2 new java.awt.Dimension( 32767, 34 )
+								"maximumSize": &Dimension3 new java.awt.Dimension( 32767, 34 )
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button11"
@@ -505,7 +517,7 @@ new FormModel {
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": #Dimension2
+								"maximumSize": #Dimension3
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button12"
@@ -514,7 +526,7 @@ new FormModel {
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_stop.png" )
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": #Dimension2
+								"maximumSize": #Dimension3
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 3

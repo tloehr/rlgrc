@@ -1,6 +1,8 @@
 package de.flashheart.rlgrc.ui;
 
 import de.flashheart.rlgrc.misc.*;
+import de.flashheart.rlgrc.ui.zeus.CenterFlagsZeus;
+import de.flashheart.rlgrc.ui.zeus.ZeusDialog;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,27 +12,26 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CenterFlagsParams extends GameParams {
 
+    private final JFrame owner;
     private JTextField txtCapturePoints;
     private JTextField txtRed;
     private JTextField txtBlue;
     private JTextField txtSirens;
     private JButton btn_switch;
 
-    public CenterFlagsParams(Configs configs) {
+    public CenterFlagsParams(Configs configs, JFrame owner) {
         super(configs);
+        this.owner = owner;
         initPanel();
     }
 
 
     private void initPanel() {
-
         txtCapturePoints = new JTextField();
         txtCapturePoints.setInputVerifier(new NotEmptyVerifier());
         txtCapturePoints.setFont(default_font);
@@ -179,5 +180,10 @@ public class CenterFlagsParams extends GameParams {
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
                 game_state.getString("game_state")
         );
+    }
+
+    @Override
+    Optional<ZeusDialog> get_zeus() {
+        return Optional.of(new CenterFlagsZeus(owner));
     }
 }

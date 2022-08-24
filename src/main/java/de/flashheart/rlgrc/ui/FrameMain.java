@@ -34,6 +34,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -111,7 +113,7 @@ public class FrameMain extends JFrame {
         game_modes = new HashMap<>();
         game_modes.put("conquest", new ConquestParams(configs));
         game_modes.put("farcry", new FarcryParams(configs));
-        game_modes.put("centerflags", new CenterFlagsParams(configs));
+        game_modes.put("centerflags", new CenterFlagsParams(configs, this));
 
         initComponents();
         setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
@@ -407,6 +409,7 @@ public class FrameMain extends JFrame {
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
 
+
         int index = _states_.indexOf(state.toUpperCase());
         // States
         for (int i = 0; i < 7; i++) {
@@ -640,12 +643,9 @@ public class FrameMain extends JFrame {
     }
 
     private void btnZeus(ActionEvent e) {
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        if (!current_game_mode.get_zeus().isPresent()) return;
-        current_game_mode.get_zeus().ifPresent(zeus -> {
-            JDialog dialog = new JDialog(this, true);
-            dialog.setContentPane(current_game_mode.get_zeus().get());
-            dialog.setVisible(true);
+        ((GameParams) cmbGameModes.getSelectedItem()).get_zeus().ifPresent(zeusDialog -> {
+            zeusDialog.add_property_change_listener(evt -> log.debug(evt));
+            zeusDialog.setVisible(true);
         });
     }
 
@@ -740,14 +740,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -798,8 +798,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -874,8 +874,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1086,8 +1086,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {

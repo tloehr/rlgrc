@@ -43,8 +43,14 @@ public class ZeusDialog extends JDialog {
         return button_panel;
     }
 
-    public void add_property_change_listener(PropertyChangeListener propertyChangeListener){
+    public void add_property_change_listener(PropertyChangeListener propertyChangeListener) {
         propertyChangeListenerList.add(propertyChangeListener);
+    }
+
+    @Override
+    public void setVisible(boolean b) {
+        setLocationRelativeTo(getParent());
+        super.setVisible(b);
     }
 
 }

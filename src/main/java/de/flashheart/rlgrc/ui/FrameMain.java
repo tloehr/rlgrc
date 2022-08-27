@@ -8,7 +8,7 @@ import com.google.common.io.Resources;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.FlashStateLedJob;
-import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.networking.SSEClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -18,24 +18,21 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.*;
 import org.jdesktop.swingx.HorizontalLayout;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -45,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -86,10 +84,11 @@ public class FrameMain extends JFrame {
     private static final int TAB_ABOUT = 4;
     private final Scheduler scheduler;
     private final JobKey state_flashing_job;
+    public static final Font MY_FONT = new Font(".SF NS Text", Font.PLAIN, 18);
 
 
     private JSONObject current_state;
-    private final Configs configs;
+    private final JSONConfigs configs;
 
     private Client client = ClientBuilder.newClient();
     private final int MAX_LOG_LINES = 400;
@@ -101,7 +100,7 @@ public class FrameMain extends JFrame {
     private final HashMap<String, GameParams> game_modes;
     private boolean summary_written_on_epilog = false;
 
-    public FrameMain(Configs configs) throws SchedulerException, IOException {
+    public FrameMain(JSONConfigs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
         this.scheduler.getContext().put("rlgrc", this);
         this.configs = configs;
@@ -116,7 +115,30 @@ public class FrameMain extends JFrame {
         game_modes.put("centerflags", new CenterFlagsParams(configs, this));
 
         initComponents();
-        setTitle("rlgrc v" + configs.getBuildProperties("my.version") + " bld" + configs.getBuildProperties("buildNumber") + " " + configs.getBuildProperties("buildDate"));
+        txtAbout.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+        txtAbout.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        if (Desktop.isDesktopSupported()) {
+            txtAbout.addHyperlinkListener(e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (Exception ex) {
+                        log.warn(ex);
+                    }
+                }
+//                else if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+//                    SwingUtilities.invokeLater(() -> {
+//                        ((JComponent) e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//                        ((JComponent) e.getSource()).revalidate();
+//                        ((JComponent) e.getSource()).repaint();
+//                    });
+//
+//                } else if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
+//                    ((JComponent) e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+//                }
+            });
+        }
+        setTitle("rlgrc v" + configs.getBuildProperties().getProperty("my.version") + " b" + configs.getBuildProperties().getProperty("buildNumber") + " " + configs.getBuildProperties().getProperty("buildDate"));
         //guiFSM = new FSM(this.getClass().getClassLoader().getResourceAsStream("fsm/gui.xml"), null);
 
         pnlMain.setSelectedIndex(TAB_ABOUT);
@@ -127,16 +149,43 @@ public class FrameMain extends JFrame {
         this._state_labels = Arrays.asList(lblProlog, lblTeamsNotReady, lblTeamsReady, lblRunning, lblPausing, lblResuming, lblEpilog);
 
         initFrame();
+
+
+    }
+
+    void add_to_recent_uris_list(String uri) {
+        //ArrayList<String> list = Lists.newArrayList(StringUtils.split(configs.get(Configs.REST_URIS), ","));
+        List<String> list = configs.getConfigs().getJSONArray("recent").toList().stream().map(Object::toString).collect(Collectors.toList());
+        if (list.contains(uri)) list.remove(uri);
+        // put last uri at the head of the list
+        // nice trick btw: https://stackoverflow.com/a/28631202
+        Collections.reverse(list);
+        list.add(uri);
+        Collections.reverse(list);
+        //configs.getConfigs().remove("recent");
+        configs.getConfigs().put("recent", new JSONArray(list));
+        configs.saveConfigs();
+
+        //configs.put(Configs.REST_URIS, StringUtils.join(list, ","));
     }
 
     private void initFrame() throws IOException, SchedulerException {
         initLogger();
+
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "centerflags"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
-        txtURI.setText(configs.get(Configs.REST_URI));
+        txtURI.setModel(new DefaultComboBoxModel(configs.getConfigs().getJSONArray("recent").toList().toArray()));
+        txtURI.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                add_to_recent_uris_list(txtURI.getSelectedItem().toString().trim());
+            }
+        });
+        txtURI.addItemListener(e -> add_to_recent_uris_list(txtURI.getSelectedItem().toString().trim()));
+        //((JTextField) txtURI.getEditor().getEditorComponent()).setText(configs.get(Configs.REST_URI));
 
         tblAgents.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
@@ -372,7 +421,8 @@ public class FrameMain extends JFrame {
     }
 
     private void txtURIFocusLost(FocusEvent e) {
-        configs.put(Configs.REST_URI, txtURI.getText().trim());
+        //configs.put(Configs.REST_URI, txtURI.getSelectedItem().toString().trim());
+        add_to_recent_uris_list(txtURI.getSelectedItem().toString().trim());
     }
 
 
@@ -477,7 +527,7 @@ public class FrameMain extends JFrame {
 
         try {
             WebTarget target = client
-                    .target(txtURI.getText().trim() + "/api/" + uri);
+                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri);
 
             for (Map.Entry entry : params.entrySet()) {
                 target = target.queryParam(entry.getKey().toString(), entry.getValue());
@@ -507,7 +557,7 @@ public class FrameMain extends JFrame {
         JSONObject json;
         try {
             Response response = client
-                    .target(txtURI.getText().trim() + "/api/" + uri)
+                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
                     .queryParam("id", id)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
@@ -529,7 +579,7 @@ public class FrameMain extends JFrame {
         JSONObject json;
         try {
             Response response = client
-                    .target(txtURI.getText() + "/api/" + uri)
+                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
@@ -557,7 +607,7 @@ public class FrameMain extends JFrame {
     void set_response_status(Exception exception) {
         String icon = "/artwork/ledred.png";
         lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(exception.getMessage());
+        lblResponse.setText(StringUtils.left(exception.getMessage(), 35));
         lblResponse.setToolTipText(exception.toString());
     }
 
@@ -590,7 +640,7 @@ public class FrameMain extends JFrame {
     private void connect_sse_client() {
         if (sseClient != null) return;
         sseClient = SSEClient.builder()
-                .url(txtURI.getText().trim() + "/api/game-sse?id=" + current_game_id())
+                .url(txtURI.getSelectedItem().toString().trim() + "/api/game-sse?id=" + current_game_id())
                 .useKeepAliveMechanismIfReceived(true)
                 .eventHandler(eventText -> {
                     try {
@@ -644,7 +694,9 @@ public class FrameMain extends JFrame {
 
     private void btnZeus(ActionEvent e) {
         ((GameParams) cmbGameModes.getSelectedItem()).get_zeus().ifPresent(zeusDialog -> {
-            zeusDialog.add_property_change_listener(evt -> log.debug(evt));
+            zeusDialog.add_property_change_listener(evt -> {
+                post("game/zeus", evt.getNewValue().toString(), current_game_id());
+            });
             zeusDialog.setVisible(true);
         });
     }
@@ -656,7 +708,7 @@ public class FrameMain extends JFrame {
 
         mainPanel = new JPanel();
         panel1 = new JPanel();
-        txtURI = new JTextField();
+        txtURI = new JComboBox();
         btnConnect = new JButton();
         panel2 = new JPanel();
         cmbGameSlots = new JComboBox();
@@ -728,7 +780,7 @@ public class FrameMain extends JFrame {
         button12 = new JButton();
         pnlAbout = new JPanel();
         scrollPane2 = new JScrollPane();
-        txtAbout = new JTextPane();
+        txtAbout = new JXEditorPane();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -747,21 +799,15 @@ public class FrameMain extends JFrame {
         {
             mainPanel.setLayout(new FormLayout(
                     "default:grow",
-                    "35dlu, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
                 panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
                 //---- txtURI ----
-                txtURI.setText("http://localhost:8090");
                 txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
-                txtURI.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        txtURIFocusLost(e);
-                    }
-                });
+                txtURI.setEditable(true);
                 panel1.add(txtURI);
 
                 //---- btnConnect ----
@@ -1268,6 +1314,7 @@ public class FrameMain extends JFrame {
 
                         //---- txtAbout ----
                         txtAbout.setContentType("text/html");
+                        txtAbout.setEditable(false);
                         scrollPane2.setViewportView(txtAbout);
                     }
                     pnlAbout.add(scrollPane2);
@@ -1285,7 +1332,7 @@ public class FrameMain extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     private JPanel mainPanel;
     private JPanel panel1;
-    private JTextField txtURI;
+    private JComboBox txtURI;
     private JButton btnConnect;
     private JPanel panel2;
     private JComboBox cmbGameSlots;
@@ -1358,6 +1405,6 @@ public class FrameMain extends JFrame {
     private JButton button12;
     private JPanel pnlAbout;
     private JScrollPane scrollPane2;
-    private JTextPane txtAbout;
+    private JXEditorPane txtAbout;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

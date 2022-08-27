@@ -32,7 +32,7 @@ import java.util.HashMap;
 @Log4j2
 public class ConquestParams extends GameParams {
 
-    public ConquestParams(Configs configs) {
+    public ConquestParams(JSONConfigs configs) {
         super(configs);
         add(default_components);
         initComponents();

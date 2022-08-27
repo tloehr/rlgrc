@@ -1,6 +1,6 @@
 package de.flashheart.rlgrc.ui;
 
-import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.misc.JavaTimeConverter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.map.MultiKeyMap;
@@ -10,8 +10,6 @@ import org.json.JSONObject;
 import javax.swing.table.AbstractTableModel;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -21,10 +19,10 @@ public class TM_Agents extends AbstractTableModel {
     private final MultiKeyMap<String, String> agents_states;
     private final HashMap<String, JSONObject> tooltips;
     private final ArrayList<String> agents;
-    private final Configs configs;
+    private final JSONConfigs configs;
     private String[] colnames = new String[]{"Agent", "Version", "last contact", "AP", "WIFI"};
 
-    public TM_Agents(JSONObject agent_states, Configs configs) throws JSONException {
+    public TM_Agents(JSONObject agent_states, JSONConfigs configs) throws JSONException {
         this.configs = configs;
         agents_states = new MultiKeyMap<>();
         agents = new ArrayList<>();
@@ -95,7 +93,11 @@ public class TM_Agents extends AbstractTableModel {
             case 3: {
                 Optional<String> optAP = Optional.ofNullable(agents_states.get(agent, "ap"));
                 // check if there is a better name for this ap in config.txt. If not we simply show the MAC address.
-                value = optAP.isPresent() ? configs.get("ap_" + optAP.get().toLowerCase(), optAP.get()) : "--";
+                if (optAP.isPresent()) {
+                    value = configs.getConfigs().getJSONObject("access_points").optString(optAP.get(), optAP.get());
+                } else {
+                    value = "--";
+                }
                 break;
             }
             case 4: {

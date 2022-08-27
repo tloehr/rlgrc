@@ -23,7 +23,7 @@ public class FarcryParams extends GameParams {
     private JTextField txtRespawnTimer;
     private JButton btn_switch;
 
-    public FarcryParams(Configs configs) {
+    public FarcryParams(JSONConfigs configs) {
         super(configs);
         initPanel();
     }

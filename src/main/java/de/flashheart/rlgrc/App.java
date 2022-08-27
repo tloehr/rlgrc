@@ -2,7 +2,7 @@ package de.flashheart.rlgrc;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import de.flashheart.rlgrc.misc.Configs;
+import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
 
@@ -19,6 +19,7 @@ public class App {
         }
 
         try {
+
             UIManager.setLookAndFeel(new FlatLightLaf());
             FlatDarkLaf.setup();
         } catch (Exception ex) {
@@ -29,6 +30,6 @@ public class App {
 //        BasicLookAndFeel darcula = new DarculaLaf();
 //        UIManager.setLookAndFeel(darcula);
 
-        new FrameMain(new Configs()).setVisible(true);
+        new FrameMain(new JSONConfigs(System.getProperties().getProperty("workspace"))).setVisible(true);
     }
 }

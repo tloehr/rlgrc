@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Log4j2
 public abstract class GameParams extends JPanel {
-    private final Configs configs;
+    private final JSONConfigs configs;
     protected JSONObject params;
     protected Optional<File> file;
     protected JPanel default_components;
@@ -36,10 +36,10 @@ public abstract class GameParams extends JPanel {
     private DateTimeFormatter dtf;
     protected String CSS = "";
     protected Font default_font = new Font(".SF NS Text", Font.PLAIN, 14);
-    protected Font large_font = new Font(".SF NS Text", Font.PLAIN, 18);
+    protected Font large_font = FrameMain.MY_FONT;
     protected HashMap<String, JTextComponent> components;
 
-    public GameParams(Configs configs) {
+    public GameParams(JSONConfigs configs) {
         super();
         components = new HashMap<>();
         this.configs = configs;
@@ -53,7 +53,13 @@ public abstract class GameParams extends JPanel {
         default_components = new JPanel(new RiverLayout(5, 5));
 
         cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
-        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
+//        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
+
+        cmbIntroMusic = new JComboBox<>(configs.getConfigs()
+                .getJSONObject("audio")
+                .getJSONArray("intro")
+                .toList().stream().sorted().collect(Collectors.toList()).toArray(new String[]{})
+        );
 
         cbWait4Teams2BReady.setFont(default_font);
         default_components.add(create_textfield("comment", new NotEmptyVerifier()), "hfill");
@@ -77,7 +83,7 @@ public abstract class GameParams extends JPanel {
         components.get("starter_countdown").addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                if (!((JTextField) e.getSource()).getText().equals("30")){
+                if (!((JTextField) e.getSource()).getText().equals("30")) {
                     cmbIntroMusic.setSelectedItem("<none>");
                 }
             }
@@ -200,7 +206,7 @@ public abstract class GameParams extends JPanel {
 
     abstract String get_in_game_event_description(JSONObject event);
 
-    Optional<ZeusDialog> get_zeus(){
+    Optional<ZeusDialog> get_zeus() {
         return Optional.empty();
     }
 

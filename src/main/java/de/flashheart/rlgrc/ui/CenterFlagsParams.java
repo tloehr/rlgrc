@@ -24,7 +24,7 @@ public class CenterFlagsParams extends GameParams {
     private JTextField txtSirens;
     private JButton btn_switch;
 
-    public CenterFlagsParams(Configs configs, JFrame owner) {
+    public CenterFlagsParams(JSONConfigs configs, JFrame owner) {
         super(configs);
         this.owner = owner;
         initPanel();
@@ -184,6 +184,6 @@ public class CenterFlagsParams extends GameParams {
 
     @Override
     Optional<ZeusDialog> get_zeus() {
-        return Optional.of(new CenterFlagsZeus(owner));
+        return Optional.of(new CenterFlagsZeus(owner, to_jsonarray(txtCapturePoints.getText())));
     }
 }

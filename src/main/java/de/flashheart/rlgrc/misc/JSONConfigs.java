@@ -4,6 +4,7 @@ package de.flashheart.rlgrc.misc;
 import com.google.common.io.Resources;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,6 +12,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
@@ -34,7 +36,7 @@ public class JSONConfigs {
         JSONObject defaults = new JSONObject(Resources.toString(Resources.getResource("defaults/configs.json"), Charset.defaultCharset()));
         defaults.put("uuid", UUID.randomUUID().toString());
         JSONObject user_configs = new JSONObject(FileUtils.readFileToString(config_file, Charset.defaultCharset()));
-        configs = deepMerge(user_configs, defaults);
+        configs = merge(new JSONObject[]{defaults, user_configs});
         saveConfigs();
     }
 
@@ -84,6 +86,79 @@ public class JSONConfigs {
             log.error(ex);
             System.exit(0);
         }
+    }
+
+    /**
+     * https://stackoverflow.com/a/44126984
+     *
+     * @param jsons
+     * @return
+     */
+    private JSONObject merge(JSONObject[] jsons) {
+
+        JSONObject merged = new JSONObject();
+        Object parameter;
+
+        for (JSONObject added : jsons) {
+
+            for (String key : toStringArrayList(added.names())) {
+                try {
+
+                    parameter = added.get(key);
+
+                    if (merged.has(key)) {
+                        // Duplicate key found:
+                        if (added.get(key) instanceof JSONObject) {
+                            // Object - allowed to merge:
+                            parameter =
+                                    merge(
+                                            new JSONObject[]{
+                                                    (JSONObject) merged.get(key),
+                                                    (JSONObject) added.get(key)});
+                        }
+                    }
+
+                    // Add or update value on duplicate key:
+                    merged.put(
+                            key,
+                            parameter);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        return merged;
+    }
+
+    /**
+     * Convert JSONArray to ArrayList<String>.
+     * https://stackoverflow.com/a/44126984
+     *
+     * @param jsonArray Source JSONArray.
+     * @return Target ArrayList<String>.
+     */
+    private ArrayList<String> toStringArrayList(JSONArray jsonArray) {
+
+        ArrayList<String> stringArray = new ArrayList<String>();
+        int arrayIndex;
+
+        for (
+                arrayIndex = 0;
+                arrayIndex < jsonArray.length();
+                arrayIndex++) {
+
+            try {
+                stringArray.add(
+                        jsonArray.getString(arrayIndex));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return stringArray;
     }
 
     public Properties getBuildProperties() {

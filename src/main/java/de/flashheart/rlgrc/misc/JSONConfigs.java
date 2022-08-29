@@ -1,6 +1,7 @@
 package de.flashheart.rlgrc.misc;
 
 
+import com.google.common.collect.Collections2;
 import com.google.common.io.Resources;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -12,10 +13,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 @Log4j2
 public class JSONConfigs {
@@ -32,11 +30,17 @@ public class JSONConfigs {
         loadBuildContext();
         File config_file = new File(CONFIGFILE);
         config_file.createNewFile();
-        // load defaults
+        // load defaults first, then overwrite it with
+        // the user_settings - where necessary
         JSONObject defaults = new JSONObject(Resources.toString(Resources.getResource("defaults/configs.json"), Charset.defaultCharset()));
         defaults.put("uuid", UUID.randomUUID().toString());
         JSONObject user_configs = new JSONObject(FileUtils.readFileToString(config_file, Charset.defaultCharset()));
-        configs = merge(new JSONObject[]{defaults, user_configs});
+
+        Map combined = defaults.toMap();
+        combined.putAll(user_configs.toMap());
+
+
+        configs = new JSONObject(combined);
         saveConfigs();
     }
 

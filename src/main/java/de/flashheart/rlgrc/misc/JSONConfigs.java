@@ -30,15 +30,14 @@ public class JSONConfigs {
         loadBuildContext();
         File config_file = new File(CONFIGFILE);
         config_file.createNewFile();
+        String string_user_configs = FileUtils.readFileToString(config_file, Charset.defaultCharset());
         // load defaults first, then overwrite it with
         // the user_settings - where necessary
         JSONObject defaults = new JSONObject(Resources.toString(Resources.getResource("defaults/configs.json"), Charset.defaultCharset()));
         defaults.put("uuid", UUID.randomUUID().toString());
-        JSONObject user_configs = new JSONObject(FileUtils.readFileToString(config_file, Charset.defaultCharset()));
-
+        JSONObject user_configs = new JSONObject(string_user_configs.isEmpty() ? "{}" : string_user_configs);
         Map combined = defaults.toMap();
         combined.putAll(user_configs.toMap());
-
 
         configs = new JSONObject(combined);
         saveConfigs();
@@ -56,31 +55,6 @@ public class JSONConfigs {
         }
     }
 
-    /**
-     * Merge "source" into "target". If fields have equal name, merge them recursively.
-     * see <a href="https://stackoverflow.com/a/15070484">origin</a>
-     *
-     * @return the merged object (target).
-     */
-    private JSONObject deepMerge(JSONObject source, JSONObject target) throws JSONException {
-        for (String key : JSONObject.getNames(source)) {
-            Object value = source.get(key);
-            if (!target.has(key)) {
-                // new value for "key":
-                target.put(key, value);
-            } else {
-                // existing value for "key" - recursively deep merge:
-                if (value instanceof JSONObject) {
-                    JSONObject valueJson = (JSONObject) value;
-                    deepMerge(valueJson, target.getJSONObject(key));
-                } else {
-                    target.put(key, value);
-                }
-            }
-        }
-        return target;
-    }
-
     public void saveConfigs() {
         try {
             configs.put("comment", "rlgrc v" + buildProperties.getProperty("my.version") + " b" + buildProperties.getProperty("buildNumber"));
@@ -90,79 +64,6 @@ public class JSONConfigs {
             log.error(ex);
             System.exit(0);
         }
-    }
-
-    /**
-     * https://stackoverflow.com/a/44126984
-     *
-     * @param jsons
-     * @return
-     */
-    private JSONObject merge(JSONObject[] jsons) {
-
-        JSONObject merged = new JSONObject();
-        Object parameter;
-
-        for (JSONObject added : jsons) {
-
-            for (String key : toStringArrayList(added.names())) {
-                try {
-
-                    parameter = added.get(key);
-
-                    if (merged.has(key)) {
-                        // Duplicate key found:
-                        if (added.get(key) instanceof JSONObject) {
-                            // Object - allowed to merge:
-                            parameter =
-                                    merge(
-                                            new JSONObject[]{
-                                                    (JSONObject) merged.get(key),
-                                                    (JSONObject) added.get(key)});
-                        }
-                    }
-
-                    // Add or update value on duplicate key:
-                    merged.put(
-                            key,
-                            parameter);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-
-        return merged;
-    }
-
-    /**
-     * Convert JSONArray to ArrayList<String>.
-     * https://stackoverflow.com/a/44126984
-     *
-     * @param jsonArray Source JSONArray.
-     * @return Target ArrayList<String>.
-     */
-    private ArrayList<String> toStringArrayList(JSONArray jsonArray) {
-
-        ArrayList<String> stringArray = new ArrayList<String>();
-        int arrayIndex;
-
-        for (
-                arrayIndex = 0;
-                arrayIndex < jsonArray.length();
-                arrayIndex++) {
-
-            try {
-                stringArray.add(
-                        jsonArray.getString(arrayIndex));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return stringArray;
     }
 
     public Properties getBuildProperties() {

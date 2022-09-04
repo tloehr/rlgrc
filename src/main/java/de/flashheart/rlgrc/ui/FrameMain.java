@@ -254,7 +254,7 @@ public class FrameMain extends JFrame {
     private void set_gui_to_situation() {
         pnlMain.setEnabled(connected);
         cmbGameSlots.setEnabled(connected);
-        btnConnect.setIcon(new ImageIcon(getClass().getResource(connected ? "/artwork/connected.png" : "/artwork/disconnected.png")));
+        btnConnect.setIcon(new ImageIcon(getClass().getResource(connected ? "/artwork/rlgrc-48-connected.png" : "/artwork/rlgrc-48-disconnected.png")));
         if (!connected) {
             pnlMain.setSelectedIndex(TAB_ABOUT);
             return;
@@ -607,7 +607,7 @@ public class FrameMain extends JFrame {
     void set_response_status(Exception exception) {
         String icon = "/artwork/ledred.png";
         lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(StringUtils.left(exception.getMessage(), 35));
+        lblResponse.setText(StringUtils.left(exception.getMessage(), 70));
         lblResponse.setToolTipText(exception.toString());
     }
 
@@ -792,28 +792,32 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
                 panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
                 //---- txtURI ----
-                txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                txtURI.setFont(new Font(".SF NS Text", Font.PLAIN, 20));
                 txtURI.setEditable(true);
                 panel1.add(txtURI);
 
                 //---- btnConnect ----
                 btnConnect.setText(null);
-                btnConnect.setIcon(new ImageIcon(getClass().getResource("/artwork/disconnected.png")));
+                btnConnect.setIcon(new ImageIcon(getClass().getResource("/artwork/rlgrc-48-disconnected.png")));
                 btnConnect.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
+                btnConnect.setPreferredSize(new Dimension(50, 50));
+                btnConnect.setBorderPainted(false);
+                btnConnect.setContentAreaFilled(false);
+                btnConnect.setPressedIcon(new ImageIcon(getClass().getResource("/artwork/rlgrc-48-gear.png")));
                 btnConnect.addActionListener(e -> btnConnect(e));
                 panel1.add(btnConnect);
             }
@@ -844,8 +848,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                            "default:grow",
-                            "fill:default:grow, $lgap, default"));
+                        "default:grow",
+                        "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -920,8 +924,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                            "default:grow",
-                            "default, $lgap, default, $rgap, default:grow"));
+                        "default:grow",
+                        "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1132,8 +1136,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                            "default:grow, $ugap, default",
-                            "fill:default:grow"));
+                        "default:grow, $ugap, default",
+                        "fill:default:grow"));
 
                     //======== panel7 ========
                     {

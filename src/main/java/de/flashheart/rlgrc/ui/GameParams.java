@@ -32,6 +32,7 @@ public abstract class GameParams extends JPanel {
     protected Optional<File> file;
     protected JPanel default_components;
     protected JCheckBox cbWait4Teams2BReady;
+    protected JCheckBox cbSilentGame; // don't use sirens
     protected JComboBox<String> cmbIntroMusic;
     private DateTimeFormatter dtf;
     protected String CSS = "";
@@ -53,6 +54,7 @@ public abstract class GameParams extends JPanel {
         default_components = new JPanel(new RiverLayout(5, 5));
 
         cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
+        cbSilentGame = new JCheckBox("Silent game");
 //        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
 
         cmbIntroMusic = new JComboBox<>(configs.getConfigs()
@@ -70,6 +72,7 @@ public abstract class GameParams extends JPanel {
         default_components.add(create_label("Countdown to Resume"), "left");
         default_components.add(create_textfield("resume_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)), "left");
         default_components.add(cbWait4Teams2BReady);
+        default_components.add(cbSilentGame);
         default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
 
         //components.get("starter_countdown").add
@@ -115,6 +118,7 @@ public abstract class GameParams extends JPanel {
         components.forEach((key, jTextComponent) -> jTextComponent.setText(params.get(key).toString()));
         cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
         cmbIntroMusic.setSelectedItem(params.getString("intro_mp3_file"));
+        cbSilentGame.setSelected(params.getBoolean("silent_game"));
     }
 
     protected void set_parameters(JSONObject params) {
@@ -126,6 +130,7 @@ public abstract class GameParams extends JPanel {
         params.clear();
         components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
         params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
+        params.put("silent_game", Boolean.toString(cbSilentGame.isSelected()));
         params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
         return params;
     }

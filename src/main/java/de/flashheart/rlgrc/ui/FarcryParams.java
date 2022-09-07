@@ -1,13 +1,9 @@
 package de.flashheart.rlgrc.ui;
 
 import de.flashheart.rlgrc.misc.*;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -18,10 +14,7 @@ public class FarcryParams extends GameParams {
 
     private JTextField txtCapturePoints;
     private JTextField txtCaptureSirens;
-    private JTextField txtAttacker;
-    private JTextField txtDefender;
     private JTextField txtRespawnTimer;
-    private JButton btn_switch;
 
     public FarcryParams(JSONConfigs configs) {
         super(configs);
@@ -30,6 +23,7 @@ public class FarcryParams extends GameParams {
 
 
     private void initPanel() {
+        load_defaults();
 
         txtCapturePoints = new JTextField();
         txtCapturePoints.setInputVerifier(new NotEmptyVerifier());
@@ -46,49 +40,26 @@ public class FarcryParams extends GameParams {
         txtRespawnTimer.setFont(default_font);
         txtRespawnTimer.setToolTipText("set 0 to disable mechanism");
 
-        txtAttacker = new JTextField();
-        txtAttacker.setBackground(Color.RED);
-        txtAttacker.setInputVerifier(new NotEmptyVerifier());
-        txtAttacker.setFont(default_font);
-
-        txtDefender = new JTextField();
-        txtDefender.setBackground(Color.BLUE);
-        txtDefender.setInputVerifier(new NotEmptyVerifier());
-        txtDefender.setFont(default_font);
-
-        btn_switch = new JButton(new ImageIcon(getClass().getResource("/artwork/lc_arrowshapes.png")));
-        btn_switch.addActionListener(e -> {
-            String a = txtDefender.getText();
-            txtDefender.setText(txtAttacker.getText());
-            txtAttacker.setText(a);
-        });
-
         setLayout(new RiverLayout(5, 5));
         add(default_components);
         add(new JLabel("Gametime in Seconds"), "br left");
         add(create_textfield("game_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "left");
         add(new JLabel("Bombtime in Seconds"), "tab");
         add(create_textfield("bomb_time", new NumberVerifier(BigDecimal.TEN, BigDecimal.valueOf(60000), true)), "left");
-        add(new JLabel("Respawn Timer"), "tab");
-        add(create_textfield("respawn_time", new NumberVerifier(BigDecimal.ZERO, BigDecimal.valueOf(1000), true)), "left");
         add(new JLabel("Capture Points"), "br left");
         add(txtCapturePoints, "hfill");
         add(new JLabel("Capture Sirens"), "br left");
         add(txtCaptureSirens, "hfill");
-        add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
-        add(txtAttacker, "br left");
-        add(btn_switch, "left");
-        add(txtDefender, "left");
+
 
     }
 
     @Override
-    protected void set_parameters() {
-        super.set_parameters();
+    protected void from_params_to_ui() {
+        super.from_params_to_ui();
         txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtCaptureSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_sirens")));
-        txtAttacker.setText(params.getJSONObject("agents").getJSONArray("attacker_spawn").getString(0));
-        txtDefender.setText(params.getJSONObject("agents").getJSONArray("defender_spawn").getString(0));
+        txtRespawnTimer.setText(Integer.toString(params.getJSONObject("spawns").getInt("respawn_time")));
     }
 
     @Override
@@ -109,16 +80,13 @@ public class FarcryParams extends GameParams {
     }
 
     @Override
-    protected JSONObject read_parameters() {
-        super.read_parameters();
+    protected JSONObject from_ui_to_params() {
+        super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
-        agents.put("capture_points", to_jsonarray(txtCapturePoints.getText()));
-        agents.put("capture_sirens", to_jsonarray(txtCaptureSirens.getText()));
-        agents.put("sirens", to_jsonarray(txtCaptureSirens.getText()));
-        agents.put("attacker_spawn", new JSONArray().put(txtAttacker.getText()));
-        agents.put("defender_spawn", new JSONArray().put(txtDefender.getText()));
-        agents.put("spawns", new JSONArray().put(txtAttacker.getText()).put(txtDefender.getText()));
+        agents.put("capture_points", from_string_list(txtCapturePoints.getText()));
+        agents.put("capture_sirens", from_string_list(txtCaptureSirens.getText()));
+        agents.put("sirens", from_string_list(txtCaptureSirens.getText()));
         params.put("agents", agents);
 
         params.put("class", "de.flashheart.rlg.commander.games.Farcry");

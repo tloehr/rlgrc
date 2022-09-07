@@ -375,12 +375,14 @@ public class FrameMain extends JFrame {
     private void btnLoadFile(ActionEvent e) {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         current_game_mode.load_file();
+        current_game_mode.from_params_to_ui();
         lblFile.setText(current_game_mode.getFilename());
     }
 
     private void btnFileNew(ActionEvent e) {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         current_game_mode.load_defaults();
+        current_game_mode.from_params_to_ui();
         lblFile.setText(current_game_mode.getFilename());
     }
 
@@ -443,8 +445,11 @@ public class FrameMain extends JFrame {
 
     private void update_setup_game_tab(Optional<GameParams> current_game_setup) {
         current_game_setup.ifPresent(gameParams -> {
-            if (!is_game_loaded_on_server()) gameParams.load_defaults();
-            else gameParams.set_parameters(current_state);
+            if (!is_game_loaded_on_server()) {
+                gameParams.load_defaults();
+                gameParams.from_params_to_ui();
+            }
+            else gameParams.from_params_to_ui(current_state);
             SwingUtilities.invokeLater(() -> {
                 pnlGameMode.removeAll();
                 pnlGameMode.add(gameParams);
@@ -625,7 +630,7 @@ public class FrameMain extends JFrame {
 
     private void btnSendGameToServer(ActionEvent e) {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        String params = current_game_mode.read_parameters().toString(4);
+        String params = current_game_mode.from_ui_to_params().toString(4);
         current_state = post("game/load", params, current_game_id());
         set_gui_to_situation();
         pnlMain.setSelectedIndex(TAB_RUNNING_GAME);

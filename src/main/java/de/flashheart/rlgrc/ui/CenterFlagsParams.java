@@ -19,8 +19,6 @@ public class CenterFlagsParams extends GameParams {
 
     private final JFrame owner;
     private JTextField txtCapturePoints;
-    private JTextField txtRed;
-    private JTextField txtBlue;
     private JTextField txtSirens;
     private JButton btn_switch;
 
@@ -32,6 +30,7 @@ public class CenterFlagsParams extends GameParams {
 
 
     private void initPanel() {
+        load_defaults();
         txtCapturePoints = new JTextField();
         txtCapturePoints.setInputVerifier(new NotEmptyVerifier());
         txtCapturePoints.setFont(default_font);
@@ -42,22 +41,7 @@ public class CenterFlagsParams extends GameParams {
         txtSirens.setFont(default_font);
         txtSirens.setToolTipText("Comma separated");
 
-        txtRed = new JTextField();
-        txtRed.setBackground(Color.RED);
-        txtRed.setInputVerifier(new NotEmptyVerifier());
-        txtRed.setFont(default_font);
 
-        txtBlue = new JTextField();
-        txtBlue.setBackground(Color.BLUE);
-        txtBlue.setInputVerifier(new NotEmptyVerifier());
-        txtBlue.setFont(default_font);
-
-        btn_switch = new JButton(new ImageIcon(getClass().getResource("/artwork/lc_arrowshapes.png")));
-        btn_switch.addActionListener(e -> {
-            String a = txtBlue.getText();
-            txtBlue.setText(txtRed.getText());
-            txtRed.setText(a);
-        });
 
         setLayout(new RiverLayout(5, 5));
         add(default_components);
@@ -67,20 +51,13 @@ public class CenterFlagsParams extends GameParams {
         add(txtCapturePoints, "hfill");
         add(new JLabel("Sirens"), "br left");
         add(txtSirens, "hfill");
-        add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
-        add(txtRed, "br left");
-        add(btn_switch, "left");
-        add(txtBlue, "left");
-
-
+        
     }
 
     @Override
-    protected void set_parameters() {
-        super.set_parameters();
+    protected void from_params_to_ui() {
+        super.from_params_to_ui();
         txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
-        txtRed.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
-        txtBlue.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
         txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
     }
 
@@ -107,15 +84,12 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    protected JSONObject read_parameters() {
-        super.read_parameters();
+    protected JSONObject from_ui_to_params() {
+        super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
-        agents.put("capture_points", to_jsonarray(txtCapturePoints.getText()));
-        agents.put("sirens", to_jsonarray(txtSirens.getText()));
-        agents.put("red_spawn", new JSONArray().put(txtRed.getText()));
-        agents.put("blue_spawn", new JSONArray().put(txtBlue.getText()));
-        agents.put("spawns", new JSONArray().put(txtRed.getText()).put(txtBlue.getText()));
+        agents.put("capture_points", from_string_list(txtCapturePoints.getText()));
+        agents.put("sirens", from_string_list(txtSirens.getText()));
         params.put("agents", agents);
 
         params.put("class", "de.flashheart.rlg.commander.games.CenterFlags");
@@ -184,6 +158,6 @@ public class CenterFlagsParams extends GameParams {
 
     @Override
     Optional<ZeusDialog> get_zeus() {
-        return Optional.of(new CenterFlagsZeus(owner, to_jsonarray(txtCapturePoints.getText())));
+        return Optional.of(new CenterFlagsZeus(owner, from_string_list(txtCapturePoints.getText())));
     }
 }

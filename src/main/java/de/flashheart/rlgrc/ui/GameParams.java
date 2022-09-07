@@ -1,17 +1,18 @@
 package de.flashheart.rlgrc.ui;
 
 import com.google.common.io.Resources;
-import com.mchange.v2.lang.StringUtils;
 import de.flashheart.rlgrc.misc.*;
 import de.flashheart.rlgrc.ui.zeus.ZeusDialog;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
@@ -22,7 +23,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -32,16 +36,27 @@ public abstract class GameParams extends JPanel {
     protected Optional<File> file;
     protected JPanel default_components;
     protected JCheckBox cbWait4Teams2BReady;
+    protected JTextField txt_starter_countdown;
     protected JCheckBox cbSilentGame; // don't use sirens
     protected JComboBox<String> cmbIntroMusic;
+    private JButton btnSwitchSides;
+    private JTextField txtBlueSpawn;
+    private JTextField txtRedSpawn;
     private DateTimeFormatter dtf;
     protected String CSS = "";
     protected Font default_font = new Font(".SF NS Text", Font.PLAIN, 14);
     protected Font large_font = FrameMain.MY_FONT;
     protected HashMap<String, JTextComponent> components;
+    private final int num_of_segments;
 
     public GameParams(JSONConfigs configs) {
+        this(configs, 1); // for later use.
+    }
+
+    public GameParams(JSONConfigs configs, int num_of_segments) {
         super();
+        log.debug("loading {}", getMode());
+        this.num_of_segments = num_of_segments;
         components = new HashMap<>();
         this.configs = configs;
         load_default_css();
@@ -52,9 +67,14 @@ public abstract class GameParams extends JPanel {
 
     private void init_default_components() {
         default_components = new JPanel(new RiverLayout(5, 5));
-
+        txt_starter_countdown = new JTextField();
+        txt_starter_countdown.setFont(default_font);
+        txt_starter_countdown.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true));
         cbWait4Teams2BReady = new JCheckBox("Wait for Teams");
-        cbSilentGame = new JCheckBox("Silent game");
+        cbWait4Teams2BReady.setFont(default_font);
+        cbSilentGame = new JCheckBox("Silent Game");
+        cbSilentGame.setFont(default_font);
+        cbSilentGame.setToolTipText("a silent game doesn't use any sirens. works as expected, otherwise.");
 //        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
 
         cmbIntroMusic = new JComboBox<>(configs.getConfigs()
@@ -63,27 +83,26 @@ public abstract class GameParams extends JPanel {
                 .toList().stream().sorted().collect(Collectors.toList()).toArray(new String[]{})
         );
 
-        cbWait4Teams2BReady.setFont(default_font);
         default_components.add(create_textfield("comment", new NotEmptyVerifier()), "hfill");
         default_components.add(create_label("Starter Countdown"), "br left");
-        default_components.add(create_textfield("starter_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)), "left");
+        default_components.add(txt_starter_countdown, "left");
         default_components.add(create_label("Intro MP3"), "left");
         default_components.add(cmbIntroMusic, "left");
         default_components.add(create_label("Countdown to Resume"), "left");
         default_components.add(create_textfield("resume_countdown", new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, true)), "left");
         default_components.add(cbWait4Teams2BReady);
         default_components.add(cbSilentGame);
-        default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
+
 
         //components.get("starter_countdown").add
         cmbIntroMusic.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 if (e.getItem().toString().equals("<none>")) return;
-                components.get("starter_countdown").setText("30");
+                txt_starter_countdown.setText("30");
             }
         });
 
-        components.get("starter_countdown").addFocusListener(new FocusAdapter() {
+        txt_starter_countdown.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 if (!((JTextField) e.getSource()).getText().equals("30")) {
@@ -92,6 +111,41 @@ public abstract class GameParams extends JPanel {
             }
         });
 
+        JPanel panel1 = new JPanel();
+        panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+
+        //---- txtRedSpawn ----
+        txtRedSpawn = new JTextField();
+        txtRedSpawn.setText("test");
+        txtRedSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
+        txtRedSpawn.setAlignmentX(0.5F);
+        txtRedSpawn.setBackground(new Color(255, 0, 51));
+        txtRedSpawn.setOpaque(true);
+        txtRedSpawn.setForeground(new Color(255, 255, 51));
+        txtRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+        panel1.add(txtRedSpawn);
+
+        //---- btnSwitchSides ----
+        btnSwitchSides = new JButton();
+        btnSwitchSides.setText(null);
+        btnSwitchSides.setIcon(new ImageIcon(getClass().getResource("/artwork/lc_arrowshapes.png")));
+        btnSwitchSides.setToolTipText("switch sides");
+        btnSwitchSides.addActionListener(e -> btnSwitchSides(e));
+        panel1.add(btnSwitchSides);
+
+        //---- txtBlueSpawn ----
+        txtBlueSpawn = new JTextField();
+        txtBlueSpawn.setText("test");
+        txtBlueSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
+        txtBlueSpawn.setAlignmentX(0.5F);
+        txtBlueSpawn.setBackground(new Color(51, 51, 255));
+        txtBlueSpawn.setOpaque(true);
+        txtBlueSpawn.setForeground(new Color(255, 255, 51));
+        txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
+        panel1.add(txtBlueSpawn);
+
+        default_components.add(panel1, "br hfill");
+        default_components.add(new JSeparator(SwingConstants.HORIZONTAL), "br hfill");
     }
 
     protected JLabel create_label(String label) {
@@ -114,26 +168,62 @@ public abstract class GameParams extends JPanel {
 
     abstract String getMode();
 
-    protected void set_parameters() {
+    protected void from_params_to_ui() {
         components.forEach((key, jTextComponent) -> jTextComponent.setText(params.get(key).toString()));
-        cbWait4Teams2BReady.setSelected(params.getBoolean("wait4teams2B_ready"));
-        cmbIntroMusic.setSelectedItem(params.getString("intro_mp3_file"));
         cbSilentGame.setSelected(params.getBoolean("silent_game"));
+
+        cbWait4Teams2BReady.setSelected(params.getJSONObject("spawns").getBoolean("wait4teams2B_ready"));
+        cmbIntroMusic.setSelectedItem(params.getJSONObject("spawns").getString("intro_mp3_file"));
+
+        log.debug(params.getJSONObject("spawns").getJSONArray("teams").toString(4));
+
+        params.getJSONObject("spawns").getJSONArray("teams").forEach(o -> {
+            JSONObject team = (JSONObject) o;
+            if (team.getString("role").equals("red_spawn"))
+                txtRedSpawn.setText(to_segment_list(team.getJSONArray("agents")));
+            if (team.getString("role").equals("blue_spawn"))
+                txtBlueSpawn.setText(to_segment_list(team.getJSONArray("agents")));
+        });
     }
 
-    protected void set_parameters(JSONObject params) {
+    protected void from_params_to_ui(JSONObject params) {
         this.params = params;
-        set_parameters();
+        from_params_to_ui();
     }
 
-    protected JSONObject read_parameters() {
+    protected JSONObject from_ui_to_params() {
         params.clear();
         components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
-        params.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
+
         params.put("silent_game", Boolean.toString(cbSilentGame.isSelected()));
-        params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
+
+        JSONObject spawns = new JSONObject();
+        spawns.put("wait4teams2B_ready", Boolean.toString(cbWait4Teams2BReady.isSelected()));
+        spawns.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
+        spawns.put("starter_countdown", txt_starter_countdown.getText());
+        spawns.put("respawn_time", 0); // maybe overwritten by some children classes
+
+        JSONArray teams = new JSONArray();
+
+        JSONObject redfor = new JSONObject();
+        redfor.put("role", "red_spawn");
+        redfor.put("led", "red");
+        redfor.put("name", "RedFor");
+        redfor.put("agents", from_string_list(txtRedSpawn.getText()));
+
+        JSONObject blufor = new JSONObject();
+        blufor.put("role", "blue_spawn");
+        blufor.put("led", "blu");
+        blufor.put("name", "BluFor");
+        blufor.put("agents", from_string_list(txtBlueSpawn.getText()));
+
+        spawns.put("teams", teams);
+        params.put("spawns", spawns);
+
+        //params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
         return params;
     }
+
 
     protected void load_defaults() {
         File myFile = FileUtils.getFile(System.getProperty("workspace"), getMode(), "default.json");
@@ -144,7 +234,6 @@ public abstract class GameParams extends JPanel {
             } else {
                 params = new JSONObject(Resources.toString(Resources.getResource("defaults/" + getMode() + ".json"), Charset.defaultCharset()));
             }
-            set_parameters();
         } catch (Exception e) {
             log.error(e);
         }
@@ -155,7 +244,6 @@ public abstract class GameParams extends JPanel {
         if (myFile.isEmpty()) return file;
         try {
             params = new JSONObject(FileUtils.readFileToString(myFile.get(), StandardCharsets.UTF_8));
-            set_parameters();
         } catch (IOException e) {
             myFile = Optional.empty();
         }
@@ -166,7 +254,7 @@ public abstract class GameParams extends JPanel {
         if (params.isEmpty()) return;
         if (file.isEmpty()) file = choose_file(true);
         if (file.isEmpty()) return;
-        FileUtils.writeStringToFile(file.get(), read_parameters().toString(4), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(file.get(), from_ui_to_params().toString(4), StandardCharsets.UTF_8);
     }
 
     protected Optional<File> choose_file(boolean save) {
@@ -196,7 +284,21 @@ public abstract class GameParams extends JPanel {
         return jsonArray.toList().stream().map(o -> o.toString().trim()).collect(Collectors.joining(","));
     }
 
-    protected JSONArray to_jsonarray(String list) {
+    protected String to_segment_list(JSONArray jsonArray) {
+        StringBuffer segment_list = new StringBuffer();
+        jsonArray.forEach(o -> {
+            JSONArray segment = (JSONArray) o;
+            segment_list.append(to_string_list(segment));
+            segment_list.append(";");
+        });
+        return StringUtils.stripEnd(segment_list.toString(), ";");
+    }
+
+    // todo: from_segment_list()
+    // todo: verifier
+
+
+    protected JSONArray from_string_list(String list) {
         return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
     }
 
@@ -251,6 +353,13 @@ public abstract class GameParams extends JPanel {
             log.error(e);
             CSS = "";
         }
+    }
+
+
+    private void btnSwitchSides(ActionEvent e) {
+        String a = txtBlueSpawn.getText();
+        txtBlueSpawn.setText(txtRedSpawn.getText());
+        txtRedSpawn.setText(a);
     }
 
 }

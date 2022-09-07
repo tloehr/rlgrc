@@ -4,27 +4,17 @@
 
 package de.flashheart.rlgrc.ui;
 
-import java.awt.event.*;
-
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.*;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections4.keyvalue.MultiKey;
-import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 
 /**
  * @author Torsten Löhr
@@ -48,14 +38,6 @@ public class ConquestParams extends GameParams {
         txtCnqEBleedInt.setInputVerifier(new NumberVerifier(BigDecimal.ZERO, NumberVerifier.MAX, false));
         txtCPs.setInputVerifier(new NotEmptyVerifier());
         txtSirens.setInputVerifier(new NotEmptyVerifier());
-        txtRedSpawn.setInputVerifier(new NotEmptyVerifier());
-        txtBlueSpawn.setInputVerifier(new NotEmptyVerifier());
-    }
-
-    private void btnSwitchSides(ActionEvent e) {
-        String a = txtBlueSpawn.getText();
-        txtBlueSpawn.setText(txtRedSpawn.getText());
-        txtRedSpawn.setText(a);
     }
 
     private void initComponents() {
@@ -78,10 +60,6 @@ public class ConquestParams extends GameParams {
         scrollPane2 = new JScrollPane();
         txtSirens = new JTextArea();
         label13 = new JLabel();
-        panel1 = new JPanel();
-        txtRedSpawn = new JTextField();
-        btnSwitchSides = new JButton();
-        txtBlueSpawn = new JTextField();
 
         //======== this ========
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -89,8 +67,8 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                    "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                    "3*(default, $lgap), fill:default:grow"));
+                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
@@ -120,9 +98,9 @@ public class ConquestParams extends GameParams {
             //======== pnl1234 ========
             {
                 pnl1234.setLayout(new FormLayout(
-                        "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                        "15dlu, $rgap, 2*(default), default:grow, $lgap, default"));
-                ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
+                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                    "15dlu, $rgap, 2*(default), default:grow"));
+                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
 
                 //---- label10 ----
                 label10.setText("Capture Points");
@@ -159,39 +137,6 @@ public class ConquestParams extends GameParams {
                 label13.setOpaque(true);
                 label13.setHorizontalAlignment(SwingConstants.CENTER);
                 pnl1234.add(label13, CC.xywh(5, 1, 3, 1, CC.DEFAULT, CC.FILL));
-
-                //======== panel1 ========
-                {
-                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
-
-                    //---- txtRedSpawn ----
-                    txtRedSpawn.setText("test");
-                    txtRedSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
-                    txtRedSpawn.setAlignmentX(0.5F);
-                    txtRedSpawn.setBackground(new Color(255, 0, 51));
-                    txtRedSpawn.setOpaque(true);
-                    txtRedSpawn.setForeground(new Color(255, 255, 51));
-                    txtRedSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                    panel1.add(txtRedSpawn);
-
-                    //---- btnSwitchSides ----
-                    btnSwitchSides.setText(null);
-                    btnSwitchSides.setIcon(new ImageIcon(getClass().getResource("/artwork/lc_arrowshapes.png")));
-                    btnSwitchSides.setToolTipText("switch sides");
-                    btnSwitchSides.addActionListener(e -> btnSwitchSides(e));
-                    panel1.add(btnSwitchSides);
-
-                    //---- txtBlueSpawn ----
-                    txtBlueSpawn.setText("test");
-                    txtBlueSpawn.setFont(new Font(".SF NS", Font.PLAIN, 22));
-                    txtBlueSpawn.setAlignmentX(0.5F);
-                    txtBlueSpawn.setBackground(new Color(51, 51, 255));
-                    txtBlueSpawn.setOpaque(true);
-                    txtBlueSpawn.setForeground(new Color(255, 255, 51));
-                    txtBlueSpawn.setHorizontalAlignment(SwingConstants.CENTER);
-                    panel1.add(txtBlueSpawn);
-                }
-                pnl1234.add(panel1, CC.xywh(1, 7, 7, 1));
             }
             pnlConquest.add(pnl1234, CC.xywh(1, 7, 7, 1, CC.FILL, CC.DEFAULT));
         }
@@ -205,8 +150,8 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    protected void set_parameters() {
-        super.set_parameters();
+    protected void from_params_to_ui() {
+        super.from_params_to_ui();
         txtCnqTickets.setText(params.get("respawn_tickets").toString());
         txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
         txtCnqBleedStarts.setText(params.get("not_bleeding_before_cps").toString());
@@ -214,13 +159,12 @@ public class ConquestParams extends GameParams {
         txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
         txtCPs.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
-        txtRedSpawn.setText(params.getJSONObject("agents").getJSONArray("red_spawn").getString(0));
-        txtBlueSpawn.setText(params.getJSONObject("agents").getJSONArray("blue_spawn").getString(0));
+
     }
 
     @Override
-    protected JSONObject read_parameters() {
-        super.read_parameters();
+    protected JSONObject from_ui_to_params() {
+        super.from_ui_to_params();
         params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
         params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
         params.put("not_bleeding_before_cps", Integer.parseInt(txtCnqBleedStarts.getText()));
@@ -228,12 +172,11 @@ public class ConquestParams extends GameParams {
         params.put("end_bleed_interval", Double.parseDouble(txtCnqEBleedInt.getText()));
 
         JSONObject agents = new JSONObject();
-        agents.put("capture_points", to_jsonarray(txtCPs.getText()));
-        agents.put("sirens", to_jsonarray(txtSirens.getText()));
-        agents.put("red_spawn", new JSONArray().put(txtRedSpawn.getText()));
-        agents.put("blue_spawn", new JSONArray().put(txtBlueSpawn.getText()));
-        agents.put("spawns", new JSONArray().put(txtRedSpawn.getText()).put(txtBlueSpawn.getText()));
+        agents.put("capture_points", from_string_list(txtCPs.getText()));
+        agents.put("sirens", from_string_list(txtSirens.getText()));
         params.put("agents", agents);
+
+
 
         params.put("class", "de.flashheart.rlg.commander.games.Conquest");
         params.put("mode", getMode());
@@ -257,14 +200,14 @@ public class ConquestParams extends GameParams {
         return "";
     }
 
-
-    /**
-     * preprocess events from conquest to combine double buttons on flags (you have to push the button twice to get your
-     * team color when you are red)
-     *
-     * @param in_events
-     * @return
-     */
+//
+//    /**
+//     * preprocess events from conquest to combine double buttons on flags (you have to push the button twice to get your
+//     * team color when you are red)
+//     *
+//     * @param in_events
+//     * @return
+//     */
 //    protected String generate_table_for_events(JSONArray in_events) {
 //        JSONArray out_events = new JSONArray();
 //
@@ -402,9 +345,5 @@ public class ConquestParams extends GameParams {
     private JScrollPane scrollPane2;
     private JTextArea txtSirens;
     private JLabel label13;
-    private JPanel panel1;
-    private JTextField txtRedSpawn;
-    private JButton btnSwitchSides;
-    private JTextField txtBlueSpawn;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

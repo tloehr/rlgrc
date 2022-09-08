@@ -439,7 +439,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button1"
 								"text": "White"
-								"actionCommand": "led_wht"
+								"actionCommand": "wht"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/led-white-on.png" )
 								"font": &Font4 new java.awt.Font( ".SF NS Text", 0, 18 )
 								"horizontalAlignment": 2
@@ -448,7 +448,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button2"
 								"text": "Red"
-								"actionCommand": "led_red"
+								"actionCommand": "red"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
 								"font": #Font4
 								"horizontalAlignment": 2
@@ -457,7 +457,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button3"
 								"text": "Yellow"
-								"actionCommand": "led_ylw"
+								"actionCommand": "ylw"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledyellow.png" )
 								"font": #Font4
 								"horizontalAlignment": 2
@@ -466,7 +466,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button4"
 								"text": "Green"
-								"actionCommand": "led_grn"
+								"actionCommand": "grn"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledgreen.png" )
 								"font": #Font4
 								"horizontalAlignment": 2
@@ -475,7 +475,7 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button5"
 								"text": "Blue"
-								"actionCommand": "led_blu"
+								"actionCommand": "blu"
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledblue.png" )
 								"font": #Font4
 								"horizontalAlignment": 2

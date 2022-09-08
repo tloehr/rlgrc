@@ -126,16 +126,6 @@ public class FrameMain extends JFrame {
                         log.warn(ex);
                     }
                 }
-//                else if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
-//                    SwingUtilities.invokeLater(() -> {
-//                        ((JComponent) e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//                        ((JComponent) e.getSource()).revalidate();
-//                        ((JComponent) e.getSource()).repaint();
-//                    });
-//
-//                } else if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
-//                    ((JComponent) e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//                }
             });
         }
         setTitle("rlgrc v" + configs.getBuildProperties().getProperty("my.version") + " b" + configs.getBuildProperties().getProperty("buildNumber") + " " + configs.getBuildProperties().getProperty("buildDate"));
@@ -1229,7 +1219,7 @@ public class FrameMain extends JFrame {
 
                         //---- button1 ----
                         button1.setText("White");
-                        button1.setActionCommand("led_wht");
+                        button1.setActionCommand("wht");
                         button1.setIcon(new ImageIcon(getClass().getResource("/artwork/led-white-on.png")));
                         button1.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button1.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1238,7 +1228,7 @@ public class FrameMain extends JFrame {
 
                         //---- button2 ----
                         button2.setText("Red");
-                        button2.setActionCommand("led_red");
+                        button2.setActionCommand("red");
                         button2.setIcon(new ImageIcon(getClass().getResource("/artwork/ledred.png")));
                         button2.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button2.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1247,7 +1237,7 @@ public class FrameMain extends JFrame {
 
                         //---- button3 ----
                         button3.setText("Yellow");
-                        button3.setActionCommand("led_ylw");
+                        button3.setActionCommand("ylw");
                         button3.setIcon(new ImageIcon(getClass().getResource("/artwork/ledyellow.png")));
                         button3.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button3.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1256,7 +1246,7 @@ public class FrameMain extends JFrame {
 
                         //---- button4 ----
                         button4.setText("Green");
-                        button4.setActionCommand("led_grn");
+                        button4.setActionCommand("grn");
                         button4.setIcon(new ImageIcon(getClass().getResource("/artwork/ledgreen.png")));
                         button4.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button4.setHorizontalAlignment(SwingConstants.LEFT);
@@ -1265,7 +1255,7 @@ public class FrameMain extends JFrame {
 
                         //---- button5 ----
                         button5.setText("Blue");
-                        button5.setActionCommand("led_blu");
+                        button5.setActionCommand("blu");
                         button5.setIcon(new ImageIcon(getClass().getResource("/artwork/ledblue.png")));
                         button5.setFont(new Font(".SF NS Text", Font.PLAIN, 18));
                         button5.setHorizontalAlignment(SwingConstants.LEFT);

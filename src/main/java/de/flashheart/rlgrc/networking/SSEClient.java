@@ -146,7 +146,7 @@ public class SSEClient {
         try {
             URL urlObject = new URL(new URL(url), "/");
             connectivityCheckUrl = urlObject.toString() + CONNECTIVITY_CHECK;
-            log.info("connectivityCheckUrl: {}", connectivityCheckUrl);
+            log.trace("connectivityCheckUrl: {}", connectivityCheckUrl);
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("invalid URL: " + url + ": " + e.getMessage());
         }
@@ -159,7 +159,7 @@ public class SSEClient {
         this.useKeepAliveMechanismIfReceived = useKeepAliveMechanismIfReceived;
         this.useConnectivityCheck = useConnectivityCheck;
         if (useKeepAliveMechanismIfReceived) {
-            log.info("useKeepAliveMechanismIfReceived is true, setting useConnectivityCheck to true.");
+            log.trace("useKeepAliveMechanismIfReceived is true, setting useConnectivityCheck to true.");
             this.useConnectivityCheck = true;
         }
         if (connectivityCheckIntervalSeconds != null) {
@@ -190,7 +190,7 @@ public class SSEClient {
     }
 
     private void getChanges() {
-        log.info("getChanges begin");
+        log.trace("getChanges begin");
         threadName = Thread.currentThread().getName();
         while (shouldRun.get() && !Thread.currentThread().isInterrupted()) {
             try {
@@ -202,15 +202,15 @@ public class SSEClient {
             if (shouldRun.get() && !Thread.currentThread().isInterrupted()) {
                 status = SubscribeStatus.RECONNECTING;
                 if (shouldSkipSleep.compareAndSet(true, false)) {
-                    log.debug("Not delaying");
+                    log.trace("Not delaying");
                 } else {
-                    log.debug("Delaying before reconnecting.");
+                    log.trace("Delaying before reconnecting.");
                     sleepQuitely(reconnectSamplingTimeMillis);
-                    log.debug("Delaying before reconnecting done.");
+                    log.trace("Delaying before reconnecting done.");
                 }
             }
         }
-        log.info("getChanges end");
+        log.trace("getChanges end");
     }
 
     private void sleepQuitely(long millis) {
@@ -223,7 +223,7 @@ public class SSEClient {
 
     public void getChangesHelper() throws IOException {
         try {
-            log.info("getChangesHelper begin for url: {}", url);
+            log.trace("getChangesHelper begin for url: {}", url);
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(new URI(url))
@@ -249,16 +249,16 @@ public class SSEClient {
                 inputStream = response.body();
                 handleResponse(inputStream);
             } else {
-                log.info("Getting error body response.");
+                log.trace("Getting error body response.");
                 String body = getNonStreamBodyResponse(response);
                 log.error("Got error response: {} {}", response.statusCode(), body);
             }
 
-            log.info("getChangesHelper end");
+            log.trace("getChangesHelper end");
         } catch (Exception e) {
             String errorMessage = "Got exception: " + e.getMessage() + ", cause: " + e.getCause() + ", class: " + e.getClass();
             if (e.getCause() instanceof InterruptedException) {
-                log.debug(errorMessage);
+                log.error(errorMessage);
             } else {
                 log.error(errorMessage, e);
                 throw new IOException(errorMessage, e);
@@ -296,7 +296,7 @@ public class SSEClient {
          * data: goodbye
          */
 
-        log.info("Handling response.");
+        log.trace("Handling response.");
         keepAliveReceivedInCurrentRequest.set(false);
         connectivityThresholdMillis = 0;
         try (BufferedInputStream in = IOUtils.buffer(inputStream)) {
@@ -313,7 +313,7 @@ public class SSEClient {
                         keepAliveReceivedInCurrentRequest.set(true);
                         processKeepAliveMessage();
                     } else {
-                        log.debug("Got non-data line: {}", content);
+                        log.trace("Got non-data line: {}", content);
                     }
                     if (line.trim().isEmpty() && messageBuilder.length() > 0) {
                         String message = messageBuilder.toString();
@@ -322,19 +322,19 @@ public class SSEClient {
                     }
                 }
                 if (messageBuilder.length() > 0) {
-                    log.info("Non-processed data: {}", messageBuilder);
+                    log.trace("Non-processed data: {}", messageBuilder);
                 }
             }
         } catch (Exception e) {
             String errorMessage = "Could not handle response: " + e.getMessage();
             if ("closed".equals(e.getMessage())) {
-                log.info(errorMessage);
+                log.trace(errorMessage);
             } else {
                 log.error(errorMessage);
                 throw new IOException(errorMessage, e);
             }
         }
-        log.info("done handling response.");
+        log.trace("done handling response.");
     }
 
     private void handleData(String eventText) {
@@ -350,7 +350,7 @@ public class SSEClient {
     }
 
     public void stopCurrentRequest() {
-        log.info("Stopping current request for Restconf NSO subscriber {}", threadName);
+        log.trace("Stopping current request for Restconf NSO subscriber {}", threadName);
         shouldSkipSleep.set(true);
         if (inputStream != null) {
             try {
@@ -359,11 +359,11 @@ public class SSEClient {
                 log.error("Got error stopCurrentRequest: " + e.getMessage(), e);
             }
         }
-        log.info("Stopped current request for current request for Restconf NSO subscriber {}", threadName);
+        log.trace("Stopped current request for current request for Restconf NSO subscriber {}", threadName);
     }
 
     public void start() {
-        log.info("Subscribing changes from " + url);
+        log.trace("Subscribing changes from " + url);
         scheduleConnectivityTasks();
         pool.execute(() -> {
             try {
@@ -373,16 +373,16 @@ public class SSEClient {
             }
         });
 
-        log.info("done.");
+        log.trace("done.");
     }
 
     protected void scheduleConnectivityTasks() {
         Runnable connectivityRefreshTask = buildConnectivityRefreshTask();
-        log.info("Scheduling connectity refresh task.");
+        log.trace("Scheduling connectity refresh task.");
         scheduleConnectivityRefreshTask(connectivityRefreshTask);
         if (useConnectivityCheck) {
             Runnable connectivityCheckTask = buildConnectivityCheckTask();
-            log.info("Scheduling connectity check task every {} seconds.", connectivityCheckIntervalSeconds);
+            log.trace("Scheduling connectity check task every {} seconds.", connectivityCheckIntervalSeconds);
             connectivityRefreshPoolScheduler.scheduleWithFixedDelay(connectivityCheckTask,
                     connectivityCheckIntervalSeconds, connectivityCheckIntervalSeconds, TimeUnit.SECONDS);
         }
@@ -391,10 +391,10 @@ public class SSEClient {
     private Runnable buildConnectivityRefreshTask() {
         return () -> {
             try {
-                log.info("Stopping current request, for refreshing connectivity with new request.");
+                log.trace("Stopping current request, for refreshing connectivity with new request.");
                 stopCurrentRequest();
             } catch (Exception e) {
-                log.info("Got error at connectivityRefreshTask: " + e.getMessage());
+                log.trace("Got error at connectivityRefreshTask: " + e.getMessage());
             }
         };
     }
@@ -408,7 +408,7 @@ public class SSEClient {
                 }
                 checkConnectivity();
             } catch (Exception e) {
-                log.info("Got error at connectivityRefreshTask: " + e.getMessage());
+                log.trace("Got error at connectivityRefreshTask: " + e.getMessage());
             }
         };
     }
@@ -421,17 +421,17 @@ public class SSEClient {
         boolean shouldReconnect = false;
         if (keepAliveReceivedInCurrentRequest.get() && connectivityThresholdMillis > 0) {
             if (!isCurrentlyConnected) {
-                log.info("time from last received message not valid.");
+                log.trace("time from last received message not valid.");
                 shouldReconnect = true;
             }
         } else if (!wasConnected && isCurrentlyConnected) {
-            log.info("Previous status was disconnected, and now it is connected.");
+            log.trace("Previous status was disconnected, and now it is connected.");
         }
         if (!isCurrentlyConnected) {
             shouldReconnect = true;
         }
         if (shouldReconnect) {
-            log.info("Stopping current request, for refreshing connectivity with new request.");
+            log.trace("Stopping current request, for refreshing connectivity with new request.");
             keepAliveReceivedInCurrentRequest.set(false);
             reconnectionsCount.incrementAndGet();
             stopCurrentRequest();
@@ -461,7 +461,7 @@ public class SSEClient {
             log.debug("connectivityCheck response status: {}", response.statusCode());
             return true;
         } catch (ConnectException e) {
-            log.info("isCurrentlyConnected - ConnectException: " + e.getMessage());
+            log.trace("isCurrentlyConnected - ConnectException: " + e.getMessage());
             return false;
         } catch (Exception e) {
             log.error("Errror in isCurrentlyConnected: " + e.getClass() + ", " + e.getMessage(), e);
@@ -489,10 +489,10 @@ public class SSEClient {
             firstKeepAliveMessageTimes.add(lastReceivedMessageTime);
             int firstKeepAliveMessageTimesSize = firstKeepAliveMessageTimes.size();
             if (firstKeepAliveMessageTimesSize == 1) {
-                log.info("First keep-alive received from current request-response.");
+                log.trace("First keep-alive received from current request-response.");
             }
             if (firstKeepAliveMessageTimesSize == KEEP_ALIVE_SAMPLING_MESSAGES_COUNT) {
-                log.info("Received enough keep-alive messages for calculating interval.");
+                log.trace("Received enough keep-alive messages for calculating interval.");
                 setConnectivityThresholdByKeepAliveIntervalAverage();
             }
         }
@@ -511,15 +511,15 @@ public class SSEClient {
         }
         log.debug("keepAliveIntervalsSum: {}", keepAliveIntervalsSum);
         int keepAliveIntervalsAverageSeconds = (int) Math.rint((double) keepAliveIntervalsSum / (double) (end) / 1000.0);
-        log.info("keepAliveIntervalsAverageSeconds: {}", keepAliveIntervalsAverageSeconds);
+        log.trace("keepAliveIntervalsAverageSeconds: {}", keepAliveIntervalsAverageSeconds);
         long keepAliveIntervalsAverageMultiplier = 4L;
         connectivityThresholdMillis = keepAliveIntervalsAverageSeconds * keepAliveIntervalsAverageMultiplier * 1000L;
         long minConnectivityThresholdMillis = minConnectivityThresholdSeconds * 1000L;
         if (connectivityThresholdMillis < minConnectivityThresholdMillis) {
             connectivityThresholdMillis = minConnectivityThresholdMillis;
-            log.info("calculated connectivity threshold average ( {} ms ) is lower than the minimum ( {} ms ). Using the minimum value.", keepAliveIntervalsAverageSeconds, minConnectivityThresholdMillis);
+            log.trace("calculated connectivity threshold average ( {} ms ) is lower than the minimum ( {} ms ). Using the minimum value.", keepAliveIntervalsAverageSeconds, minConnectivityThresholdMillis);
         } else {
-            log.info("Setting connectivity threshold by received keep-alive messages to {} times than the average: {} ms.", keepAliveIntervalsAverageMultiplier, connectivityThresholdMillis);
+            log.trace("Setting connectivity threshold by received keep-alive messages to {} times than the average: {} ms.", keepAliveIntervalsAverageMultiplier, connectivityThresholdMillis);
         }
     }
 
@@ -529,14 +529,14 @@ public class SSEClient {
 
     public void shutdown() {
         try {
-            log.info("shutdown");
+            log.trace("shutdown");
             shouldRun.set(false);
-            log.info("Stopping SSE Client {}", threadName);
+            log.trace("Stopping SSE Client {}", threadName);
             stopCurrentRequest();
             pool.shutdownNow();
             connectivityRefreshPoolScheduler.shutdownNow();
             status = SubscribeStatus.STOPPED;
-            log.info("Stopped SSE Client {}", threadName);
+            log.trace("Stopped SSE Client {}", threadName);
         } catch (Exception e) {
             log.error("Error in preDestroy", e);
         }

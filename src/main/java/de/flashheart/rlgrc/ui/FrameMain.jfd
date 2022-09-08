@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.15" encoding: "UTF-8"
+JFDML JFormDesigner: "7.0.7.0.1134" Java: "11.0.14.1" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -115,7 +115,7 @@ new FormModel {
 								"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
 								"toolTipText": "Remove the loaded game from the commander's memory."
 								"horizontalAlignment": 2
-								"preferredSize": new java.awt.Dimension( 38, 38 )
+								"preferredSize": &Dimension2 new java.awt.Dimension( 38, 38 )
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadOnServer", true ) )
 							} )
 							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
@@ -128,6 +128,16 @@ new FormModel {
 							} )
 							add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
 								name: "hSpacer2"
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "btnTestJSON"
+								"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/debug28.png" )
+								"font": #Font1
+								"toolTipText": "Remove the loaded game from the commander's memory."
+								"horizontalAlignment": 2
+								"preferredSize": #Dimension2
+								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnTestJSON", true ) )
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridY": 3
@@ -151,7 +161,7 @@ new FormModel {
 								"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
 								"contentAreaFilled": false
 								"borderPainted": false
-								"preferredSize": &Dimension2 new java.awt.Dimension( 38, 38 )
+								"preferredSize": &Dimension3 new java.awt.Dimension( 38, 38 )
 								"toolTipText": "Lock"
 								addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "btnLockItemStateChanged", true ) )
 							} )
@@ -162,7 +172,7 @@ new FormModel {
 								"selectedIcon": sfield com.jformdesigner.model.FormObject NULL_VALUE
 								"contentAreaFilled": false
 								"borderPainted": false
-								"preferredSize": #Dimension2
+								"preferredSize": #Dimension3
 								"toolTipText": "Zeus"
 								addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnZeus", true ) )
 							} )
@@ -306,18 +316,21 @@ new FormModel {
 							"hAlign": sfield com.jgoodies.forms.layout.CellConstraints LEFT
 							"gridY": 3
 						} )
-						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-							name: "scrlGameStatus"
-							add( new FormComponent( "javax.swing.JTextPane" ) {
-								name: "txtGameStatus"
-								"contentType": "text/html"
-								"editable": false
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+							"axis": 3
+						} ) {
+							name: "panel3"
+							add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+								name: "scrlGameStatus"
+								add( new FormComponent( "javax.swing.JTextPane" ) {
+									name: "txtGameStatus"
+									"contentType": "text/html"
+									"editable": false
+								} )
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-							"gridX": 1
 							"gridY": 5
 							"vAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
-							"hAlign": sfield com.jgoodies.forms.layout.CellConstraints FILL
 						} )
 					}, new FormLayoutConstraints( null ) {
 						"title": "Running Game"
@@ -511,7 +524,7 @@ new FormModel {
 								"icon": #SwingIcon1
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": &Dimension3 new java.awt.Dimension( 32767, 34 )
+								"maximumSize": &Dimension4 new java.awt.Dimension( 32767, 34 )
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button11"
@@ -520,7 +533,7 @@ new FormModel {
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": #Dimension3
+								"maximumSize": #Dimension4
 							} )
 							add( new FormComponent( "javax.swing.JButton" ) {
 								name: "button12"
@@ -529,7 +542,7 @@ new FormModel {
 								"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_stop.png" )
 								"font": #Font5
 								"horizontalAlignment": 2
-								"maximumSize": #Dimension3
+								"maximumSize": #Dimension4
 							} )
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 3

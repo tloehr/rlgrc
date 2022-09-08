@@ -448,8 +448,7 @@ public class FrameMain extends JFrame {
             if (!is_game_loaded_on_server()) {
                 gameParams.load_defaults();
                 gameParams.from_params_to_ui();
-            }
-            else gameParams.from_params_to_ui(current_state);
+            } else gameParams.from_params_to_ui(current_state);
             SwingUtilities.invokeLater(() -> {
                 pnlGameMode.removeAll();
                 pnlGameMode.add(gameParams);
@@ -463,7 +462,9 @@ public class FrameMain extends JFrame {
         if (!is_game_loaded_on_server()) return;
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
-
+        String html = game_modes.get(mode).get_score_as_html(current_state);
+        log.debug("txtGameStatus.setText");
+        txtGameStatus.setText(html);
 
         int index = _states_.indexOf(state.toUpperCase());
         // States
@@ -476,7 +477,6 @@ public class FrameMain extends JFrame {
             _message_buttons.get(i).setEnabled(enabled);
         }
 
-        String html = game_modes.get(mode).get_score_as_html(current_state);
         // at the end of a match, we save the results for later use
         if (state.equals(_state_PROLOG)) summary_written_on_epilog = false;
         if (state.equals(_state_EPILOG) && !summary_written_on_epilog) {
@@ -489,8 +489,7 @@ public class FrameMain extends JFrame {
             }
         }
 
-        txtGameStatus.setText(html);
-        scrlGameStatus.getVerticalScrollBar().setValue(0);
+
     }
 
 
@@ -650,7 +649,7 @@ public class FrameMain extends JFrame {
                 .eventHandler(eventText -> {
                     try {
                         // does not work, when there are newlines in the received messages
-                        log.debug("sse_event_received - new state: {}", eventText);
+                        log.trace("sse_event_received - new state: {}", eventText);
                         last_sse_received = LocalDateTime.now();
                         current_state = get("game/status", current_game_id());
                         set_gui_to_situation();
@@ -676,9 +675,11 @@ public class FrameMain extends JFrame {
         if (sseClient == null || !sseClient.isSubscribedSuccessfully()) {
             shutdown_sse_client();
             connect_sse_client();
+        } else {
+            current_state = get("game/status", current_game_id());
+            update_running_game_tab();
         }
-        current_state = get("game/status", current_game_id());
-        update_running_game_tab();
+
     }
 
     private void btnLockItemStateChanged(ItemEvent e) {
@@ -706,6 +707,12 @@ public class FrameMain extends JFrame {
         });
     }
 
+    private void btnTestJSON(ActionEvent e) {
+        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
+        String params = current_game_mode.from_ui_to_params().toString(4);
+        log.debug(params);
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -731,6 +738,7 @@ public class FrameMain extends JFrame {
         hSpacer1 = new JPanel(null);
         lblFile = new JLabel();
         hSpacer2 = new JPanel(null);
+        btnTestJSON = new JButton();
         pnlRunningGame = new JPanel();
         pnlMessages = new JPanel();
         btnLock = new JToggleButton();
@@ -752,6 +760,7 @@ public class FrameMain extends JFrame {
         lblPausing = new JLabel();
         lblResuming = new JLabel();
         lblEpilog = new JLabel();
+        panel3 = new JPanel();
         scrlGameStatus = new JScrollPane();
         txtGameStatus = new JTextPane();
         pnlServer = new JPanel();
@@ -921,6 +930,16 @@ public class FrameMain extends JFrame {
                         lblFile.setFont(new Font(".SF NS Text", Font.PLAIN, 16));
                         pnlFiles.add(lblFile);
                         pnlFiles.add(hSpacer2);
+
+                        //---- btnTestJSON ----
+                        btnTestJSON.setText(null);
+                        btnTestJSON.setIcon(new ImageIcon(getClass().getResource("/artwork/debug28.png")));
+                        btnTestJSON.setFont(new Font(".AppleSystemUIFont", Font.PLAIN, 18));
+                        btnTestJSON.setToolTipText("Remove the loaded game from the commander's memory.");
+                        btnTestJSON.setHorizontalAlignment(SwingConstants.LEFT);
+                        btnTestJSON.setPreferredSize(new Dimension(38, 38));
+                        btnTestJSON.addActionListener(e -> btnTestJSON(e));
+                        pnlFiles.add(btnTestJSON);
                     }
                     pnlParams.add(pnlFiles, CC.xy(1, 3));
                 }
@@ -1095,15 +1114,21 @@ public class FrameMain extends JFrame {
                     }
                     pnlRunningGame.add(pnlGameStates, CC.xy(1, 3, CC.LEFT, CC.DEFAULT));
 
-                    //======== scrlGameStatus ========
+                    //======== panel3 ========
                     {
+                        panel3.setLayout(new BoxLayout(panel3, BoxLayout.PAGE_AXIS));
 
-                        //---- txtGameStatus ----
-                        txtGameStatus.setContentType("text/html");
-                        txtGameStatus.setEditable(false);
-                        scrlGameStatus.setViewportView(txtGameStatus);
+                        //======== scrlGameStatus ========
+                        {
+
+                            //---- txtGameStatus ----
+                            txtGameStatus.setContentType("text/html");
+                            txtGameStatus.setEditable(false);
+                            scrlGameStatus.setViewportView(txtGameStatus);
+                        }
+                        panel3.add(scrlGameStatus);
                     }
-                    pnlRunningGame.add(scrlGameStatus, CC.xy(1, 5, CC.FILL, CC.FILL));
+                    pnlRunningGame.add(panel3, CC.xy(1, 5, CC.DEFAULT, CC.FILL));
                 }
                 pnlMain.addTab("Running Game", pnlRunningGame);
 
@@ -1359,6 +1384,7 @@ public class FrameMain extends JFrame {
     private JPanel hSpacer1;
     private JLabel lblFile;
     private JPanel hSpacer2;
+    private JButton btnTestJSON;
     private JPanel pnlRunningGame;
     private JPanel pnlMessages;
     private JToggleButton btnLock;
@@ -1380,6 +1406,7 @@ public class FrameMain extends JFrame {
     private JLabel lblPausing;
     private JLabel lblResuming;
     private JLabel lblEpilog;
+    private JPanel panel3;
     private JScrollPane scrlGameStatus;
     private JTextPane txtGameStatus;
     private JPanel pnlServer;

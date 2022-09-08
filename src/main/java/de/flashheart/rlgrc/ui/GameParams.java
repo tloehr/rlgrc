@@ -23,10 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -174,15 +171,16 @@ public abstract class GameParams extends JPanel {
 
         cbWait4Teams2BReady.setSelected(params.getJSONObject("spawns").getBoolean("wait4teams2B_ready"));
         cmbIntroMusic.setSelectedItem(params.getJSONObject("spawns").getString("intro_mp3_file"));
+        txt_starter_countdown.setText(Integer.toString(params.getJSONObject("spawns").getInt("starter_countdown")));
 
         log.debug(params.getJSONObject("spawns").getJSONArray("teams").toString(4));
 
         params.getJSONObject("spawns").getJSONArray("teams").forEach(o -> {
             JSONObject team = (JSONObject) o;
             if (team.getString("role").equals("red_spawn"))
-                txtRedSpawn.setText(to_segment_list(team.getJSONArray("agents")));
+                txtRedSpawn.setText(to_string_segment_list(team.getJSONArray("agents")));
             if (team.getString("role").equals("blue_spawn"))
-                txtBlueSpawn.setText(to_segment_list(team.getJSONArray("agents")));
+                txtBlueSpawn.setText(to_string_segment_list(team.getJSONArray("agents")));
         });
     }
 
@@ -209,13 +207,15 @@ public abstract class GameParams extends JPanel {
         redfor.put("role", "red_spawn");
         redfor.put("led", "red");
         redfor.put("name", "RedFor");
-        redfor.put("agents", from_string_list(txtRedSpawn.getText()));
+        redfor.put("agents", from_string_segment_list(txtRedSpawn.getText()));
+        teams.put(redfor);
 
         JSONObject blufor = new JSONObject();
         blufor.put("role", "blue_spawn");
         blufor.put("led", "blu");
         blufor.put("name", "BluFor");
-        blufor.put("agents", from_string_list(txtBlueSpawn.getText()));
+        blufor.put("agents", from_string_segment_list(txtBlueSpawn.getText()));
+        teams.put(blufor);
 
         spawns.put("teams", teams);
         params.put("spawns", spawns);
@@ -284,7 +284,7 @@ public abstract class GameParams extends JPanel {
         return jsonArray.toList().stream().map(o -> o.toString().trim()).collect(Collectors.joining(","));
     }
 
-    protected String to_segment_list(JSONArray jsonArray) {
+    protected String to_string_segment_list(JSONArray jsonArray) {
         StringBuffer segment_list = new StringBuffer();
         jsonArray.forEach(o -> {
             JSONArray segment = (JSONArray) o;
@@ -294,7 +294,22 @@ public abstract class GameParams extends JPanel {
         return StringUtils.stripEnd(segment_list.toString(), ";");
     }
 
-    // todo: from_segment_list()
+    /**
+     * create a cascaded JSONArray out of a String like ag01,ag02;ag03,ag04;ag05,ag06
+     *
+     * @param list
+     * @return
+     */
+    protected JSONArray from_string_segment_list(String list) {
+        JSONArray outer = new JSONArray();
+        Collections.list(new StringTokenizer(list, "\n;")).stream().map(token -> (String) token).forEach(s -> {
+            JSONArray inner = new JSONArray();
+            Collections.list(new StringTokenizer(s, ",")).stream().map(token -> (String) token).forEach(s1 -> inner.put(s1));
+            outer.put(inner);
+        });
+        return outer;
+    }
+
     // todo: verifier
 
 

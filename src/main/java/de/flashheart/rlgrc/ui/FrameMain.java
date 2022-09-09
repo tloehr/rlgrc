@@ -445,6 +445,7 @@ public class FrameMain extends JFrame {
                 this.invalidate();
                 this.repaint();
             });
+            btnZeus.setEnabled(gameParams.get_zeus().isPresent());
         });
     }
 
@@ -452,9 +453,10 @@ public class FrameMain extends JFrame {
         if (!is_game_loaded_on_server()) return;
         String state = current_state.getString("game_state");
         String mode = current_state.getString("mode");
-        String html = game_modes.get(mode).get_score_as_html(current_state);
-        log.debug("txtGameStatus.setText");
-        txtGameStatus.setText(html);
+        final String html = game_modes.get(mode).get_score_as_html(current_state);
+        // if we do not run this in a different thread, the scrollpane wont go up
+        // don't know why. but did cost me some time to find out.
+        new Thread(() -> txtGameStatus.setText(html)).start();
 
         int index = _states_.indexOf(state.toUpperCase());
         // States
@@ -796,14 +798,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-            "$ugap, default:grow, $ugap",
-            "$rgap, default:grow, $ugap"));
+                "$ugap, default:grow, $ugap",
+                "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                "default:grow",
-                "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                    "default:grow",
+                    "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {
@@ -852,8 +854,8 @@ public class FrameMain extends JFrame {
                 //======== pnlParams ========
                 {
                     pnlParams.setLayout(new FormLayout(
-                        "default:grow",
-                        "fill:default:grow, $lgap, default"));
+                            "default:grow",
+                            "fill:default:grow, $lgap, default"));
 
                     //======== pnlGameMode ========
                     {
@@ -938,8 +940,8 @@ public class FrameMain extends JFrame {
                 //======== pnlRunningGame ========
                 {
                     pnlRunningGame.setLayout(new FormLayout(
-                        "default:grow",
-                        "default, $lgap, default, $rgap, default:grow"));
+                            "default:grow",
+                            "default, $lgap, default, $rgap, default:grow"));
 
                     //======== pnlMessages ========
                     {
@@ -1156,8 +1158,8 @@ public class FrameMain extends JFrame {
                 //======== pnlAgents ========
                 {
                     pnlAgents.setLayout(new FormLayout(
-                        "default:grow, $ugap, default",
-                        "fill:default:grow"));
+                            "default:grow, $ugap, default",
+                            "fill:default:grow"));
 
                     //======== panel7 ========
                     {

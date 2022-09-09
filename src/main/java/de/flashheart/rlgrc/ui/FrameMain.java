@@ -255,10 +255,11 @@ public class FrameMain extends JFrame {
         // todo: nach neustart, wenn ein spiel schon läuft, dann glaubt er alles ist conquest auch wenn farcry läuft.
         // hier muss der richtige game mode gesetzt werden. de.flashheart.rlgrc.ui.FrameMain org.json.JSONException: JSONObject["cps_held_by_red"] not found.
         // und zwar erstmal nur für game:1
+
         if (pnlMain.getSelectedIndex() == TAB_SETUP) {
             if (is_game_loaded_on_server()) {
                 cmbGameModes.setSelectedItem(game_modes.get(current_state.getString("mode")));
-            } else cmbGameModes.setSelectedItem(game_modes.get("conquest"));
+            } //else cmbGameModes.setSelectedItem(game_modes.get("conquest"));
         } else {
             update_running_game_tab();
         }
@@ -518,7 +519,7 @@ public class FrameMain extends JFrame {
      * @param params
      * @return
      */
-    private JSONObject post(String uri, String body, Properties params) {
+    private JSONObject post(String uri, String body, Properties params) throws IllegalStateException {
         JSONObject json = new JSONObject();
 
         try {
@@ -536,9 +537,22 @@ public class FrameMain extends JFrame {
             String entity = response.readEntity(String.class);
             if (entity.isEmpty()) json = new JSONObject();
             else json = new JSONObject(entity);
-            set_response_status(response);
+
+            if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                set_response_status(response, null);
+            } else {
+                String err_message = json.optJSONObject("targetException").optString("message");
+                err_message += json.optString("message");
+                set_response_status(response, err_message);
+            }
+
+
             addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
+//            if (
+//                    response.getStatusInfo().getFamily().equals(Response.Status.Family.CLIENT_ERROR)
+//            ) throw new IllegalStateException(entity);
+
             //connect();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
@@ -558,7 +572,7 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response);
+            set_response_status(response, null);
             addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
             response.close();
             //connect();
@@ -579,7 +593,7 @@ public class FrameMain extends JFrame {
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response);
+            set_response_status(response, null);
             response.close();
         } catch (Exception connectException) {
             addLog(connectException.getMessage());
@@ -590,7 +604,7 @@ public class FrameMain extends JFrame {
         return json;
     }
 
-    void set_response_status(Response response) {
+    void set_response_status(Response response, String details) {
         String icon = "/artwork/ledyellow.png";
         if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("CLIENT_ERROR") || response.getStatusInfo().getFamily().name().equalsIgnoreCase("SERVER_ERROR"))
             icon = "/artwork/ledred.png";
@@ -598,6 +612,7 @@ public class FrameMain extends JFrame {
             icon = "/artwork/ledgreen.png";
         lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
         lblResponse.setText(response.getStatusInfo().getStatusCode() + " " + response.getStatusInfo().getReasonPhrase());
+        lblResponse.setToolTipText(details);
     }
 
     void set_response_status(Exception exception) {
@@ -623,8 +638,11 @@ public class FrameMain extends JFrame {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         String params = current_game_mode.from_ui_to_params().toString(4);
         current_state = post("game/load", params, current_game_id());
-        set_gui_to_situation();
-        pnlMain.setSelectedIndex(TAB_RUNNING_GAME);
+
+        if (is_game_loaded_on_server()) {
+            set_gui_to_situation();
+            pnlMain.setSelectedIndex(TAB_RUNNING_GAME);
+        }
     }
 
     private void shutdown_sse_client() {

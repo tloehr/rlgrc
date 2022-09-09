@@ -2,5 +2,8 @@
   "recent": ["http://localhost:8090"],
   "audio": {
     "intro": ["<none>","bf3"]
+  },
+  "access_points": {
+      "00223f97a198": "NETGEAR"
   }
 }

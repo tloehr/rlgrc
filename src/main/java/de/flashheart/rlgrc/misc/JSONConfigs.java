@@ -33,7 +33,7 @@ public class JSONConfigs {
         String string_user_configs = FileUtils.readFileToString(config_file, Charset.defaultCharset());
         // load defaults first, then overwrite it with
         // the user_settings - where necessary
-        JSONObject defaults = new JSONObject(Resources.toString(Resources.getResource("defaults/configs.json"), Charset.defaultCharset()));
+        JSONObject defaults = new JSONObject(Resources.toString(Resources.getResource("defaults/rlgrc.json"), Charset.defaultCharset()));
         defaults.put("uuid", UUID.randomUUID().toString());
         JSONObject user_configs = new JSONObject(string_user_configs.isEmpty() ? "{}" : string_user_configs);
         Map combined = defaults.toMap();

@@ -26,5 +26,5 @@ public interface EventHandler {
 	 * Handle the event text.
 	 * @param eventText - trimmed event text
 	 */
-	public void handle(String eventText);
+	void handle(String eventText);
 }

@@ -1,4 +1,4 @@
-package de.flashheart.rlgrc.ui.events;
+package de.flashheart.rlgrc.networking;
 
 import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @AllArgsConstructor
-public class RestResponseEvent {
-    Response response;
+public class LoggableEvent {
+    String event;
 }
 

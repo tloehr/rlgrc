@@ -173,7 +173,7 @@ public abstract class GameParams extends JPanel {
         cmbIntroMusic.setSelectedItem(params.getJSONObject("spawns").getString("intro_mp3_file"));
         txt_starter_countdown.setText(Integer.toString(params.getJSONObject("spawns").getInt("starter_countdown")));
 
-        log.debug(params.getJSONObject("spawns").getJSONArray("teams").toString(4));
+        //log.debug(params.getJSONObject("spawns").getJSONArray("teams").toString(4));
 
         params.getJSONObject("spawns").getJSONArray("teams").forEach(o -> {
             JSONObject team = (JSONObject) o;

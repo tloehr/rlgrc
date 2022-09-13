@@ -9,12 +9,9 @@ import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.jobs.FlashStateLedJob;
 import de.flashheart.rlgrc.misc.JSONConfigs;
+import de.flashheart.rlgrc.networking.RestHandler;
+import de.flashheart.rlgrc.networking.RestResponseEvent;
 import de.flashheart.rlgrc.networking.SSEClient;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -90,21 +87,23 @@ public class FrameMain extends JFrame {
     private JSONObject current_state;
     private final JSONConfigs configs;
 
-    private Client client = ClientBuilder.newClient();
+
     private final int MAX_LOG_LINES = 400;
     private ArrayList<JToggleButton> GAME_SELECT_BUTTONS;
-    private boolean connected;
     private Optional<String> selected_agent;
     private SSEClient sseClient;
     private LocalDateTime last_sse_received;
     private final HashMap<String, GameParams> game_modes;
     private boolean summary_written_on_epilog = false;
+    private RestHandler restHandler;
 
     public FrameMain(JSONConfigs configs) throws SchedulerException, IOException {
         this.scheduler = StdSchedulerFactory.getDefaultScheduler();
         this.scheduler.getContext().put("rlgrc", this);
         this.configs = configs;
-        this.connected = false;
+        this.restHandler = new RestHandler(() -> on_connect(), () -> on_disconnect());
+        this.restHandler.addRestResponseListener(event -> on_response(event));
+        this.restHandler.addLoggableEventListener(event -> addLog(event.getEvent()));
         this.selected_agent = Optional.empty();
         this.GAME_SELECT_BUTTONS = new ArrayList<>();
         this.current_state = new JSONObject();
@@ -141,6 +140,46 @@ public class FrameMain extends JFrame {
         initFrame();
 
 
+    }
+
+    void on_response(RestResponseEvent event) {
+        event.getException().ifPresent(exception -> {
+            String icon = "/artwork/ledred.png";
+            lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
+            lblResponse.setText(StringUtils.left(exception.getMessage(), 70));
+            lblResponse.setToolTipText(exception.toString());
+        });
+
+        event.getResponse().ifPresent(response -> {
+            String icon = "/artwork/ledyellow.png";
+            if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("CLIENT_ERROR") || response.getStatusInfo().getFamily().name().equalsIgnoreCase("SERVER_ERROR"))
+                icon = "/artwork/ledred.png";
+            if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("SUCCESSFUL"))
+                icon = "/artwork/ledgreen.png";
+            lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
+            lblResponse.setText(response.getStatusInfo().getStatusCode() + " " + response.getStatusInfo().getReasonPhrase());
+            lblResponse.setToolTipText(event.getDetails().orElse(null));
+        });
+    }
+
+
+    void on_connect() {
+        int max_number_of_games = restHandler.get("system/get_max_number_of_games").getInt("max_number_of_games");
+        for (int i = 0; i < max_number_of_games; i++) cmbGameSlots.addItem(i + 1);
+        current_state = restHandler.get("game/status", current_game_id()); // just in case a game is already running
+        set_gui_to_situation();
+    }
+
+    void on_disconnect() {
+        pnlMain.setSelectedIndex(TAB_ABOUT);
+        txtLogger.setText(null);
+        addLog("Server not connected...");
+        shutdown_sse_client();
+        this.current_state = new JSONObject();
+        cmbGameSlots.removeAllItems();
+        lblResponse.setIcon(new ImageIcon(getClass().getResource("/artwork/leddarkred.png")));
+        lblResponse.setText("not connected");
+        set_gui_to_situation();
     }
 
     void add_to_recent_uris_list(String uri) {
@@ -197,7 +236,7 @@ public class FrameMain extends JFrame {
                 Properties properties = new Properties();
                 properties.put("agentid", selected_agent.get());
                 properties.put("deviceid", e.getActionCommand());
-                post("system/test_agent", "{}", properties);
+                restHandler.post("system/test_agent", "{}", properties);
             });
         }
 
@@ -206,7 +245,7 @@ public class FrameMain extends JFrame {
                 Properties props = new Properties();
                 props.put("id", current_game_id());
                 props.put("message", e.getActionCommand());
-                post("game/process", "{}", props);
+                restHandler.post("game/process", "{}", props);
             });
         }
 
@@ -242,24 +281,21 @@ public class FrameMain extends JFrame {
     }
 
     private void set_gui_to_situation() {
-        pnlMain.setEnabled(connected);
-        cmbGameSlots.setEnabled(connected);
-        btnConnect.setIcon(new ImageIcon(getClass().getResource(connected ? "/artwork/rlgrc-48-connected.png" : "/artwork/rlgrc-48-disconnected.png")));
-        if (!connected) {
+        pnlMain.setEnabled(restHandler.isConnected());
+        cmbGameSlots.setEnabled(restHandler.isConnected());
+        btnConnect.setIcon(new ImageIcon(getClass().getResource(restHandler.isConnected() ? "/artwork/rlgrc-48-connected.png" : "/artwork/rlgrc-48-disconnected.png")));
+        if (!restHandler.isConnected()) {
             pnlMain.setSelectedIndex(TAB_ABOUT);
             return;
         }
 
         pnlMain.setEnabledAt(TAB_SETUP, !is_game_loaded_on_server() || current_state.getString("game_state").equals(_state_PROLOG));
         pnlMain.setEnabledAt(TAB_RUNNING_GAME, is_game_loaded_on_server());
-        // todo: nach neustart, wenn ein spiel schon läuft, dann glaubt er alles ist conquest auch wenn farcry läuft.
-        // hier muss der richtige game mode gesetzt werden. de.flashheart.rlgrc.ui.FrameMain org.json.JSONException: JSONObject["cps_held_by_red"] not found.
-        // und zwar erstmal nur für game:1
 
         if (pnlMain.getSelectedIndex() == TAB_SETUP) {
             if (is_game_loaded_on_server()) {
                 cmbGameModes.setSelectedItem(game_modes.get(current_state.getString("mode")));
-            } //else cmbGameModes.setSelectedItem(game_modes.get("conquest"));
+            }
         } else {
             update_running_game_tab();
         }
@@ -298,44 +334,15 @@ public class FrameMain extends JFrame {
     }
 
     private void btnConnect(ActionEvent e) {
-        if (connected) disconnect();
-        else connect();
-    }
-
-    private void connect() {
-        if (connected) return;
-        try {
-            txtLogger.setText(null);
-            int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
-            connected = true;
-            for (int i = 0; i < max_number_of_games; i++) cmbGameSlots.addItem(i + 1);
-            current_state = get("game/status", current_game_id()); // just in case a game is already running
-            set_gui_to_situation();
-        } catch (JSONException e) {
-            log.error(e);
-            disconnect();
-        }
-    }
-
-    private void disconnect() {
-        if (!connected) return;
-        pnlMain.setSelectedIndex(TAB_ABOUT);
-        txtLogger.setText(null);
-        addLog("Server not connected...");
-        shutdown_sse_client();
-        connected = false;
-        this.current_state = new JSONObject();
-        cmbGameSlots.removeAllItems();
-        lblResponse.setIcon(new ImageIcon(getClass().getResource("/artwork/leddarkred.png")));
-        lblResponse.setText("not connected");
-        set_gui_to_situation();
+        if (restHandler.isConnected()) restHandler.disconnect();
+        else restHandler.connect(txtURI.getSelectedItem());
     }
 
     /**
      * called from the quartz job
      */
     public void flash_state_led() {
-        if (!connected) return;
+        if (!restHandler.isConnected()) return;
         if (pnlMain.getSelectedIndex() != TAB_RUNNING_GAME) return;
         final String state = current_state.getString("game_state");
         SwingUtilities.invokeLater(() -> {
@@ -420,7 +427,7 @@ public class FrameMain extends JFrame {
 
 
     private void btnRefreshAgents(ActionEvent e) {
-        JSONObject request = get("system/list_agents");
+        JSONObject request = restHandler.get("system/list_agents");
         SwingUtilities.invokeLater(() -> {
             tblAgents.getSelectionModel().clearSelection();
             txtAgent.setText(null);
@@ -430,7 +437,7 @@ public class FrameMain extends JFrame {
     }
 
     private void btnRefreshServer(ActionEvent e) {
-        current_state = get("game/status", current_game_id());
+        current_state = restHandler.get("game/status", current_game_id());
         set_gui_to_situation();
     }
 
@@ -486,142 +493,6 @@ public class FrameMain extends JFrame {
     }
 
 
-    /**
-     * conveniance method
-     *
-     * @param uri
-     * @param body
-     * @param id
-     * @return
-     */
-    private JSONObject post(String uri, String body, String id) {
-        Properties properties = new Properties();
-        properties.put("id", id);
-        return post(uri, body, properties);
-    }
-
-    /**
-     * conveniance method
-     *
-     * @param uri
-     * @param id
-     * @return
-     */
-    private JSONObject post(String uri, String id) {
-        return post(uri, "{}", id);
-    }
-
-    /**
-     * posts a REST request.
-     *
-     * @param uri
-     * @param body
-     * @param params
-     * @return
-     */
-    private JSONObject post(String uri, String body, Properties params) throws IllegalStateException {
-        JSONObject json = new JSONObject();
-
-        try {
-            WebTarget target = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri);
-
-            for (Map.Entry entry : params.entrySet()) {
-                target = target.queryParam(entry.getKey().toString(), entry.getValue());
-            }
-
-            Response response = target
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.json(body));
-
-            String entity = response.readEntity(String.class);
-            if (entity.isEmpty()) json = new JSONObject();
-            else json = new JSONObject(entity);
-
-            if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-                set_response_status(response, null);
-            } else {
-                String err_message = json.optJSONObject("targetException").optString("message");
-                err_message += json.optString("message");
-                set_response_status(response, err_message);
-            }
-
-
-            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
-            response.close();
-//            if (
-//                    response.getStatusInfo().getFamily().equals(Response.Status.Family.CLIENT_ERROR)
-//            ) throw new IllegalStateException(entity);
-
-            //connect();
-        } catch (Exception connectException) {
-            addLog(connectException.getMessage());
-            set_response_status(connectException);
-            disconnect();
-        }
-        return json;
-    }
-
-
-    private JSONObject get(String uri, String id) {
-        JSONObject json;
-        try {
-            Response response = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
-                    .queryParam("id", id)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-            json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response, null);
-            addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
-            response.close();
-            //connect();
-        } catch (Exception connectException) {
-            addLog(connectException.getMessage());
-            set_response_status(connectException);
-            disconnect();
-            json = new JSONObject();
-        }
-        return json;
-    }
-
-    private JSONObject get(String uri) {
-        JSONObject json;
-        try {
-            Response response = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-            json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response, null);
-            response.close();
-        } catch (Exception connectException) {
-            addLog(connectException.getMessage());
-            set_response_status(connectException);
-            disconnect();
-            json = new JSONObject();
-        }
-        return json;
-    }
-
-    void set_response_status(Response response, String details) {
-        String icon = "/artwork/ledyellow.png";
-        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("CLIENT_ERROR") || response.getStatusInfo().getFamily().name().equalsIgnoreCase("SERVER_ERROR"))
-            icon = "/artwork/ledred.png";
-        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("SUCCESSFUL"))
-            icon = "/artwork/ledgreen.png";
-        lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(response.getStatusInfo().getStatusCode() + " " + response.getStatusInfo().getReasonPhrase());
-        lblResponse.setToolTipText(details);
-    }
-
-    void set_response_status(Exception exception) {
-        String icon = "/artwork/ledred.png";
-        lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(StringUtils.left(exception.getMessage(), 70));
-        lblResponse.setToolTipText(exception.toString());
-    }
-
     private void cmbGameSlotsItemStateChanged(ItemEvent e) {
         if (e.getStateChange() != ItemEvent.SELECTED) return;
         btnRefreshServer(null);
@@ -629,7 +500,7 @@ public class FrameMain extends JFrame {
 
     private void btnUnloadOnServer(ActionEvent e) {
         shutdown_sse_client();
-        post("game/unload", current_game_id());
+        restHandler.post("game/unload", current_game_id());
         current_state = new JSONObject();
         set_gui_to_situation();
     }
@@ -637,7 +508,7 @@ public class FrameMain extends JFrame {
     private void btnSendGameToServer(ActionEvent e) {
         GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         String params = current_game_mode.from_ui_to_params().toString(4);
-        current_state = post("game/load", params, current_game_id());
+        current_state = restHandler.post("game/load", params, current_game_id());
 
         if (is_game_loaded_on_server()) {
             set_gui_to_situation();
@@ -661,7 +532,7 @@ public class FrameMain extends JFrame {
                         // does not work, when there are newlines in the received messages
                         log.trace("sse_event_received - new state: {}", eventText);
                         last_sse_received = LocalDateTime.now();
-                        current_state = get("game/status", current_game_id());
+                        current_state = restHandler.get("game/status", current_game_id());
                         set_gui_to_situation();
                     } catch (JSONException jsonException) {
                         log.error(jsonException);
@@ -678,7 +549,7 @@ public class FrameMain extends JFrame {
     }
 
     private void thisWindowClosing(WindowEvent e) {
-        disconnect();
+        restHandler.disconnect();
     }
 
     private void btnLastSSE(ActionEvent e) {
@@ -686,7 +557,7 @@ public class FrameMain extends JFrame {
             shutdown_sse_client();
             connect_sse_client();
         } else {
-            current_state = get("game/status", current_game_id());
+            current_state = restHandler.get("game/status", current_game_id());
             update_running_game_tab();
         }
 
@@ -701,17 +572,17 @@ public class FrameMain extends JFrame {
     }
 
     private void btnPowerSaveOn(ActionEvent e) {
-        post("system/powersave_agents", "", new Properties());
+        restHandler.post("system/powersave_agents", "", new Properties());
     }
 
     private void btnPowerSaveOff(ActionEvent e) {
-        post("system/welcome_agents", "", new Properties());
+        restHandler.post("system/welcome_agents", "", new Properties());
     }
 
     private void btnZeus(ActionEvent e) {
         ((GameParams) cmbGameModes.getSelectedItem()).get_zeus().ifPresent(zeusDialog -> {
             zeusDialog.add_property_change_listener(evt -> {
-                post("game/zeus", evt.getNewValue().toString(), current_game_id());
+                restHandler.post("game/zeus", evt.getNewValue().toString(), current_game_id());
             });
             zeusDialog.setVisible(true);
         });

@@ -1,63 +1,126 @@
 package de.flashheart.rlgrc.networking;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
 @Log4j2
 public class RestHandler {
+    private final Runnable on_connect;
+    private final Runnable on_disconnect;
     private boolean connected;
+    private Client client;
+    private String server;
+    private ArrayList<RestResponseListener> restResponseListeners;
+    private ArrayList<LoggableEventListener> loggableEventListeners;
 
-    public RestHandler() {
+    public RestHandler(Runnable on_connect, Runnable on_disconnect) {
+        this.on_connect = on_connect;
+        this.on_disconnect = on_disconnect;
+        restResponseListeners = new ArrayList<>();
+        loggableEventListeners = new ArrayList<>();
         connected = false;
+        client = ClientBuilder.newClient();
     }
 
-    private void connect() {
+
+    private void fireResponseReceived(RestResponseEvent event) {
+        restResponseListeners.forEach(restResponseListener -> restResponseListener.on_response(event));
+        log.trace(event);
+    }
+
+    public void addRestResponseListener(RestResponseListener toAdd) {
+        restResponseListeners.add(toAdd);
+    }
+
+    public void addLoggableEventListener(LoggableEventListener toAdd) {
+        loggableEventListeners.add(toAdd);
+    }
+
+    private void fireLoggableEvent(LoggableEvent event) {
+        loggableEventListeners.forEach(loggableEventListener -> loggableEventListener.on_event(event));
+        log.trace(event);
+    }
+
+    public void connect(Object server_object) {
         if (connected) return;
         try {
+            server = server_object.toString().trim();
+            // just checking - will fail if nobody is answering
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
-            for (int i = 0; i < max_number_of_games; i++) cmbGameSlots.addItem(i + 1);
-            current_state = get("game/status", current_game_id()); // just in case a game is already running
-            set_gui_to_situation();
+            on_connect.run();
         } catch (JSONException e) {
             log.error(e);
             disconnect();
         }
     }
 
+    public void disconnect() {
+        if (!connected) return;
+
+        connected = false;
+        server = "";
+        on_disconnect.run();
+
+    }
+
     public boolean isConnected() {
         return connected;
     }
 
-    private JSONObject post(String uri, String id) {
+    /**
+     * conveniance method
+     *
+     * @param uri
+     * @param body
+     * @param id
+     * @return
+     */
+    public JSONObject post(String uri, String body, String id) {
+        Properties properties = new Properties();
+        properties.put("id", id);
+        return post(uri, body, properties);
+    }
+
+    /**
+     * conveniance method
+     *
+     * @param uri
+     * @param id
+     * @return
+     */
+    public JSONObject post(String uri, String id) {
         return post(uri, "{}", id);
     }
 
     /**
      * posts a REST request.
      *
-     * @param uri
      * @param body
      * @param params
      * @return
      */
-    private JSONObject post(String uri, String body, Properties params) throws IllegalStateException {
+    public JSONObject post(String endpoint, String body, Properties params) throws IllegalStateException {
         JSONObject json = new JSONObject();
 
         try {
-            WebTarget target = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri);
+            WebTarget target = client.target(server + "/api/" + endpoint);
 
             for (Map.Entry entry : params.entrySet()) {
                 target = target.queryParam(entry.getKey().toString(), entry.getValue());
@@ -72,15 +135,14 @@ public class RestHandler {
             else json = new JSONObject(entity);
 
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-                set_response_status(response, null);
+                fireResponseReceived(new RestResponseEvent(response));
             } else {
                 String err_message = json.optJSONObject("targetException").optString("message");
                 err_message += json.optString("message");
-                set_response_status(response, err_message);
+                fireResponseReceived(new RestResponseEvent(response, err_message));
             }
 
-
-            pnlServer.addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
+            fireLoggableEvent(new LoggableEvent("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4)));
             response.close();
 //            if (
 //                    response.getStatusInfo().getFamily().equals(Response.Status.Family.CLIENT_ERROR)
@@ -88,71 +150,53 @@ public class RestHandler {
 
             //connect();
         } catch (Exception connectException) {
-            pnlServer.addLog(connectException.getMessage());
-            set_response_status(connectException);
+            fireLoggableEvent(new LoggableEvent(connectException.getMessage()));
+            fireResponseReceived(new RestResponseEvent(connectException));
             disconnect();
         }
         return json;
     }
 
 
-    private JSONObject get(String uri, String id) {
+    public JSONObject get(String uri, String id) {
         JSONObject json;
         try {
             Response response = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
+                    .target(server + "/api/" + uri)
                     .queryParam("id", id)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response, null);
-            pnlServer.addLog("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4));
+            fireResponseReceived(new RestResponseEvent(response));
+            fireLoggableEvent(new LoggableEvent("\n\n" + response.getStatus() + " " + response.getStatusInfo().toString() + "\n" + json.toString(4)));
             response.close();
             //connect();
         } catch (Exception connectException) {
-            pnlServer.addLog(connectException.getMessage());
-            set_response_status(connectException);
+            fireLoggableEvent(new LoggableEvent(connectException.getMessage()));
+            fireResponseReceived(new RestResponseEvent(connectException));
             disconnect();
             json = new JSONObject();
         }
         return json;
     }
 
-    private JSONObject get(String uri) {
+    public JSONObject get(String uri) {
         JSONObject json;
         try {
             Response response = client
-                    .target(txtURI.getSelectedItem().toString().trim() + "/api/" + uri)
+                    .target(server + "/api/" + uri)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
-            set_response_status(response, null);
+            fireResponseReceived(new RestResponseEvent(response));
             response.close();
         } catch (Exception connectException) {
-            pnlServer.addLog(connectException.getMessage());
-            set_response_status(connectException);
+            fireLoggableEvent(new LoggableEvent(connectException.getMessage()));
+            fireResponseReceived(new RestResponseEvent(connectException));
             disconnect();
             json = new JSONObject();
         }
         return json;
-    }
-
-    void set_response_status(Response response, String details) {
-        String icon = "/artwork/ledyellow.png";
-        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("CLIENT_ERROR") || response.getStatusInfo().getFamily().name().equalsIgnoreCase("SERVER_ERROR"))
-            icon = "/artwork/ledred.png";
-        if (response.getStatusInfo().getFamily().name().equalsIgnoreCase("SUCCESSFUL"))
-            icon = "/artwork/ledgreen.png";
-        lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(response.getStatusInfo().getStatusCode() + " " + response.getStatusInfo().getReasonPhrase());
-        lblResponse.setToolTipText(details);
-    }
-
-    void set_response_status(Exception exception) {
-        String icon = "/artwork/ledred.png";
-        lblResponse.setIcon(new ImageIcon(getClass().getResource(icon)));
-        lblResponse.setText(StringUtils.left(exception.getMessage(), 70));
-        lblResponse.setToolTipText(exception.toString());
     }
 
 

@@ -1,8 +1,9 @@
-package de.flashheart.rlgrc.ui;
+package de.flashheart.rlgrc.ui.params;
 
 import com.google.common.io.Resources;
 import de.flashheart.rlgrc.misc.*;
-import de.flashheart.rlgrc.ui.zeus.ZeusDialog;
+import de.flashheart.rlgrc.ui.FrameMain;
+import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -159,13 +160,13 @@ public abstract class GameParams extends JPanel {
         return txt;
     }
 
-    protected String getFilename() {
+    public String getFilename() {
         return file.isEmpty() ? "no file" : file.get().getPath();
     }
 
-    abstract String getMode();
+    public abstract String getMode();
 
-    protected void from_params_to_ui() {
+    public void from_params_to_ui() {
         components.forEach((key, jTextComponent) -> jTextComponent.setText(params.get(key).toString()));
         cbSilentGame.setSelected(params.getBoolean("silent_game"));
 
@@ -184,12 +185,12 @@ public abstract class GameParams extends JPanel {
         });
     }
 
-    protected void from_params_to_ui(JSONObject params) {
+    public void from_params_to_ui(JSONObject params) {
         this.params = params;
         from_params_to_ui();
     }
 
-    protected JSONObject from_ui_to_params() {
+    public JSONObject from_ui_to_params() {
         params.clear();
         components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
 
@@ -225,7 +226,7 @@ public abstract class GameParams extends JPanel {
     }
 
 
-    protected void load_defaults() {
+    public void load_defaults() {
         File myFile = FileUtils.getFile(System.getProperty("workspace"), getMode(), "default.json");
         file = Optional.empty();
         try {
@@ -239,7 +240,7 @@ public abstract class GameParams extends JPanel {
         }
     }
 
-    protected Optional<File> load_file() {
+    public Optional<File> load_file() {
         Optional<File> myFile = choose_file(false);
         if (myFile.isEmpty()) return file;
         try {
@@ -250,7 +251,7 @@ public abstract class GameParams extends JPanel {
         return myFile;
     }
 
-    void save_file() throws IOException {
+    public void save_file() throws IOException {
         if (params.isEmpty()) return;
         if (file.isEmpty()) file = choose_file(true);
         if (file.isEmpty()) return;
@@ -324,11 +325,11 @@ public abstract class GameParams extends JPanel {
      * @param game_state the game status as provided by the server
      * @return the current score in HTML
      */
-    abstract String get_score_as_html(JSONObject game_state);
+    public abstract String get_score_as_html(JSONObject game_state);
 
     abstract String get_in_game_event_description(JSONObject event);
 
-    Optional<ZeusDialog> get_zeus() {
+    public Optional<ZeusDialog> get_zeus() {
         return Optional.empty();
     }
 
@@ -369,7 +370,6 @@ public abstract class GameParams extends JPanel {
             CSS = "";
         }
     }
-
 
     private void btnSwitchSides(ActionEvent e) {
         String a = txtBlueSpawn.getText();

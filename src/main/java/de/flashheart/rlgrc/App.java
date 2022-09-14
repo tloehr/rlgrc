@@ -5,8 +5,10 @@ import com.formdev.flatlaf.FlatLightLaf;
 import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
+import java.io.File;
 
 @Log4j2
 public class App {
@@ -18,8 +20,13 @@ public class App {
             Runtime.getRuntime().halt(0);
         }
 
-        try {
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "conquest"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "centerflags"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
 
+        try {
             UIManager.setLookAndFeel(new FlatLightLaf());
             FlatDarkLaf.setup();
         } catch (Exception ex) {

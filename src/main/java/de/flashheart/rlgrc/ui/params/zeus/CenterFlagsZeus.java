@@ -1,12 +1,12 @@
-package de.flashheart.rlgrc.ui.zeus;
+package de.flashheart.rlgrc.ui.params.zeus;
 
 import com.google.common.collect.Lists;
 import de.flashheart.rlgrc.misc.NumberVerifier;
 import de.flashheart.rlgrc.ui.FrameMain;
+import org.jdesktop.swingx.HorizontalLayout;
 import org.json.JSONArray;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -27,45 +27,43 @@ public class CenterFlagsZeus extends ZeusDialog {
     }
 
     private JPanel add_to_neutral() {
-        //    {
-//      "agent": "ag01",
-//      "operation": "to_neutral"
-//    }
-        JPanel pnl = new JPanel(new FlowLayout());
+        JPanel pnl = new JPanel(new HorizontalLayout(5));
         JLabel lbl = new JLabel("Set to neutral:");
         lbl.setFont(FrameMain.MY_FONT);
-        pnl.add(lbl);
         final JComboBox cmb = new JComboBox<>(new Vector<>(cp_agents.toList().stream().sorted().collect(Collectors.toList())));
+        JButton apply = new JButton(new ImageIcon(getClass().getResource("/artwork/apply.png")));
         cmb.setFont(FrameMain.MY_FONT);
-        pnl.add(cmb);
-        cmb.addItemListener(e -> {
+        apply.addActionListener(e -> {
             zeus_intervention.clear();
             zeus_intervention.put("operation", "to_neutral").put("agent", cmb.getSelectedItem().toString());
+            super.apply(e.getSource());
         });
+        pnl.add(lbl);
+        pnl.add(cmb);
+        pnl.add(apply);
         return pnl;
     }
 
     private JPanel add_change_score() {
-        JPanel change_score = new JPanel(new FlowLayout());
-        JLabel lbl = new JLabel("Add/Subtract Score:");
+        JPanel pnl = new JPanel(new HorizontalLayout(5));
+        JLabel lbl = new JLabel("+/- seconds:");
         lbl.setFont(FrameMain.MY_FONT);
-        change_score.add(lbl);
         final JComboBox cmb = new JComboBox<>(new Vector<>(Lists.newArrayList("Blue", "Red")));
         cmb.setFont(FrameMain.MY_FONT);
-        change_score.add(cmb);
+        JButton apply = new JButton(new ImageIcon(getClass().getResource("/artwork/apply.png")));
         JTextField txtScore = new JTextField("0");
         txtScore.setFont(FrameMain.MY_FONT);
         txtScore.setInputVerifier(new NumberVerifier());
-        change_score.add(txtScore);
-        cmb.addItemListener(e -> {
+        apply.addActionListener(e -> {
             zeus_intervention.clear();
-            zeus_intervention.put("operation", "change_score").put("team", cmb.getSelectedItem().toString()).put("score", txtScore.getText());
+            zeus_intervention.put("operation", "add_seconds").put("team", cmb.getSelectedItem().toString()).put("amount", txtScore.getText());
+            super.apply(e.getSource());
         });
-        txtScore.addCaretListener(evt -> {
-            zeus_intervention.clear();
-            zeus_intervention.put("operation", "change_score").put("team", cmb.getSelectedItem().toString()).put("score", txtScore.getText());
-        });
-        return change_score;
+        pnl.add(lbl);
+        pnl.add(cmb);
+        pnl.add(txtScore);
+        pnl.add(apply);
+        return pnl;
     }
 
 

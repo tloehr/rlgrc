@@ -1,4 +1,4 @@
-package de.flashheart.rlgrc.ui.zeus;
+package de.flashheart.rlgrc.ui.params.zeus;
 
 import org.jdesktop.swingx.HorizontalLayout;
 import org.json.JSONObject;
@@ -19,6 +19,7 @@ public class ZeusDialog extends JDialog {
 
     public ZeusDialog(JFrame owner) {
         super(owner, true);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         center = new JPanel();
         center.setLayout(new BoxLayout(center, BoxLayout.PAGE_AXIS));
@@ -31,16 +32,19 @@ public class ZeusDialog extends JDialog {
 
     protected JPanel get_button_panel() {
         JPanel button_panel = new JPanel(new HorizontalLayout(5));
-        JButton apply = new JButton(new ImageIcon(getClass().getResource("/artwork/apply.png")));
         JButton cancel = new JButton(new ImageIcon(getClass().getResource("/artwork/cancel.png")));
-        button_panel.add(apply);
         button_panel.add(cancel);
-        apply.addActionListener(e -> {
-            propertyChangeListenerList.forEach(propertyChangeListener -> propertyChangeListener.propertyChange(new PropertyChangeEvent(e.getSource(), "zeus", empty, zeus_intervention)));
-            dispose();
-        });
+//        apply.addActionListener(e -> {
+//            propertyChangeListenerList.forEach(propertyChangeListener -> propertyChangeListener.propertyChange(new PropertyChangeEvent(e.getSource(), "zeus", empty, zeus_intervention)));
+//            dispose();
+//        });
         cancel.addActionListener(e -> dispose());
         return button_panel;
+    }
+
+    void apply(final Object source){
+        propertyChangeListenerList.forEach(propertyChangeListener -> propertyChangeListener.propertyChange(new PropertyChangeEvent(source, "zeus", empty, zeus_intervention)));
+        dispose();
     }
 
     public void add_property_change_listener(PropertyChangeListener propertyChangeListener) {

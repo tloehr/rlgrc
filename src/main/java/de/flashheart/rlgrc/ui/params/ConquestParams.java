@@ -2,7 +2,7 @@
  * Created by JFormDesigner on Sun Feb 13 18:06:24 CET 2022
  */
 
-package de.flashheart.rlgrc.ui;
+package de.flashheart.rlgrc.ui.params;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -150,7 +150,7 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    protected void from_params_to_ui() {
+    public void from_params_to_ui() {
         super.from_params_to_ui();
         txtCnqTickets.setText(params.get("respawn_tickets").toString());
         txtCnqTPrice.setText(params.get("ticket_price_for_respawn").toString());
@@ -163,7 +163,7 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    protected JSONObject from_ui_to_params() {
+    public JSONObject from_ui_to_params() {
         super.from_ui_to_params();
         params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
         params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
@@ -290,7 +290,7 @@ public class ConquestParams extends GameParams {
 //        return super.generate_table_for_events(out_events);
 //    }
     @Override
-    protected String get_score_as_html(JSONObject game_state) {
+    public String get_score_as_html(JSONObject game_state) {
 
         String blue_flags = "";
         String red_flags = "";

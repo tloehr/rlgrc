@@ -1,13 +1,11 @@
-package de.flashheart.rlgrc.ui;
+package de.flashheart.rlgrc.ui.params;
 
 import de.flashheart.rlgrc.misc.*;
-import de.flashheart.rlgrc.ui.zeus.CenterFlagsZeus;
-import de.flashheart.rlgrc.ui.zeus.ZeusDialog;
-import org.json.JSONArray;
+import de.flashheart.rlgrc.ui.params.zeus.CenterFlagsZeus;
+import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.Color;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -55,7 +53,7 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    protected void from_params_to_ui() {
+    public void from_params_to_ui() {
         super.from_params_to_ui();
         txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
@@ -84,7 +82,7 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    protected JSONObject from_ui_to_params() {
+    public JSONObject from_ui_to_params() {
         super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
@@ -98,12 +96,12 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    String getMode() {
+    public String getMode() {
         return "centerflags";
     }
 
     @Override
-    String get_score_as_html(JSONObject game_state) {
+    public String get_score_as_html(JSONObject game_state) {
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
 
@@ -157,7 +155,7 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    Optional<ZeusDialog> get_zeus() {
+    public Optional<ZeusDialog> get_zeus() {
         return Optional.of(new CenterFlagsZeus(owner, from_string_list(txtCapturePoints.getText())));
     }
 }

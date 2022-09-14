@@ -1,4 +1,4 @@
-package de.flashheart.rlgrc.ui;
+package de.flashheart.rlgrc.ui.params;
 
 import de.flashheart.rlgrc.misc.*;
 import org.json.JSONObject;
@@ -55,7 +55,7 @@ public class FarcryParams extends GameParams {
     }
 
     @Override
-    protected void from_params_to_ui() {
+    public void from_params_to_ui() {
         super.from_params_to_ui();
         txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtCaptureSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_sirens")));
@@ -80,7 +80,7 @@ public class FarcryParams extends GameParams {
     }
 
     @Override
-    protected JSONObject from_ui_to_params() {
+    public JSONObject from_ui_to_params() {
         super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
@@ -95,12 +95,12 @@ public class FarcryParams extends GameParams {
     }
 
     @Override
-    String getMode() {
+    public String getMode() {
         return "farcry";
     }
 
     @Override
-    String get_score_as_html(JSONObject game_state) {
+    public String get_score_as_html(JSONObject game_state) {
 
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
 

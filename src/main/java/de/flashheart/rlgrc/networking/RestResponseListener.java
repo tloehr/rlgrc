@@ -1,7 +1,5 @@
 package de.flashheart.rlgrc.networking;
 
-import de.flashheart.rlgrc.ui.events.SpawnEvent;
-
 import java.time.LocalDateTime;
 import java.util.EventListener;
 

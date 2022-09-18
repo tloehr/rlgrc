@@ -1,0 +1,202 @@
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.15" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) ) {
+				name: "panel5"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.HorizontalLayout ) {
+					"gap": 5
+				} ) {
+					name: "pnlMessages"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnPrepare"
+						"text": "Prepare"
+						"toolTipText": "Prepare"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": &Font0 new java.awt.Font( ".SF NS Text", 0, 18 )
+						"actionCommand": "prepare"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReset"
+						"text": "Reset"
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font0
+						"actionCommand": "reset"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnReady"
+						"text": "Ready"
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font0
+						"actionCommand": "ready"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnRun"
+						"text": "Run"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": &Font1 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"actionCommand": "run"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnPause"
+						"text": "Pause"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"actionCommand": "pause"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnResume"
+						"text": "Resume"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"actionCommand": "resume"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnContinue"
+						"text": "Continue"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"actionCommand": "continue"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnGameOver"
+						"text": "Game Over"
+						"icon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"font": #Font1
+						"actionCommand": "game_over"
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.HorizontalLayout ) {
+					"gap": 10
+				} ) {
+					name: "pnlGameStates"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblProlog"
+						"text": "Prolog"
+						"font": &Font2 new java.awt.Font( ".SF NS Text", 0, 18 )
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkred.png" )
+						"name": "PROLOG"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblTeamsNotReady"
+						"text": "Teams not Ready"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledorange.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkorange.png" )
+						"name": "TEAMS_NOT_READY"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblTeamsReady"
+						"text": "Teams Ready"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledyellow.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkyellow.png" )
+						"name": "TEAMS_READY"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblRunning"
+						"text": "Running"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledgreen.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkgreen.png" )
+						"name": "RUNNING"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblPausing"
+						"text": "Pausing"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledlightblue.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkcyan.png" )
+						"name": "PAUSING"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblResuming"
+						"text": "Resuming"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledblue.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkblue.png" )
+						"name": "RESUMING"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblEpilog"
+						"text": "Epilog"
+						"font": #Font2
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledpurple.png" )
+						"disabledIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/leddarkpurple.png" )
+					} )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+				"axis": 3
+			} ) {
+				name: "panel3"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrlGameStatus"
+					add( new FormComponent( "javax.swing.JTextPane" ) {
+						name: "txtGameStatus"
+						"contentType": "text/html"
+						"editable": false
+					} )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JToggleButton" ) {
+					name: "btnLock"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/decrypted.png" )
+					"selectedIcon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/encrypted.png" )
+					"contentAreaFilled": false
+					"borderPainted": false
+					"preferredSize": &Dimension0 new java.awt.Dimension( 38, 38 )
+					"toolTipText": "Lock"
+					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "btnLockItemStateChanged", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnZeus"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/zeus-28.png" )
+					"selectedIcon": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"contentAreaFilled": false
+					"borderPainted": false
+					"preferredSize": #Dimension0
+					"toolTipText": "Zeus"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnZeus", true ) )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+					name: "hSpacer1"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnLastSSE"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/irkickflash.png" )
+					"toolTipText": "Last Message received"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLastSSE", true ) )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}

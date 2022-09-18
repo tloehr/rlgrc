@@ -1,0 +1,95 @@
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.15" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+				name: "pnlFiles"
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "cmbGameModes"
+					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+					addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "cmbGameModesItemStateChanged", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnFileNew"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/filenew.png" )
+					"minimumSize": &Dimension0 new java.awt.Dimension( 38, 38 )
+					"preferredSize": &Dimension1 new java.awt.Dimension( 38, 38 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnFileNew", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnLoadFile"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/fileopen.png" )
+					"minimumSize": #Dimension0
+					"preferredSize": #Dimension1
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnLoadFile", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnSaveFile"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/filesave.png" )
+					"minimumSize": #Dimension0
+					"preferredSize": #Dimension1
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveFile", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnSendGameToServer"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/upload.png" )
+					"toolTipText": "Load game on the server"
+					"minimumSize": new java.awt.Dimension( 38, 38 )
+					"preferredSize": new java.awt.Dimension( 38, 38 )
+					"font": new java.awt.Font( ".SF NS Text", 0, 18 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSendGameToServer", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnUnloadOnServer"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/unload.png" )
+					"font": &Font0 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+					"toolTipText": "Remove the loaded game from the commander's memory."
+					"horizontalAlignment": 2
+					"preferredSize": &Dimension2 new java.awt.Dimension( 38, 38 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnUnloadOnServer", true ) )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+					name: "hSpacer1"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "lblFile"
+					"text": "no file"
+					"font": new java.awt.Font( ".SF NS Text", 0, 16 )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+					name: "hSpacer2"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnTestJSON"
+					"text": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/debug28.png" )
+					"font": #Font0
+					"toolTipText": "Remove the loaded game from the commander's memory."
+					"horizontalAlignment": 2
+					"preferredSize": #Dimension2
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnTestJSON", true ) )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+				"axis": 3
+			} ) {
+				name: "pnlCenter"
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}

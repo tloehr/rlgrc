@@ -82,7 +82,7 @@ public class CenterFlagsParams extends GameParams {
     }
 
     @Override
-    public JSONObject from_ui_to_params() {
+    public void from_ui_to_params() {
         super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
@@ -92,7 +92,6 @@ public class CenterFlagsParams extends GameParams {
 
         params.put("class", "de.flashheart.rlg.commander.games.CenterFlags");
         params.put("mode", getMode());
-        return params;
     }
 
     @Override

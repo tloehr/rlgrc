@@ -186,11 +186,12 @@ public abstract class GameParams extends JPanel {
     }
 
     public void from_params_to_ui(JSONObject params) {
-        this.params = params;
+        if (params.has("game_state")) this.params = params;
+        else load_defaults();
         from_params_to_ui();
     }
 
-    public JSONObject from_ui_to_params() {
+    public void from_ui_to_params() {
         params.clear();
         components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
 
@@ -222,7 +223,7 @@ public abstract class GameParams extends JPanel {
         params.put("spawns", spawns);
 
         //params.put("intro_mp3_file", cmbIntroMusic.getSelectedItem().toString());
-        return params;
+//        return params;
     }
 
 
@@ -255,7 +256,8 @@ public abstract class GameParams extends JPanel {
         if (params.isEmpty()) return;
         if (file.isEmpty()) file = choose_file(true);
         if (file.isEmpty()) return;
-        FileUtils.writeStringToFile(file.get(), from_ui_to_params().toString(4), StandardCharsets.UTF_8);
+        from_ui_to_params();
+        FileUtils.writeStringToFile(file.get(), params.toString(4), StandardCharsets.UTF_8);
     }
 
     protected Optional<File> choose_file(boolean save) {
@@ -377,4 +379,7 @@ public abstract class GameParams extends JPanel {
         txtRedSpawn.setText(a);
     }
 
+    public JSONObject getParams() {
+        return params;
+    }
 }

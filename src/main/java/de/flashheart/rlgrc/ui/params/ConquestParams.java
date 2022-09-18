@@ -163,7 +163,7 @@ public class ConquestParams extends GameParams {
     }
 
     @Override
-    public JSONObject from_ui_to_params() {
+    public void from_ui_to_params() {
         super.from_ui_to_params();
         params.put("respawn_tickets", Integer.parseInt(txtCnqTickets.getText()));
         params.put("ticket_price_for_respawn", Integer.parseInt(txtCnqTPrice.getText()));
@@ -180,7 +180,6 @@ public class ConquestParams extends GameParams {
 
         params.put("class", "de.flashheart.rlg.commander.games.Conquest");
         params.put("mode", getMode());
-        return params;
     }
 
     @Override

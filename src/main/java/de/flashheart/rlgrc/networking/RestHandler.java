@@ -6,15 +6,10 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import lombok.Getter;
-import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
@@ -25,7 +20,7 @@ public class RestHandler {
     private final Runnable on_disconnect;
     private boolean connected;
     private Client client;
-    private String server;
+    private String uri;
     private ArrayList<RestResponseListener> restResponseListeners;
     private ArrayList<LoggableEventListener> loggableEventListeners;
 
@@ -60,7 +55,7 @@ public class RestHandler {
     public void connect(Object server_object) {
         if (connected) return;
         try {
-            server = server_object.toString().trim();
+            uri = server_object.toString().trim();
             // just checking - will fail if nobody is answering
             int max_number_of_games = get("system/get_max_number_of_games").getInt("max_number_of_games");
             connected = true;
@@ -75,7 +70,7 @@ public class RestHandler {
         if (!connected) return;
 
         connected = false;
-        server = "";
+        uri = "";
         on_disconnect.run();
 
     }
@@ -120,7 +115,7 @@ public class RestHandler {
         JSONObject json = new JSONObject();
 
         try {
-            WebTarget target = client.target(server + "/api/" + endpoint);
+            WebTarget target = client.target(uri + "/api/" + endpoint);
 
             for (Map.Entry entry : params.entrySet()) {
                 target = target.queryParam(entry.getKey().toString(), entry.getValue());
@@ -162,7 +157,7 @@ public class RestHandler {
         JSONObject json;
         try {
             Response response = client
-                    .target(server + "/api/" + uri)
+                    .target(this.uri + "/api/" + uri)
                     .queryParam("id", id)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
@@ -184,7 +179,7 @@ public class RestHandler {
         JSONObject json;
         try {
             Response response = client
-                    .target(server + "/api/" + uri)
+                    .target(this.uri + "/api/" + uri)
                     .request(MediaType.APPLICATION_JSON)
                     .get();
             json = new JSONObject(response.readEntity(String.class));
@@ -199,5 +194,7 @@ public class RestHandler {
         return json;
     }
 
-
+    public String getUri() {
+        return uri;
+    }
 }

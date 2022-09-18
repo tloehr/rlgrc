@@ -1,9 +1,11 @@
 package de.flashheart.rlgrc.ui;
 
 import com.google.common.io.Resources;
+import de.flashheart.rlgrc.ui.panels.MyPanels;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.jdesktop.swingx.JXEditorPane;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -11,7 +13,7 @@ import java.awt.*;
 import java.nio.charset.Charset;
 
 @Log4j2
-public class PnlAbout extends JPanel {
+public class PnlAbout extends JPanel implements MyPanels {
     private JScrollPane scrl;
     private JXEditorPane txtAbout;
 
@@ -43,5 +45,10 @@ public class PnlAbout extends JPanel {
         }
         txtAbout.setText(Resources.toString(Resources.getResource("about.html"), Charset.defaultCharset()));
         add(scrl);
+    }
+
+    @Override
+    public void update(JSONObject current_game) {
+        // dummy implementation
     }
 }

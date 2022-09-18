@@ -2,6 +2,7 @@ package de.flashheart.rlgrc.ui;
 
 import de.flashheart.rlgrc.networking.RestHandler;
 import lombok.extern.log4j.Log4j2;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -21,18 +22,35 @@ public class PnlServer extends JPanel {
     private JTextArea txtLogger;
     private JScrollPane scrollLog;
     private final int MAX_LOG_LINES = 400;
+    private boolean selected;
+    private JSONObject current_state;
 
 
     public PnlServer(RestHandler restHandler, String current_game_id) {
         super(new BorderLayout());
+        selected = false;
+        current_state = new JSONObject();
         this.restHandler = restHandler;
         this.current_game_id = current_game_id;
         initLogger();
         initButtons();
     }
 
+    @Override
+    public boolean isShowing() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        if (!selected) return;
+        current_state = restHandler.get("game/status", current_game_id);
+    }
+
     public void setCurrent_game_id(String current_game_id) {
         this.current_game_id = current_game_id;
+        current_state = restHandler.get("game/status", current_game_id);
+
     }
 
     void initLogger() {
@@ -72,7 +90,7 @@ public class PnlServer extends JPanel {
     }
 
     public void addLog(String text){
-        log.trace(text);
+        log.debug(text);
         SwingUtilities.invokeLater(() -> {
             txtLogger.append(LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT)) + ": " + text + "\n");
             scrollLog.getVerticalScrollBar().setValue(scrollLog.getVerticalScrollBar().getMaximum());

@@ -1,0 +1,214 @@
+JFDML JFormDesigner: "7.0.5.1.409" Java: "11.0.15" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "panel7"
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane3"
+					add( new FormComponent( "javax.swing.JTable" ) {
+						name: "tblAgents"
+						"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector, new java.util.Vector )
+						auxiliary() {
+							"model.noCode": true
+							"JavaCodeGenerator.customCreate": true
+						}
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTextArea" ) {
+						name: "txtAgent"
+						"wrapStyleWord": true
+						"lineWrap": true
+						"editable": false
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+				"axis": 3
+			} ) {
+				name: "pnlTesting"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnRefreshAgents"
+					"text": "Update"
+					"font": &Font0 new java.awt.Font( ".AppleSystemUIFont", 0, 18 )
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/reload-on.png" )
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+					"horizontalAlignment": 2
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnRefreshAgents", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JSeparator" ) {
+					name: "separator1"
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+					name: "vSpacer1"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnPowerSaveOn"
+					"text": "Sleep"
+					"font": #Font0
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/bluemoon.png" )
+					"toolTipText": "send idle agents to powersave mode"
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+					"horizontalAlignment": 2
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPowerSaveOn", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnPowerSaveOff"
+					"text": "Wake up"
+					"font": #Font0
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/sun-3-28.png" )
+					"toolTipText": "welcome back to idle agents"
+					"maximumSize": &Dimension0 new java.awt.Dimension( 32767, 34 )
+					"horizontalAlignment": 2
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnPowerSaveOff", true ) )
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+					name: "vSpacer2"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button1"
+					"text": "White"
+					"actionCommand": "wht"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/led-white-on.png" )
+					"font": &Font1 new java.awt.Font( ".SF NS Text", 0, 18 )
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button2"
+					"text": "Red"
+					"actionCommand": "red"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledred.png" )
+					"font": #Font1
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button3"
+					"text": "Yellow"
+					"actionCommand": "ylw"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledyellow.png" )
+					"font": #Font1
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button4"
+					"text": "Green"
+					"actionCommand": "grn"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledgreen.png" )
+					"font": #Font1
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button5"
+					"text": "Blue"
+					"actionCommand": "blu"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/ledblue.png" )
+					"font": #Font1
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button6"
+					"text": "Buzzer"
+					"actionCommand": "buzzer"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/buzzer.png" )
+					"font": &Font2 new java.awt.Font( ".SF NS Text", 0, 18 )
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button7"
+					"text": "Siren 1"
+					"actionCommand": "sir1"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button8"
+					"text": "Siren 2"
+					"actionCommand": "sir2"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button9"
+					"text": "Siren 3"
+					"actionCommand": "sir3"
+					"icon": &SwingIcon0 new com.jformdesigner.model.SwingIcon( 0, "/artwork/siren.png" )
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button10"
+					"text": "Siren 4"
+					"actionCommand": "sir4"
+					"icon": #SwingIcon0
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": &Dimension1 new java.awt.Dimension( 32767, 34 )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnStartSignal"
+					"text": "Start Signal"
+					"font": #Font0
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/up.png" )
+					"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"maximumSize": #Dimension0
+					"horizontalAlignment": 2
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnStopSignal"
+					"text": "Stop Signal"
+					"font": #Font0
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/down.png" )
+					"toolTipText": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"maximumSize": #Dimension0
+					"horizontalAlignment": 2
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button11"
+					"text": "Play"
+					"actionCommand": "play"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_play.png" )
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": #Dimension1
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "button12"
+					"text": "Stop"
+					"actionCommand": "stop"
+					"icon": new com.jformdesigner.model.SwingIcon( 0, "/artwork/player_stop.png" )
+					"font": #Font2
+					"horizontalAlignment": 2
+					"maximumSize": #Dimension1
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "East"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 820, 1115 )
+		} )
+	}
+}

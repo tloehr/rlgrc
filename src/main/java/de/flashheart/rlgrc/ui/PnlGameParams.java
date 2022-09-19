@@ -12,11 +12,14 @@ import de.flashheart.rlgrc.ui.params.ConquestParams;
 import de.flashheart.rlgrc.ui.params.FarcryParams;
 import de.flashheart.rlgrc.ui.params.GameParams;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Optional;
 import javax.swing.*;
@@ -56,45 +59,38 @@ public class PnlGameParams extends JPanel {
     public void setSelected(boolean selected) {
         if (this.selected == selected) return;
         this.selected = selected;
-        if (!selected) current_game_params = Optional.empty();
-        else {
+//        if (!selected) current_game_params = Optional.empty();
+        if (selected) {
             current_state = restHandler.get("game/status", current_game_id);
             if (current_state.has("game_state")) {
                 cmbGameModes.setSelectedItem(current_state.getString("mode"));
-                cmbGameModes.setEnabled(false); // can happen if the game is loaded and we log in later
-            } else {
-                update(cmbGameModes.getSelectedItem().toString());
+                //   cmbGameModes.setEnabled(false); // can happen if the game is loaded and we log in later
             }
+            create_game_params_if_needed(cmbGameModes.getSelectedItem().toString());
+            update();
         }
     }
 
     private void initPanel() {
-//        game_modes.put("conquest", new ConquestParams(configs));
-//        game_modes.put("farcry", new FarcryParams(configs));
-//        game_modes.put("centerflags", new CenterFlagsParams(configs, owner));
-//        game_modes.forEach((s, gameParams) -> cmbGameModes.addItem(gameParams));
-
         cmbGameModes.addItem("conquest");
         cmbGameModes.addItem("farcry");
         cmbGameModes.addItem("centerflags");
         cmbGameModes.setEnabled(true);
-
-        //cmbGameModes.setRenderer((list, value, index, isSelected, cellHasFocus) -> new DefaultListCellRenderer().getListCellRendererComponent(list, ((GameParams) value).getMode(), index, isSelected, cellHasFocus));
-
     }
 
     private void btnTestJSON(ActionEvent e) {
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        current_game_mode.from_ui_to_params();
-        log.debug(current_game_mode.getParams().toString(4));
+        current_game_params.ifPresent(gameParams -> {
+            gameParams.from_ui_to_params();
+            log.debug(gameParams.getParams().toString(4));
+        });
     }
 
-
-    private void update(String mode) {
+    private void create_game_params_if_needed(String mode) {
+        if (current_game_params.isPresent() && current_game_params.get().getMode().equals(mode)) return;
         if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
-        update();
+        if (mode.equals("none")) current_game_params = Optional.empty();
     }
 
     private void update() {
@@ -112,28 +108,46 @@ public class PnlGameParams extends JPanel {
     }
 
     private void btnSaveFile(ActionEvent e) {
-        try {
-            GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-            current_game_mode.save_file();
-            lblFile.setText(current_game_mode.getFilename());
-        } catch (IOException ex) {
-            log.error(ex);
-            //pnlServer.addLog(ex.getMessage());
-        }
+        current_game_params.ifPresent(gameParams -> {
+            try {
+                gameParams.save_file();
+                lblFile.setText("no file");
+                gameParams.getFile().ifPresent(file -> {
+                    Path p = Paths.get(file.getPath());
+                    lblFile.setText(p.getFileName().toString());
+                    lblFile.setToolTipText(p.getParent().toString());
+                });
+            } catch (IOException ex) {
+                log.error(ex);
+                //pnlServer.addLog(ex.getMessage());
+            }
+        });
     }
 
     private void btnLoadFile(ActionEvent e) {
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        current_game_mode.load_file();
-        current_game_mode.from_params_to_ui();
-        lblFile.setText(current_game_mode.getFilename());
+        current_game_params.ifPresent(gameParams -> {
+            gameParams.load_file();
+            gameParams.from_params_to_ui();
+            lblFile.setText("no file");
+            gameParams.getFile().ifPresent(file -> {
+                Path p = Paths.get(file.getPath());
+                lblFile.setText(p.getFileName().toString());
+                lblFile.setToolTipText(p.getParent().toString());
+            });
+        });
     }
 
     private void btnFileNew(ActionEvent e) {
-        GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
-        current_game_mode.load_defaults();
-        current_game_mode.from_params_to_ui();
-        lblFile.setText(current_game_mode.getFilename());
+        current_game_params.ifPresent(gameParams -> {
+            gameParams.load_defaults();
+            gameParams.from_params_to_ui();
+            lblFile.setText("no file");
+            gameParams.getFile().ifPresent(file -> {
+                Path p = Paths.get(file.getPath());
+                lblFile.setText(p.getFileName().toString());
+                lblFile.setToolTipText(p.getParent().toString());
+            });
+        });
     }
 
     private void btnUnloadOnServer(ActionEvent e) {
@@ -144,7 +158,6 @@ public class PnlGameParams extends JPanel {
     }
 
     private void btnSendGameToServer(ActionEvent e) {
-        //GameParams current_game_mode = (GameParams) cmbGameModes.getSelectedItem();
         current_game_params.ifPresent(gameParams -> {
             gameParams.from_ui_to_params();
             current_state = restHandler.post("game/load", gameParams.getParams().toString(4), current_game_id);
@@ -155,7 +168,8 @@ public class PnlGameParams extends JPanel {
     private void cmbGameModesItemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.DESELECTED) return;
         current_state.clear();
-        update(e.getItem().toString());
+        create_game_params_if_needed(e.getItem().toString());
+        update();
     }
 
 

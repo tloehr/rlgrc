@@ -160,8 +160,8 @@ public abstract class GameParams extends JPanel {
         return txt;
     }
 
-    public String getFilename() {
-        return file.isEmpty() ? "no file" : file.get().getPath();
+    public Optional<File> getFile() {
+        return file;
     }
 
     public abstract String getMode();
@@ -244,6 +244,7 @@ public abstract class GameParams extends JPanel {
     public Optional<File> load_file() {
         Optional<File> myFile = choose_file(false);
         if (myFile.isEmpty()) return file;
+        file = myFile;
         try {
             params = new JSONObject(FileUtils.readFileToString(myFile.get(), StandardCharsets.UTF_8));
         } catch (IOException e) {

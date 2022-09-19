@@ -23,11 +23,12 @@ import org.json.JSONObject;
  * @author Torsten Löhr
  */
 @Log4j2
-public class PnlAgents extends JPanel   {
+public class PnlAgents extends JPanel {
     private final RestHandler restHandler;
     private final JSONConfigs configs;
     boolean selected;
     private Optional<String> selected_agent;
+
     public PnlAgents(RestHandler restHandler, JSONConfigs configs) {
         this.restHandler = restHandler;
         this.configs = configs;
@@ -53,12 +54,16 @@ public class PnlAgents extends JPanel   {
         tblAgents.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tblAgents.getSelectionModel().addListSelectionListener(e -> table_of_agents_changed_selection(e));
 
-        for (JButton testButton : Arrays.asList(button1, button2, button2, button3, button4, button5, button6, button7, button8, button9, button10, button11, button12)) {
+        for (JButton testButton : Arrays.asList(button1, button2, button2, button3, button4, button5, button6, button7, button8, button9, button10, button11, button12, btnStartSignal, btnStopSignal)) {
             testButton.addActionListener(e -> {
                 if (selected_agent.isEmpty()) return;
                 Properties properties = new Properties();
                 properties.put("agentid", selected_agent.get());
                 properties.put("deviceid", e.getActionCommand());
+                String pattern = "medium";
+                if (testButton.equals(btnStartSignal)) pattern = "game_starts";
+                if (testButton.equals(btnStopSignal)) pattern = "game_ends";
+                properties.put("pattern", pattern);
                 restHandler.post("system/test_agent", "{}", properties);
             });
         }
@@ -86,7 +91,6 @@ public class PnlAgents extends JPanel   {
     private void btnPowerSaveOff(ActionEvent e) {
         restHandler.post("system/welcome_agents", "", new Properties());
     }
-
 
 
     private void table_of_agents_changed_selection(ListSelectionEvent e) {
@@ -293,6 +297,7 @@ public class PnlAgents extends JPanel   {
             btnStartSignal.setToolTipText(null);
             btnStartSignal.setMaximumSize(new Dimension(32767, 34));
             btnStartSignal.setHorizontalAlignment(SwingConstants.LEFT);
+            btnStartSignal.setActionCommand("sir1");
             pnlTesting.add(btnStartSignal);
 
             //---- btnStopSignal ----
@@ -302,6 +307,7 @@ public class PnlAgents extends JPanel   {
             btnStopSignal.setToolTipText(null);
             btnStopSignal.setMaximumSize(new Dimension(32767, 34));
             btnStopSignal.setHorizontalAlignment(SwingConstants.LEFT);
+            btnStopSignal.setActionCommand("sir1");
             pnlTesting.add(btnStopSignal);
 
             //---- button11 ----

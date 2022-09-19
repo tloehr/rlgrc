@@ -44,7 +44,7 @@ public class CenterFlagsParams extends GameParams {
         setLayout(new RiverLayout(5, 5));
         add(default_components);
         add(new JLabel("Gametime in seconds"), "br left");
-        add(create_textfield("game_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(120), true)), "left");
+        add(create_textfield("game_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(7200), true)), "left");
         add(new JLabel("Capture Points"), "br left");
         add(txtCapturePoints, "hfill");
         add(new JLabel("Sirens"), "br left");
@@ -74,7 +74,7 @@ public class CenterFlagsParams extends GameParams {
             }
             if (event.getString("item").equals("add_seconds")) {
                 String text = event.getLong("amount") >= 0 ? " has been granted %d seconds" : " has lost %d seconds";
-                return "Team " + event.getString("team") + String.format(text, event.getLong("amount"))
+                return "Team " + event.getString("team") + String.format(text, Math.abs(event.getLong("amount")))
                         + zeus;
             }
         }

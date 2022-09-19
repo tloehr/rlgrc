@@ -128,7 +128,12 @@ public class PnlActiveGame extends JPanel {
             final String html = gameParams.get_score_as_html(current_state);
             // if we do not run this in a different thread, the scrollpane wont go up
             // don't know why. but did cost me some time to find out.
-            new Thread(() -> txtGameStatus.setText(html)).start();
+            try {
+                new Thread(() -> txtGameStatus.setText(html)).start();
+            } catch (Exception e){
+                log.warn(e);
+            }
+
 
             int index = FrameMain._states_.indexOf(state.toUpperCase());
             // States
@@ -163,18 +168,22 @@ public class PnlActiveGame extends JPanel {
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
         if (mode.equals("none")) current_game_params = Optional.empty();
+        current_game_params.ifPresent(gameParams -> gameParams.from_params_to_ui(current_state));
     }
 
     public void setSelected(boolean selected) {
+        if (this.selected == selected) return;
         this.selected = selected;
         try {
             if (selected) {
+                log.debug("SELECTED");
                 connect_sse_client();
                 current_state = restHandler.get("game/status", current_game_id);
                 this.scheduler.start();
                 create_game_params_if_needed();
                 update();
             } else {
+                log.debug("DESELECTED");
                 this.scheduler.standby();
                 disconnect_sse_client();
                 current_game_params = Optional.empty();

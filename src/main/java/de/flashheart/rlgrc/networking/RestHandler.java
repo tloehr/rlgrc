@@ -132,7 +132,7 @@ public class RestHandler {
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
                 fireResponseReceived(new RestResponseEvent(response));
             } else {
-                String err_message = json.optJSONObject("targetException").optString("message");
+                String err_message = json.optString("message");
                 err_message += json.optString("message");
                 fireResponseReceived(new RestResponseEvent(response, err_message));
             }
@@ -147,7 +147,6 @@ public class RestHandler {
         } catch (Exception connectException) {
             fireLoggableEvent(new LoggableEvent(connectException.getMessage()));
             fireResponseReceived(new RestResponseEvent(connectException));
-            disconnect();
         }
         return json;
     }

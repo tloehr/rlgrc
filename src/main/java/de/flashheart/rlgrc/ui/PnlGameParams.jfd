@@ -75,6 +75,7 @@ new FormModel {
 					"toolTipText": "Remove the loaded game from the commander's memory."
 					"horizontalAlignment": 2
 					"preferredSize": #Dimension2
+					"enabled": false
 					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnTestJSON", true ) )
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
@@ -89,7 +90,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 400, 300 )
+			"size": new java.awt.Dimension( 640, 300 )
 		} )
 	}
 }

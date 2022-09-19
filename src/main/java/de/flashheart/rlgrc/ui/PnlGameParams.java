@@ -54,12 +54,14 @@ public class PnlGameParams extends JPanel {
     }
 
     public void setSelected(boolean selected) {
+        if (this.selected == selected) return;
         this.selected = selected;
         if (!selected) current_game_params = Optional.empty();
         else {
             current_state = restHandler.get("game/status", current_game_id);
             if (current_state.has("game_state")) {
                 cmbGameModes.setSelectedItem(current_state.getString("mode"));
+                cmbGameModes.setEnabled(false); // can happen if the game is loaded and we log in later
             } else {
                 update(cmbGameModes.getSelectedItem().toString());
             }
@@ -138,6 +140,7 @@ public class PnlGameParams extends JPanel {
         restHandler.post("game/unload", current_game_id);
         current_state.clear();
         firePropertyChange("game_unloaded", "", current_game_id);
+        update();
     }
 
     private void btnSendGameToServer(ActionEvent e) {
@@ -150,6 +153,8 @@ public class PnlGameParams extends JPanel {
     }
 
     private void cmbGameModesItemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.DESELECTED) return;
+        current_state.clear();
         update(e.getItem().toString());
     }
 
@@ -239,6 +244,7 @@ public class PnlGameParams extends JPanel {
             btnTestJSON.setToolTipText("Remove the loaded game from the commander's memory.");
             btnTestJSON.setHorizontalAlignment(SwingConstants.LEFT);
             btnTestJSON.setPreferredSize(new Dimension(38, 38));
+            btnTestJSON.setEnabled(false);
             btnTestJSON.addActionListener(e -> btnTestJSON(e));
             pnlFiles.add(btnTestJSON);
         }

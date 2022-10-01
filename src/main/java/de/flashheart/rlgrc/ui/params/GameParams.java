@@ -73,6 +73,7 @@ public abstract class GameParams extends JPanel {
         cbSilentGame = new JCheckBox("Silent Game");
         cbSilentGame.setFont(default_font);
         cbSilentGame.setToolTipText("a silent game doesn't use any sirens. works as expected, otherwise.");
+        //StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true)
 //        cmbIntroMusic = new JComboBox<>(StringUtils.splitCommaSeparated(configs.get(Configs.INTRO_MP3_FILES), true));
 
         cmbIntroMusic = new JComboBox<>(configs.getConfigs()

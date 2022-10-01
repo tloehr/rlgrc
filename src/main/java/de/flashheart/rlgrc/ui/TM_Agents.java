@@ -20,7 +20,7 @@ public class TM_Agents extends AbstractTableModel {
     private final HashMap<String, JSONObject> tooltips;
     private final ArrayList<String> agents;
     private final JSONConfigs configs;
-    private String[] colnames = new String[]{"Agent", "Version", "last contact", "AP", "WIFI"};
+    private String[] colnames = new String[]{"Agent", "Version", "last contact", "AP", "WIFI","failed_pings/reconnects"};
 
     public TM_Agents(JSONObject agent_states, JSONConfigs configs) throws JSONException {
         this.configs = configs;
@@ -57,7 +57,7 @@ public class TM_Agents extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 5;
+        return 6;
     }
 
     public String getTooltipAt(int rowIndex) {
@@ -102,6 +102,12 @@ public class TM_Agents extends AbstractTableModel {
             }
             case 4: {
                 value = agents_states.get(agent, "wifi");
+                break;
+            }
+            case 5: {
+                String reconnects = agents_states.get(agent, "reconnects") != null ? agents_states.get(agent, "reconnects") : "--";
+                String failed_pings = agents_states.get(agent, "failed_pings") != null ? agents_states.get(agent, "failed_pings") : "--";
+                value = failed_pings + "/" + reconnects;
                 break;
             }
             default: {

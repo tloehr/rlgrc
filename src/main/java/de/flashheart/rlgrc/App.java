@@ -13,7 +13,7 @@ import java.io.File;
 @Log4j2
 public class App {
     public static final String PROJECT = "rlgrc";
-
+// https://github.com/nidi3/graphviz-java#user-content-how-it-works
     public static void main(String[] args) throws Exception {
         if (!System.getProperties().containsKey("workspace")) {
             log.fatal("workspace directory parameter needs to be set via -Dworkspace=/path/you/want");
@@ -24,6 +24,7 @@ public class App {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "centerflags"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "maggi1"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
 
         try {

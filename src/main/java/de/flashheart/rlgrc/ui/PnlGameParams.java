@@ -7,10 +7,7 @@ package de.flashheart.rlgrc.ui;
 import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.networking.RestHandler;
 import de.flashheart.rlgrc.ui.panels.MyPanels;
-import de.flashheart.rlgrc.ui.params.CenterFlagsParams;
-import de.flashheart.rlgrc.ui.params.ConquestParams;
-import de.flashheart.rlgrc.ui.params.FarcryParams;
-import de.flashheart.rlgrc.ui.params.GameParams;
+import de.flashheart.rlgrc.ui.params.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -75,6 +72,7 @@ public class PnlGameParams extends JPanel {
         cmbGameModes.addItem("conquest");
         cmbGameModes.addItem("farcry");
         cmbGameModes.addItem("centerflags");
+        cmbGameModes.addItem("maggi1");
         cmbGameModes.setEnabled(true);
     }
 
@@ -90,6 +88,7 @@ public class PnlGameParams extends JPanel {
         if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
+        if (mode.equals("maggi1")) current_game_params = Optional.of(new Maggi1Params(configs));
         if (mode.equals("none")) current_game_params = Optional.empty();
     }
 

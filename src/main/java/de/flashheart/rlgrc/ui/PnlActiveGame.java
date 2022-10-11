@@ -22,10 +22,7 @@ import de.flashheart.rlgrc.jobs.FlashStateLedJob;
 import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.networking.RestHandler;
 import de.flashheart.rlgrc.networking.SSEClient;
-import de.flashheart.rlgrc.ui.params.CenterFlagsParams;
-import de.flashheart.rlgrc.ui.params.ConquestParams;
-import de.flashheart.rlgrc.ui.params.FarcryParams;
-import de.flashheart.rlgrc.ui.params.GameParams;
+import de.flashheart.rlgrc.ui.params.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.jdesktop.swingx.*;
@@ -173,6 +170,7 @@ public class PnlActiveGame extends JPanel {
         if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
+        if (mode.equals("maggi1")) current_game_params = Optional.of(new Maggi1Params(configs));
         if (mode.equals("none")) current_game_params = Optional.empty();
         current_game_params.ifPresent(gameParams -> gameParams.from_params_to_ui(current_state));
     }

@@ -22,6 +22,8 @@ public class CenterFlagsZeus extends ZeusDialog {
         this.cp_agents = cp_agents;
         center.add(add_change_score());
         center.add(new JSeparator(SwingConstants.HORIZONTAL));
+        center.add(add_change_respawns());
+        center.add(new JSeparator(SwingConstants.HORIZONTAL));
         center.add(add_to_neutral());
         pack();
     }
@@ -66,5 +68,27 @@ public class CenterFlagsZeus extends ZeusDialog {
         return pnl;
     }
 
+
+    private JPanel add_change_respawns() {
+        JPanel pnl = new JPanel(new HorizontalLayout(5));
+        JLabel lbl = new JLabel("+/- respawns:");
+        lbl.setFont(FrameMain.MY_FONT);
+        final JComboBox cmb = new JComboBox<>(new Vector<>(Lists.newArrayList("Blue", "Red")));
+        cmb.setFont(FrameMain.MY_FONT);
+        JButton apply = new JButton(new ImageIcon(getClass().getResource("/artwork/apply.png")));
+        JTextField txtScore = new JTextField("0");
+        txtScore.setFont(FrameMain.MY_FONT);
+        txtScore.setInputVerifier(new NumberVerifier());
+        apply.addActionListener(e -> {
+            zeus_intervention.clear();
+            zeus_intervention.put("operation", "add_respawns").put("team", cmb.getSelectedItem().toString()).put("amount", txtScore.getText());
+            super.apply(e.getSource());
+        });
+        pnl.add(lbl);
+        pnl.add(cmb);
+        pnl.add(txtScore);
+        pnl.add(apply);
+        return pnl;
+    }
 
 }

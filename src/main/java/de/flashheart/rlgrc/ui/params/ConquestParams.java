@@ -7,6 +7,9 @@ package de.flashheart.rlgrc.ui.params;
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 import de.flashheart.rlgrc.misc.*;
+import de.flashheart.rlgrc.ui.params.zeus.CenterFlagsZeus;
+import de.flashheart.rlgrc.ui.params.zeus.ConquestZeus;
+import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
 import lombok.extern.log4j.Log4j2;
 import org.json.JSONObject;
 
@@ -15,15 +18,18 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * @author Torsten Löhr
  */
 @Log4j2
 public class ConquestParams extends GameParams {
+    private final JFrame owner;
 
-    public ConquestParams(JSONConfigs configs) {
+    public ConquestParams(JSONConfigs configs, JFrame owner) {
         super(configs);
+        this.owner = owner;
         add(default_components);
         initComponents();
         initPanel();
@@ -67,8 +73,8 @@ public class ConquestParams extends GameParams {
         //======== pnlConquest ========
         {
             pnlConquest.setLayout(new FormLayout(
-                "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
-                "3*(default, $lgap), fill:default:grow"));
+                    "pref, $rgap, default:grow, $ugap, pref, $rgap, default:grow",
+                    "3*(default, $lgap), fill:default:grow"));
 
             //---- label3 ----
             label3.setText("Respawn Tickets");
@@ -98,9 +104,9 @@ public class ConquestParams extends GameParams {
             //======== pnl1234 ========
             {
                 pnl1234.setLayout(new FormLayout(
-                    "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
-                    "15dlu, $rgap, 2*(default), default:grow"));
-                ((FormLayout)pnl1234.getLayout()).setColumnGroups(new int[][] {{1, 5}});
+                        "70dlu:grow, $lcgap, 20dlu, $ugap, 70dlu:grow, $lcgap, 20dlu",
+                        "15dlu, $rgap, 2*(default), default:grow"));
+                ((FormLayout) pnl1234.getLayout()).setColumnGroups(new int[][]{{1, 5}});
 
                 //---- label10 ----
                 label10.setText("Capture Points");
@@ -159,7 +165,6 @@ public class ConquestParams extends GameParams {
         txtCnqEBleedInt.setText(params.get("end_bleed_interval").toString());
         txtCPs.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
-
     }
 
     @Override
@@ -175,7 +180,6 @@ public class ConquestParams extends GameParams {
         agents.put("capture_points", from_string_list(txtCPs.getText()));
         agents.put("sirens", from_string_list(txtSirens.getText()));
         params.put("agents", agents);
-
 
 
         params.put("class", "de.flashheart.rlg.commander.games.Conquest");
@@ -199,7 +203,7 @@ public class ConquestParams extends GameParams {
         return "";
     }
 
-//
+    //
 //    /**
 //     * preprocess events from conquest to combine double buttons on flags (you have to push the button twice to get your
 //     * team color when you are red)
@@ -309,7 +313,7 @@ public class ConquestParams extends GameParams {
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Conquest @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
+                        HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Team Red &#8594; %s  &#8660; %s &#8592; Team Blue") +
                                 HTML.h2("Capture points") +
                                 HTML.h3("Team Red") +
@@ -322,7 +326,16 @@ public class ConquestParams extends GameParams {
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
-        return String.format(html, game_state.getInt("remaining_red_tickets"), game_state.getInt("remaining_blue_tickets"), game_state.getInt("red_respawns"), game_state.getInt("blue_respawns"));
+        return String.format(html, game_state.optString("comment"),
+                game_state.getInt("remaining_red_tickets"),
+                game_state.getInt("remaining_blue_tickets"),
+                game_state.getInt("red_respawns"),
+                game_state.getInt("blue_respawns"));
+    }
+
+    @Override
+    public Optional<ZeusDialog> get_zeus() {
+        return Optional.of(new ConquestZeus(owner, from_string_list(txtCPs.getText())));
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables

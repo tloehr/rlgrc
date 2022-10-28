@@ -85,7 +85,7 @@ public class PnlGameParams extends JPanel {
 
     private void create_game_params_if_needed(String mode) {
         if (current_game_params.isPresent() && current_game_params.get().getMode().equals(mode)) return;
-        if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs));
+        if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs, owner));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
         if (mode.equals("maggi1")) current_game_params = Optional.of(new Maggi1Params(configs));

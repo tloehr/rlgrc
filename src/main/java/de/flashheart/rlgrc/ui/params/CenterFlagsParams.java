@@ -40,7 +40,6 @@ public class CenterFlagsParams extends GameParams {
         txtSirens.setToolTipText("Comma separated");
 
 
-
         setLayout(new RiverLayout(5, 5));
         add(default_components);
         add(new JLabel("Gametime in seconds"), "br left");
@@ -49,7 +48,7 @@ public class CenterFlagsParams extends GameParams {
         add(txtCapturePoints, "hfill");
         add(new JLabel("Sirens"), "br left");
         add(txtSirens, "hfill");
-        
+
     }
 
     @Override
@@ -66,8 +65,12 @@ public class CenterFlagsParams extends GameParams {
             return event.getString("message");
         }
 
+        if (event.getString("item").equals("respawn")) {
+            return "Respawn Team " + event.getString("team") + ": #" + event.getInt("value");
+        }
+
         if (type.equalsIgnoreCase("in_game_state_change")) {
-            String zeus = (event.has("zeus") ? HTML.linebreak()+ "(by the hand of ZEUS)" : "");
+            String zeus = (event.has("zeus") ? HTML.linebreak() + "(by the hand of ZEUS)" : "");
             if (event.getString("item").equals("capture_point")) {
                 return event.getString("agent") + " => " + event.getString("state")
                         + zeus;
@@ -104,7 +107,6 @@ public class CenterFlagsParams extends GameParams {
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
 
-
         // Preparing Score Table
         JSONObject scores = game_state.getJSONObject("scores");
         List capture_points = game_state.getJSONObject("agents").getJSONArray("capture_points").toList().stream().sorted().collect(Collectors.toList());
@@ -133,7 +135,7 @@ public class CenterFlagsParams extends GameParams {
 
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Center-Flags @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
+                        HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Match length: %s, remaining time: %s") +
                                 HTML.h2("Score") +
                                 HTML.table(
@@ -143,13 +145,18 @@ public class CenterFlagsParams extends GameParams {
                                                         HTML.table_th("Red Score")
                                         ),
                                         buffer.toString(), "1") +
+                                HTML.h3("Number of Respawns") +
+                                "Team Red: %s" + HTML.linebreak() +
+                                "Team Blue: %s" +
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
         return String.format(html,
+                game_state.optString("comment"),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
-                game_state.getString("game_state")
+                game_state.getInt("red_respawns"),
+                game_state.getInt("blue_respawns")
         );
     }
 

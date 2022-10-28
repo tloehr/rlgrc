@@ -67,7 +67,7 @@ public class Maggi1Params extends GameParams {
         }
 
         if (type.equalsIgnoreCase("in_game_state_change")) {
-            String zeus = (event.has("zeus") ? HTML.linebreak()+ "(by the hand of ZEUS)" : "");
+            String zeus = (event.has("zeus") ? HTML.linebreak() + "(by the hand of ZEUS)" : "");
             if (event.getString("item").equals("capture_point")) {
                 return event.getString("agent") + " => " + event.getString("state")
                         + zeus;
@@ -109,15 +109,20 @@ public class Maggi1Params extends GameParams {
 
         String html =
                 HTML.document(CSS,
-                        HTML.h1("Maggi's Stammtisch @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
+                        HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Match length: %s, remaining time: %s") +
+                                HTML.h2("Score") +
+                                "Team Red: %s" + HTML.linebreak() +
+                                "Team Blue: %s" +
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
         return String.format(html,
+                game_state.optString("comment"),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
-                game_state.getString("game_state")
+                game_state.getInt("red_points"),
+                game_state.getInt("blue_points")
         );
     }
 

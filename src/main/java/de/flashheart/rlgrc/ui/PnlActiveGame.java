@@ -211,7 +211,7 @@ public class PnlActiveGame extends JPanel {
         });
     }
 
-    private void disconnect_sse_client() {
+    public void disconnect_sse_client() {
         opt_sseClient.ifPresent(sseClient -> sseClient.shutdown());
         opt_sseClient = Optional.empty();
     }

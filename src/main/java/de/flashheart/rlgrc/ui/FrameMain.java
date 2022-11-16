@@ -89,6 +89,7 @@ public class FrameMain extends JFrame {
     private void initFrame() throws IOException, SchedulerException {
         pnlParams.addPropertyChangeListener("game_unloaded", evt -> {
             current_state.clear();
+            pnlActiveGame.disconnect_sse_client();
             update();
         });
         pnlParams.addPropertyChangeListener("game_loaded", evt -> {
@@ -200,7 +201,10 @@ public class FrameMain extends JFrame {
 
 
     private void btnConnect(ActionEvent e) {
-        if (restHandler.isConnected()) restHandler.disconnect();
+        if (restHandler.isConnected()) {
+            pnlActiveGame.disconnect_sse_client();
+            restHandler.disconnect();
+        }
         else restHandler.connect(txtURI.getSelectedItem());
     }
 

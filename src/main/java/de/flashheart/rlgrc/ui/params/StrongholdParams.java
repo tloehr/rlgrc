@@ -1,8 +1,8 @@
 package de.flashheart.rlgrc.ui.params;
 
 import de.flashheart.rlgrc.misc.*;
-import de.flashheart.rlgrc.ui.params.zeus.CenterFlagsZeus;
 import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -10,17 +10,15 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class Maggi1Params extends GameParams {
+public class StrongholdParams extends GameParams {
 
-    private JTextField txtCapturePoints;
+    private JTextField txtRedRing, txtYellowRing, txtGreenRing, txtBlueRing;
     private JTextField txtSirens;
     private JButton btn_switch;
 
-    public Maggi1Params(JSONConfigs configs) {
+    public StrongholdParams(JSONConfigs configs) {
         super(configs);
         initPanel();
     }
@@ -28,10 +26,24 @@ public class Maggi1Params extends GameParams {
 
     private void initPanel() {
         load_defaults();
-        txtCapturePoints = new JTextField();
-        txtCapturePoints.setInputVerifier(new NotEmptyVerifier());
-        txtCapturePoints.setFont(default_font);
-        txtCapturePoints.setToolTipText("Comma separated");
+        txtRedRing = new JTextField();
+        txtRedRing.setFont(default_font);
+        txtRedRing.setToolTipText("Comma separated");
+
+        txtYellowRing = new JTextField();
+        txtYellowRing.setFont(default_font);
+        txtYellowRing.setToolTipText("Comma separated");
+
+
+        txtGreenRing = new JTextField();
+        txtGreenRing.setFont(default_font);
+        txtGreenRing.setToolTipText("Comma separated");
+
+
+        txtBlueRing = new JTextField();
+        txtBlueRing.setFont(default_font);
+        txtBlueRing.setToolTipText("Comma separated");
+
 
         txtSirens = new JTextField();
         txtSirens.setInputVerifier(new NotEmptyVerifier());
@@ -42,12 +54,15 @@ public class Maggi1Params extends GameParams {
         add(default_components);
         add(new JLabel("Gametime in seconds"), "br left");
         add(create_textfield("game_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(7200), true)), "left");
-        add(new JLabel("Capture Points"), "br left");
-        add(txtCapturePoints, "hfill");
-        add(new JLabel("Seconds to Lock"), "br left");
-        add(create_textfield("lock_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(20L), true)), "left");
-        add(new JLabel("Seconds to Unlock"), "left");
-        add(create_textfield("unlock_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(20L), true)), "left");
+        add(create_checkbox("allow_defuse", "Allow Defuse"), "left");
+        add(new JLabel("Ring 1", new ImageIcon(getClass().getResource("/artwork/ledred.png")), SwingConstants.LEADING), "br left");
+        add(txtRedRing, "hfill");
+        add(new JLabel("Ring 2", new ImageIcon(getClass().getResource("/artwork/ledyellow.png")), SwingConstants.LEADING), "br left");
+        add(txtYellowRing, "hfill");
+        add(new JLabel("Ring 3", new ImageIcon(getClass().getResource("/artwork/ledgreen.png")), SwingConstants.LEADING), "br left");
+        add(txtGreenRing, "hfill");
+        add(new JLabel("Ring 4", new ImageIcon(getClass().getResource("/artwork/ledblue.png")), SwingConstants.LEADING), "br left");
+        add(txtBlueRing, "hfill");
         add(new JLabel("Sirens"), "br left");
         add(txtSirens, "hfill");
     }
@@ -55,8 +70,11 @@ public class Maggi1Params extends GameParams {
     @Override
     public void from_params_to_ui() {
         super.from_params_to_ui();
-        txtCapturePoints.setText(to_string_list(params.getJSONObject("agents").getJSONArray("capture_points")));
         txtSirens.setText(to_string_list(params.getJSONObject("agents").getJSONArray("sirens")));
+        txtRedRing.setText(to_string_list(params.getJSONObject("agents").getJSONArray("red")));
+        txtYellowRing.setText(to_string_list(params.getJSONObject("agents").getJSONArray("ylw")));
+        txtGreenRing.setText(to_string_list(params.getJSONObject("agents").getJSONArray("grn")));
+        txtBlueRing.setText(to_string_list(params.getJSONObject("agents").getJSONArray("blu")));
     }
 
     @Override
@@ -65,11 +83,18 @@ public class Maggi1Params extends GameParams {
         if (type.equalsIgnoreCase("general_game_state_change")) {
             return event.getString("message");
         }
+        if (type.equalsIgnoreCase("general_game_state_change")) {
+            return event.getString("message");
+        }
 
         if (type.equalsIgnoreCase("in_game_state_change")) {
             String zeus = (event.has("zeus") ? HTML.linebreak() + "(by the hand of ZEUS)" : "");
             if (event.getString("item").equals("capture_point")) {
                 return event.getString("agent") + " => " + event.getString("state")
+                        + zeus;
+            }
+            if (event.getString("item").equals("ring")) {
+                return event.getString("ring") + " => " + event.getString("state")
                         + zeus;
             }
             if (event.getString("item").equals("add_seconds")) {
@@ -86,17 +111,28 @@ public class Maggi1Params extends GameParams {
         super.from_ui_to_params();
 
         JSONObject agents = new JSONObject();
-        agents.put("capture_points", from_string_list(txtCapturePoints.getText()));
+
+        JSONArray red = from_string_list(txtRedRing.getText());
+        JSONArray yellow = from_string_list(txtYellowRing.getText());
+        JSONArray green = from_string_list(txtGreenRing.getText());
+        JSONArray blue = from_string_list(txtBlueRing.getText());
+
+        agents.put("red", red);
+        agents.put("ylw", yellow);
+        agents.put("grn", green);
+        agents.put("blu", blue);
+
+        agents.put("capture_points", new JSONArray().putAll(red).putAll(yellow).putAll(green).putAll(blue));
         agents.put("sirens", from_string_list(txtSirens.getText()));
         params.put("agents", agents);
 
-        params.put("class", "de.flashheart.rlg.commander.games.Maggi1");
+        params.put("class", "de.flashheart.rlg.commander.games.Stronghold");
         params.put("mode", getMode());
     }
 
     @Override
     public String getMode() {
-        return "maggi1";
+        return "stronghold";
     }
 
     @Override
@@ -112,8 +148,9 @@ public class Maggi1Params extends GameParams {
                         HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Match length: %s, remaining time: %s") +
                                 HTML.h2("Score") +
-                                "Team Red: %s" + HTML.linebreak() +
-                                "Team Blue: %s" +
+                                "Rings taken: %s" + HTML.linebreak() +
+                                "Active ring: %s" + HTML.linebreak() +
+                                "Rings to go: %s"+
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
@@ -121,9 +158,11 @@ public class Maggi1Params extends GameParams {
                 game_state.optString("comment"),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
-                game_state.getInt("red_points"),
-                game_state.getInt("blue_points")
+                game_state.optString("rings_taken"),
+                game_state.optString("active_ring"),
+                game_state.optString("rings_to_go")
         );
+
     }
 
     @Override

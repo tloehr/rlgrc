@@ -24,8 +24,9 @@ public class App {
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "farcry"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "rush"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "centerflags"));
-        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "maggi1"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "signal"));
         FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "results"));
+        FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + "stronghold"));
 
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());

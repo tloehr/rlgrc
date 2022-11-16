@@ -73,7 +73,7 @@ public class FrameMain extends JFrame {
         initTab();
         initFrame();
         pack();
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     private void initTab() {

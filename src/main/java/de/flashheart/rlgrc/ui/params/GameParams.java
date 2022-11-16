@@ -44,7 +44,7 @@ public abstract class GameParams extends JPanel {
     protected String CSS = "";
     protected Font default_font = new Font(".SF NS Text", Font.PLAIN, 14);
     protected Font large_font = FrameMain.MY_FONT;
-    protected HashMap<String, JTextComponent> components;
+    protected HashMap<String, JComponent> components;
     private final int num_of_segments;
 
     public GameParams(JSONConfigs configs) {
@@ -161,6 +161,13 @@ public abstract class GameParams extends JPanel {
         return txt;
     }
 
+    protected JCheckBox create_checkbox(String key, String label) {
+        JCheckBox cb = new JCheckBox(label);
+        cb.setFont(default_font);
+        components.put(key, cb);
+        return cb;
+    }
+
     public Optional<File> getFile() {
         return file;
     }
@@ -168,7 +175,10 @@ public abstract class GameParams extends JPanel {
     public abstract String getMode();
 
     public void from_params_to_ui() {
-        components.forEach((key, jTextComponent) -> jTextComponent.setText(params.get(key).toString()));
+        components.forEach((key, jComponent) -> {
+            if (jComponent instanceof JTextComponent) ((JTextComponent) jComponent).setText(params.get(key).toString());
+            if (jComponent instanceof JCheckBox) ((JCheckBox) jComponent).setSelected(params.optBoolean(key));
+        });
         cbSilentGame.setSelected(params.getBoolean("silent_game"));
 
         cbWait4Teams2BReady.setSelected(params.getJSONObject("spawns").getBoolean("wait4teams2B_ready"));
@@ -194,7 +204,10 @@ public abstract class GameParams extends JPanel {
 
     public void from_ui_to_params() {
         params.clear();
-        components.forEach((key, jTextComponent) -> params.put(key, jTextComponent.getText()));
+        components.forEach((key, jComponent) -> {
+            if (jComponent instanceof JTextComponent) params.put(key, ((JTextComponent) jComponent).getText());
+            if (jComponent instanceof JCheckBox) params.put(key, ((JCheckBox) jComponent).isSelected());
+        });
 
         params.put("silent_game", Boolean.toString(cbSilentGame.isSelected()));
 

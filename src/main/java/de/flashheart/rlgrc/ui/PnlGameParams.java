@@ -6,10 +6,8 @@ package de.flashheart.rlgrc.ui;
 
 import de.flashheart.rlgrc.misc.JSONConfigs;
 import de.flashheart.rlgrc.networking.RestHandler;
-import de.flashheart.rlgrc.ui.panels.MyPanels;
 import de.flashheart.rlgrc.ui.params.*;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -69,10 +67,11 @@ public class PnlGameParams extends JPanel {
     }
 
     private void initPanel() {
+        cmbGameModes.addItem("centerflags");
         cmbGameModes.addItem("conquest");
         cmbGameModes.addItem("farcry");
-        cmbGameModes.addItem("centerflags");
-        cmbGameModes.addItem("maggi1");
+        cmbGameModes.addItem("signal");
+        cmbGameModes.addItem("stronghold");
         cmbGameModes.setEnabled(true);
     }
 
@@ -88,7 +87,8 @@ public class PnlGameParams extends JPanel {
         if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs, owner));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
-        if (mode.equals("maggi1")) current_game_params = Optional.of(new Maggi1Params(configs));
+        if (mode.equals("signal")) current_game_params = Optional.of(new SignalParams(configs));
+        if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs));
         if (mode.equals("none")) current_game_params = Optional.empty();
     }
 

@@ -125,18 +125,18 @@ public class PnlActiveGame extends JPanel {
             final String html = gameParams.get_score_as_html(current_state);
             // if we do not run this in a different thread, the scrollpane wont go up
             // don't know why. but did cost me some time to find out.
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    new Thread(() -> {
-                        txtGameStatus.setText(html);
-                        revalidate();
-                        repaint();
-                    }).start();
-                } catch (Exception e) {
-                    log.warn(e);
-                }
-            });
-
+            txtGameStatus.setText(html);
+//            SwingUtilities.invokeLater(() -> {
+//                try {
+//                    new Thread(() -> {
+//                        txtGameStatus.setText(html);
+//                        revalidate();
+//                        repaint();
+//                    }).start();
+//                } catch (Exception e) {
+//                    log.warn(e);
+//                }
+//            });
 
             int index = FrameMain._states_.indexOf(state.toUpperCase());
             // States
@@ -170,7 +170,8 @@ public class PnlActiveGame extends JPanel {
         if (mode.equals("conquest")) current_game_params = Optional.of(new ConquestParams(configs, owner));
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
-        if (mode.equals("maggi1")) current_game_params = Optional.of(new Maggi1Params(configs));
+        if (mode.equals("signal")) current_game_params = Optional.of(new SignalParams(configs));
+        if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs));
         if (mode.equals("none")) current_game_params = Optional.empty();
         current_game_params.ifPresent(gameParams -> gameParams.from_params_to_ui(current_state));
     }

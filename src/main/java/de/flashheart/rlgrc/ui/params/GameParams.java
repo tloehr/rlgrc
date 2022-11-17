@@ -320,9 +320,9 @@ public abstract class GameParams extends JPanel {
      */
     protected JSONArray from_string_segment_list(String list) {
         JSONArray outer = new JSONArray();
-        Collections.list(new StringTokenizer(list, "\n;")).stream().map(token -> (String) token).forEach(s -> {
+        Collections.list(new StringTokenizer(list, "\n;")).stream().map(token -> ((String) token).trim()).forEach(s -> {
             JSONArray inner = new JSONArray();
-            Collections.list(new StringTokenizer(s, ",")).stream().map(token -> (String) token).forEach(s1 -> inner.put(s1));
+            Collections.list(new StringTokenizer(s, ",")).stream().map(token -> ((String) token).trim()).forEach(s1 -> inner.put(s1));
             outer.put(inner);
         });
         return outer;
@@ -332,7 +332,7 @@ public abstract class GameParams extends JPanel {
 
 
     protected JSONArray from_string_list(String list) {
-        return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> (String) token).collect(Collectors.toList()));
+        return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> ((String) token).trim()).collect(Collectors.toList()));
     }
 
     /**

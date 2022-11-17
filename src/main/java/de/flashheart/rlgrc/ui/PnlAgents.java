@@ -94,6 +94,7 @@ public class PnlAgents extends JPanel {
 
 
     private void table_of_agents_changed_selection(ListSelectionEvent e) {
+        // todo: multi selection
         if (e.getValueIsAdjusting()) return;
         selected_agent = Optional.empty();
         final DefaultListSelectionModel target = (DefaultListSelectionModel) e.getSource();

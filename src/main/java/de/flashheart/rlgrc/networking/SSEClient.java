@@ -309,7 +309,7 @@ public class SSEClient {
                     if (content.startsWith("data:")) {
                         messageBuilder.append(content.substring(5));
                     } else if (useKeepAliveMechanismIfReceived && content.startsWith(":")) {
-                        log.debug("Got keeplive / comment message: {}", content);
+                        log.trace("Got keeplive / comment message: {}", content);
                         keepAliveReceivedInCurrentRequest.set(true);
                         processKeepAliveMessage();
                     } else {
@@ -403,7 +403,7 @@ public class SSEClient {
         return () -> {
             try {
                 if (!isSubscribedSuccessfully()) {
-                    log.debug("Status is not subscribed successfully. Skipping connectivity check.");
+                    log.trace("Status is not subscribed successfully. Skipping connectivity check.");
                     return;
                 }
                 checkConnectivity();
@@ -416,7 +416,7 @@ public class SSEClient {
     private void checkConnectivity() {
         boolean wasConnected = isConnected.get();
         boolean isCurrentlyConnected = isCurrentlyConnected();
-        log.debug("connectivityCheckTask - isCurrentlyConnected: {}, wasConnected: {}, keepAliveReceived: {}, connectivityThresholdMillis: {}",
+        log.trace("connectivityCheckTask - isCurrentlyConnected: {}, wasConnected: {}, keepAliveReceived: {}, connectivityThresholdMillis: {}",
                 isCurrentlyConnected, wasConnected, keepAliveReceivedInCurrentRequest, connectivityThresholdMillis);
         boolean shouldReconnect = false;
         if (keepAliveReceivedInCurrentRequest.get() && connectivityThresholdMillis > 0) {
@@ -444,7 +444,7 @@ public class SSEClient {
             if (!isLastReceivedMessageTimeValid()) {
                 return false;
             }
-            log.debug("Checking via connectivity check URL request: {}", connectivityCheckUrl);
+            log.trace("Checking via connectivity check URL request: {}", connectivityCheckUrl);
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(new URI(connectivityCheckUrl))
                     .GET()
@@ -458,7 +458,7 @@ public class SSEClient {
                     .connectTimeout(Duration.ofSeconds(3))
                     .build()
                     .send(request, BodyHandlers.ofInputStream());
-            log.debug("connectivityCheck response status: {}", response.statusCode());
+            log.trace("connectivityCheck response status: {}", response.statusCode());
             return true;
         } catch (ConnectException e) {
             log.trace("isCurrentlyConnected - ConnectException: " + e.getMessage());
@@ -509,7 +509,7 @@ public class SSEClient {
                     - firstKeepAliveMessageTimes.get(i);
             keepAliveIntervalsSum += keepAliveInterval;
         }
-        log.debug("keepAliveIntervalsSum: {}", keepAliveIntervalsSum);
+        log.trace("keepAliveIntervalsSum: {}", keepAliveIntervalsSum);
         int keepAliveIntervalsAverageSeconds = (int) Math.rint((double) keepAliveIntervalsSum / (double) (end) / 1000.0);
         log.trace("keepAliveIntervalsAverageSeconds: {}", keepAliveIntervalsAverageSeconds);
         long keepAliveIntervalsAverageMultiplier = 4L;

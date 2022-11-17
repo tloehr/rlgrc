@@ -1,11 +1,15 @@
 package de.flashheart.rlgrc.ui.params;
 
 import de.flashheart.rlgrc.misc.*;
+import de.flashheart.rlgrc.ui.params.zeus.CenterFlagsZeus;
+import de.flashheart.rlgrc.ui.params.zeus.StrongholdZeus;
 import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -14,12 +18,13 @@ import java.util.Optional;
 
 public class StrongholdParams extends GameParams {
 
+    private final JFrame owner;
     private JTextField txtRedRing, txtYellowRing, txtGreenRing, txtBlueRing;
     private JTextField txtSirens;
-    private JButton btn_switch;
 
-    public StrongholdParams(JSONConfigs configs) {
+    public StrongholdParams(JSONConfigs configs, JFrame owner) {
         super(configs);
+        this.owner = owner;
         initPanel();
     }
 
@@ -135,38 +140,59 @@ public class StrongholdParams extends GameParams {
         return "stronghold";
     }
 
+    String get_color(String color) {
+        if (color.equalsIgnoreCase("blu")) return HTML.color(Color.BLUE, color);
+        if (color.equalsIgnoreCase("red")) return HTML.color(Color.RED, color);
+        if (color.equalsIgnoreCase("grn")) return HTML.color(Color.GREEN, color);
+        if (color.equalsIgnoreCase("ylw")) return HTML.color(Color.YELLOW, color);
+        return HTML.color(Color.WHITE, color);
+    }
+
     @Override
     public String get_score_as_html(JSONObject game_state) {
         JSONObject firstEvent = game_state.getJSONArray("in_game_events").getJSONObject(0);
         LocalDateTime first_pit = JavaTimeConverter.from_iso8601(firstEvent.getString("pit"));
 
 
-        // Preparing Score Table
+        String rings_progress = game_state.optString("rings_progress");
+
+        rings_progress = StringUtils.replaceIgnoreCase(rings_progress, "red", get_color("red"));
+        rings_progress = StringUtils.replaceIgnoreCase(rings_progress, "ylw", get_color("ylw"));
+        rings_progress = StringUtils.replaceIgnoreCase(rings_progress, "grn", get_color("grn"));
+        rings_progress = StringUtils.replaceIgnoreCase(rings_progress, "blu", get_color("blu"));
 
         String html =
                 HTML.document(CSS,
                         HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
                                 HTML.h2("Match length: %s, remaining time: %s") +
-                                HTML.h2("Score") +
-                                "Rings taken: %s" + HTML.linebreak() +
-                                "Active ring: %s" + HTML.linebreak() +
-                                "Rings to go: %s"+
+                                HTML.h2("Progress") +
+                                rings_progress +
+//                                "Rings taken: %s" + HTML.linebreak() +
+//                                "Active ring: %s" + HTML.linebreak() +
+//                                "Rings to go: %s" +
                                 HTML.h2("Events") +
                                 generate_table_for_events(game_state.getJSONArray("in_game_events"))
                 );
+
         return String.format(html,
                 game_state.optString("comment"),
                 JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
-                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
-                game_state.optString("rings_taken"),
-                game_state.optString("active_ring"),
-                game_state.optString("rings_to_go")
+                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining")))
         );
 
     }
 
     @Override
     public Optional<ZeusDialog> get_zeus() {
-        return Optional.empty();
+        return Optional.of(
+                new StrongholdZeus(owner,
+                        from_string_list(
+                                txtRedRing.getText() + " "
+                                        + txtYellowRing.getText() + " "
+                                        + txtGreenRing.getText() + " "
+                                        + txtBlueRing.getText()
+                        )
+                )
+        );
     }
 }

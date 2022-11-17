@@ -171,7 +171,7 @@ public class PnlActiveGame extends JPanel {
         if (mode.equals("centerflags")) current_game_params = Optional.of(new CenterFlagsParams(configs, owner));
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
         if (mode.equals("signal")) current_game_params = Optional.of(new SignalParams(configs));
-        if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs));
+        if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs, owner));
         if (mode.equals("none")) current_game_params = Optional.empty();
         current_game_params.ifPresent(gameParams -> gameParams.from_params_to_ui(current_state));
     }

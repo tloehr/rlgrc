@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class StrongholdParams extends GameParams {
 
@@ -187,9 +188,9 @@ public class StrongholdParams extends GameParams {
         return Optional.of(
                 new StrongholdZeus(owner,
                         from_string_list(
-                                txtRedRing.getText() + " "
-                                        + txtYellowRing.getText() + " "
-                                        + txtGreenRing.getText() + " "
+                                txtRedRing.getText() + ","
+                                        + txtYellowRing.getText() + ","
+                                        + txtGreenRing.getText() + ","
                                         + txtBlueRing.getText()
                         )
                 )

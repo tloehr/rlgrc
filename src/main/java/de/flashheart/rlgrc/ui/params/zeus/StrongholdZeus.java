@@ -22,6 +22,7 @@ public class StrongholdZeus extends ZeusDialog {
         JPanel pnl = new JPanel(new HorizontalLayout(5));
         JLabel lbl = new JLabel("Defuse:");
         lbl.setFont(FrameMain.MY_FONT);
+        //todo: fixme
         final JComboBox cmb = new JComboBox<>(new Vector<>(cp_agents.toList().stream().sorted().collect(Collectors.toList())));
         JButton apply = new JButton(new ImageIcon(getClass().getResource("/artwork/apply.png")));
         cmb.setFont(FrameMain.MY_FONT);

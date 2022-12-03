@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -332,7 +333,11 @@ public abstract class GameParams extends JPanel {
 
 
     protected JSONArray from_string_list(String list) {
-        return new JSONArray(Collections.list(new StringTokenizer(list, "\n,")).stream().map(token -> ((String) token).trim()).collect(Collectors.toList()));
+        return new JSONArray(
+                Collections.list(new StringTokenizer(list, "\n,")).stream()
+                        .map(token -> ((String) token).trim())
+                        .sorted()
+                        .collect(Collectors.toList()));
     }
 
     /**

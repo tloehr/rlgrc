@@ -60,7 +60,7 @@ public class FrameMain extends JFrame {
 
         this.restHandler = new RestHandler(() -> on_connect(), () -> on_disconnect());
         pnlParams = new PnlGameParams(restHandler, configs, this, "1");
-        pnlActiveGame = new PnlActiveGame(restHandler, configs, this,"1");
+        pnlActiveGame = new PnlActiveGame(restHandler, configs, this, "1");
         pnlServer = new PnlServer(restHandler, "1");
         pnlAgents = new PnlAgents(restHandler, configs);
         this.restHandler.addRestResponseListener(event -> on_response(event));
@@ -73,7 +73,8 @@ public class FrameMain extends JFrame {
         initTab();
         initFrame();
         pack();
-        //setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        if (configs.getConfigs().optBoolean("maximize_on_start")) setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     private void initTab() {
@@ -204,8 +205,7 @@ public class FrameMain extends JFrame {
         if (restHandler.isConnected()) {
             pnlActiveGame.disconnect_sse_client();
             restHandler.disconnect();
-        }
-        else restHandler.connect(txtURI.getSelectedItem());
+        } else restHandler.connect(txtURI.getSelectedItem());
     }
 
     private void cmbGameSlotsItemStateChanged(ItemEvent e) {
@@ -246,14 +246,14 @@ public class FrameMain extends JFrame {
         });
         var contentPane = getContentPane();
         contentPane.setLayout(new FormLayout(
-                "$ugap, default:grow, $ugap",
-                "$rgap, default:grow, $ugap"));
+            "$ugap, default:grow, $ugap",
+            "$rgap, default:grow, $ugap"));
 
         //======== mainPanel ========
         {
             mainPanel.setLayout(new FormLayout(
-                    "default:grow",
-                    "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
+                "default:grow",
+                "pref, $rgap, default, $lgap, default, $rgap, default, $lgap, fill:default:grow"));
 
             //======== panel1 ========
             {

@@ -336,7 +336,6 @@ public abstract class GameParams extends JPanel {
         return new JSONArray(
                 Collections.list(new StringTokenizer(list, "\n,")).stream()
                         .map(token -> ((String) token).trim())
-                        .sorted()
                         .collect(Collectors.toList()));
     }
 

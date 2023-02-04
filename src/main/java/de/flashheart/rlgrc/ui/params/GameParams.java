@@ -251,6 +251,7 @@ public abstract class GameParams extends JPanel {
             } else {
                 params = new JSONObject(Resources.toString(Resources.getResource("defaults/" + getMode() + ".json"), Charset.defaultCharset()));
             }
+
         } catch (Exception e) {
             log.error(e);
         }

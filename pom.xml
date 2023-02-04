@@ -33,7 +33,7 @@
         <collections4.version>4.4</collections4.version>
         <commons.io.version>2.11.0</commons.io.version>
         <quartz.version>2.3.2</quartz.version>
-        <flatlaf.version>2.1</flatlaf.version>
+        <flatlaf.version>3.0</flatlaf.version>
         <lang3.version>3.12.0</lang3.version>
         <dynamicfsm.version>0.01</dynamicfsm.version>
         <cxf.version>3.5.1</cxf.version>

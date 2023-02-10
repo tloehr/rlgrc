@@ -1,27 +1,22 @@
 package de.flashheart.rlgrc.ui.params;
 
 import de.flashheart.rlgrc.misc.*;
-import de.flashheart.rlgrc.ui.params.zeus.StrongholdZeus;
-import de.flashheart.rlgrc.ui.params.zeus.ZeusDialog;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
-public class TimedParams extends GameParams {
+public class TimedOnlyParams extends GameParams {
 
     private final JFrame owner;
     private JTextField txtRedRing, txtYellowRing, txtGreenRing, txtBlueRing;
     private JTextField txtSirens;
 
-    public TimedParams(JSONConfigs configs, JFrame owner) {
+    public TimedOnlyParams(JSONConfigs configs, JFrame owner) {
         super(configs);
         this.owner = owner;
         initPanel();

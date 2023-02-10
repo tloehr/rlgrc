@@ -39,11 +39,11 @@ public class CenterFlagsParams extends GameParams {
         txtSirens.setFont(default_font);
         txtSirens.setToolTipText("Comma separated");
 
-
         setLayout(new RiverLayout(5, 5));
         add(default_components);
         add(new JLabel("Gametime in seconds"), "br left");
         add(create_textfield("game_time", new NumberVerifier(BigDecimal.ONE, BigDecimal.valueOf(7200), true)), "left");
+        add(create_checkbox("count_respawns", "Count Respawns"), "left");
         add(new JLabel("Capture Points"), "br left");
         add(txtCapturePoints, "hfill");
         add(new JLabel("Sirens"), "br left");

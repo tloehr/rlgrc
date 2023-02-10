@@ -41,6 +41,7 @@
     ]
   },
   "game_time": 2700,
+  "count_respawns": false,
   "wait4teams2B_ready": false,
   "intro_mp3_file": "<random>",
   "starter_countdown": 30,

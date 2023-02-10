@@ -125,6 +125,11 @@ public class PnlActiveGame extends JPanel {
             final String html = gameParams.get_score_as_html(current_state);
             // if we do not run this in a different thread, the scrollpane wont go up
             // don't know why. but did cost me some time to find out.
+//            try {
+//                new Thread(() -> txtGameStatus.setText(html)).start();
+//            } catch (Exception e){
+//                log.warn(e);
+//            }
             SwingUtilities.invokeLater(() -> {
                 try {
                     new Thread(() -> {
@@ -173,7 +178,7 @@ public class PnlActiveGame extends JPanel {
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
         if (mode.equals("signal")) current_game_params = Optional.of(new SignalParams(configs));
         if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs, owner));
-        if (mode.equals("timed")) current_game_params = Optional.of(new TimedOnlyParams(configs, owner));
+        if (mode.equals("timed_only")) current_game_params = Optional.of(new TimedOnlyParams(configs, owner));
         if (mode.equals("none")) current_game_params = Optional.empty();
         current_game_params.ifPresent(gameParams -> gameParams.from_params_to_ui(current_state));
     }

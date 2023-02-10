@@ -72,7 +72,7 @@ public class PnlGameParams extends JPanel {
         cmbGameModes.addItem("farcry");
         cmbGameModes.addItem("signal");
         cmbGameModes.addItem("stronghold");
-        cmbGameModes.addItem("timed");
+        cmbGameModes.addItem("timed_only");
         cmbGameModes.setEnabled(true);
     }
 
@@ -90,7 +90,7 @@ public class PnlGameParams extends JPanel {
         if (mode.equals("farcry")) current_game_params = Optional.of(new FarcryParams(configs));
         if (mode.equals("signal")) current_game_params = Optional.of(new SignalParams(configs));
         if (mode.equals("stronghold")) current_game_params = Optional.of(new StrongholdParams(configs, owner));
-        if (mode.equals("timed")) current_game_params = Optional.of(new TimedOnlyParams(configs, owner));
+        if (mode.equals("timed_only")) current_game_params = Optional.of(new TimedOnlyParams(configs, owner));
         if (mode.equals("none")) current_game_params = Optional.empty();
     }
 

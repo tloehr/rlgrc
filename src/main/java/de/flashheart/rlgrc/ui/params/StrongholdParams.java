@@ -89,9 +89,6 @@ public class StrongholdParams extends GameParams {
         if (type.equalsIgnoreCase("general_game_state_change")) {
             return event.getString("message");
         }
-        if (type.equalsIgnoreCase("general_game_state_change")) {
-            return event.getString("message");
-        }
 
         if (type.equalsIgnoreCase("in_game_state_change")) {
             String zeus = (event.has("zeus") ? HTML.linebreak() + "(by the hand of ZEUS)" : "");

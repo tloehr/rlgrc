@@ -18,7 +18,6 @@ public class CenterFlagsParams extends GameParams {
     private final JFrame owner;
     private JTextField txtCapturePoints;
     private JTextField txtSirens;
-    private JButton btn_switch;
 
     public CenterFlagsParams(JSONConfigs configs, JFrame owner) {
         super(configs);
@@ -133,31 +132,55 @@ public class CenterFlagsParams extends GameParams {
                         HTML.table_td(HTML.bold(JavaTimeConverter.format(Instant.ofEpochMilli(scores.getJSONObject("red").getLong("all")))))
         ));
 
-        String html =
-                HTML.document(CSS,
-                        HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
-                                HTML.h2("Match length: %s, remaining time: %s") +
-                                HTML.h2("Score") +
-                                HTML.table(
-                                        HTML.table_tr(
-                                                HTML.table_th("Agent") +
-                                                        HTML.table_th("Blue Score") +
-                                                        HTML.table_th("Red Score")
-                                        ),
-                                        buffer.toString(), "1") +
-                                HTML.h3("Number of Respawns") +
-                                "Team Red: %s" + HTML.linebreak() +
-                                "Team Blue: %s" +
-                                HTML.h2("Events") +
-                                generate_table_for_events(game_state.getJSONArray("in_game_events"))
-                );
-        return String.format(html,
-                game_state.optString("comment"),
-                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
-                JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
-                game_state.getInt("red_respawns"),
-                game_state.getInt("blue_respawns")
-        );
+        boolean count_respawns = game_state.optBoolean("count_respawns");
+
+        if (count_respawns) {
+            String html = HTML.document(CSS,
+                    HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
+                            HTML.h2("Match length: %s, remaining time: %s") +
+                            HTML.h2("Score") +
+                            HTML.table(
+                                    HTML.table_tr(
+                                            HTML.table_th("Agent") +
+                                                    HTML.table_th("Blue Score") +
+                                                    HTML.table_th("Red Score")
+                                    ),
+                                    buffer.toString(), "1") +
+                            HTML.h3("Number of Respawns") +
+                            "Team Red: %s" + HTML.linebreak() +
+                            "Team Blue: %s" +
+                            HTML.h2("Events") +
+                            generate_table_for_events(game_state.getJSONArray("in_game_events"))
+            );
+            return String.format(html,
+                    game_state.optString("comment"),
+                    JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
+                    JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining"))),
+                    game_state.getInt("red_respawns"),
+                    game_state.getInt("blue_respawns")
+            );
+        } else {
+            String html = HTML.document(CSS,
+                    HTML.h1("%s @ " + first_pit.format(DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm"))) +
+                            HTML.h2("Match length: %s, remaining time: %s") +
+                            HTML.h2("Score") +
+                            HTML.table(
+                                    HTML.table_tr(
+                                            HTML.table_th("Agent") +
+                                                    HTML.table_th("Blue Score") +
+                                                    HTML.table_th("Red Score")
+                                    ),
+                                    buffer.toString(), "1") +
+                            HTML.h2("Events") +
+                            generate_table_for_events(game_state.getJSONArray("in_game_events"))
+            );
+            return String.format(html,
+                    game_state.optString("comment"),
+                    JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("match_length"))),
+                    JavaTimeConverter.format(Instant.ofEpochSecond(game_state.getInt("remaining")))
+            );
+        }
+
     }
 
     @Override

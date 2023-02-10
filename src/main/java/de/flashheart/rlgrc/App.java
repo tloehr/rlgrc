@@ -23,7 +23,7 @@ public class App {
             Runtime.getRuntime().halt(0);
         }
 
-        for (String game : Arrays.asList("conquest", "farcry", "rush", "centerflags", "signal", "results", "stronghold", "timed")) {
+        for (String game : Arrays.asList("conquest", "farcry", "rush", "centerflags", "signal", "results", "stronghold", "timed_only")) {
             FileUtils.forceMkdir(new File(System.getProperty("workspace") + File.separator + game));
         }
 

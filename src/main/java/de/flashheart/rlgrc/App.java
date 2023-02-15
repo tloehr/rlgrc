@@ -3,12 +3,14 @@ package de.flashheart.rlgrc;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import de.flashheart.rlgrc.misc.JSONConfigs;
+import de.flashheart.rlgrc.ui.EventQueueProxy;
 import de.flashheart.rlgrc.ui.ExceptionHandler;
 import de.flashheart.rlgrc.ui.FrameMain;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 
@@ -39,8 +41,11 @@ public class App {
         // Regular Exception
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
         // EDT Exception
-        SwingUtilities.invokeAndWait(() -> Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler()));
+        //SwingUtilities.invokeAndWait(() -> Thread.currentThread().setUncaughtExceptionHandler(new ExceptionHandler()));
 
+        // https://ruben42.wordpress.com/2009/03/30/catching-all-runtime-exceptions-in-swing/
+        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueueProxy());
+        
         new FrameMain(new JSONConfigs(System.getProperties().getProperty("workspace"))).setVisible(true);
     }
 }
